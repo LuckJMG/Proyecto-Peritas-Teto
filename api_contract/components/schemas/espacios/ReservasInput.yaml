@@ -1,0 +1,23 @@
+type: object
+required:
+  - espacioComunId
+  - residenteId
+  - fechaReserva
+  - horaInicio
+  - horaFin
+properties:
+  espacioComunId:
+    type: integer
+  residenteId:
+    type: integer
+  fechaReserva:
+    type: string
+    format: date
+  horaInicio:
+    type: string
+    format: time
+  horaFin:
+    type: string
+    format: time
+  observaciones:
+    type: string

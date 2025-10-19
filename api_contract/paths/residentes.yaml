@@ -1,0 +1,71 @@
+residentes:
+  get:
+    tags:
+      - Residentes
+    summary: Listar residentes
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioId'
+    responses:
+      '200':
+        description: Lista de residentes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../components/schemas/residentes/Residente.yaml'
+  post:
+    tags:
+      - Residentes
+    summary: Registrar residente
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/residentes/ResidenteInput.yaml'
+    responses:
+      '201':
+        description: Residente registrado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/residentes/Residente.yaml'
+
+residenteById:
+  get:
+    tags:
+      - Residentes
+    summary: Obtener residente
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/residenteIdPath'
+    responses:
+      '200':
+        description: Detalles del residente
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/residentes/Residente.yaml'
+
+  put:
+    tags:
+      - Residentes
+    summary: Actualizar residente
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/residenteIdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/residentes/ResidenteInput.yaml'
+    responses:
+      '200':
+        description: Residente actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/residentes/Residente.yaml'

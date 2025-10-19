@@ -1,0 +1,27 @@
+Unauthorized:
+  description: No autorizado
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common/Error.yaml'
+
+Forbidden:
+  description: Acceso denegado
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common/Error.yaml'
+
+NotFound:
+  description: Recurso no encontrado
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common/Error.yaml'
+
+BadRequest:
+  description: Solicitud inválida
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common/Error.yaml'

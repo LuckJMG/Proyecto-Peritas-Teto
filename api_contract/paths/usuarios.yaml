@@ -1,0 +1,87 @@
+usuarios:
+  get:
+    tags:
+      - Usuarios
+    summary: Listar usuarios
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioId'
+      - in: query
+        name: rol
+        schema:
+          $ref: '../components/schemas/usuarios/RolUsuario.yaml'
+    responses:
+      '200':
+        description: Lista de usuarios
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../components/schemas/usuarios/Usuario.yaml'
+
+  post:
+    tags:
+      - Usuarios
+    summary: Crear usuario
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/usuarios/UsuarioInput.yaml'
+    responses:
+      '201':
+        description: Usuario creado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/usuarios/Usuario.yaml'
+
+usuarioById:
+  get:
+    tags:
+      - Usuarios
+    summary: Obtener usuario
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/usuarioIdPath'
+    responses:
+      '200':
+        description: Detalles del usuario
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/usuarios/Usuario.yaml'
+
+  put:
+    tags:
+      - Usuarios
+    summary: Actualizar usuario
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/usuarioIdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/usuarios/UsuarioInput.yaml'
+    responses:
+      '200':
+        description: Usuario actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/usuarios/Usuario.yaml'
+
+deshabilitarUsuario:
+  patch:
+    tags:
+      - Usuarios
+    summary: Deshabilitar usuario
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/usuarioIdPath'
+    responses:
+      '200':
+        description: Usuario deshabilitado

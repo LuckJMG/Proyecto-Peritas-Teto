@@ -1,0 +1,95 @@
+multas:
+  get:
+    tags:
+      - Multas
+    summary: Listar multas
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioId'
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+    responses:
+      '200':
+        description: Lista de multas
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../components/schemas/multas/Multa.yaml'
+
+  post:
+    tags:
+      - Multas
+    summary: Crear multa
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/multas/MultaInput.yaml'
+    responses:
+      '201':
+        description: Multa creada
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/multas/Multa.yaml'
+
+multaById:
+  get:
+    tags:
+      - Multas
+    summary: Obtener multa
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/multaIdPath'
+    responses:
+      '200':
+        description: Detalles de la multa
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/multas/Multa.yaml'
+
+  put:
+    tags:
+      - Multas
+    summary: Modificar multa
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/multaIdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/multas/MultaInput.yaml'
+    responses:
+      '200':
+        description: Multa actualizada
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/multas/Multa.yaml'
+
+condonar:
+  patch:
+    tags:
+      - Multas
+    summary: Condonar multa
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/multaIdPath'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              motivo:
+                type: string
+    responses:
+      '200':
+        description: Multa condonada

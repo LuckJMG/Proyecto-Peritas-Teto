@@ -1,0 +1,33 @@
+type: object
+required:
+  - condominioId
+  - viviendaNumero
+  - nombre
+  - apellido
+  - rut
+  - email
+  - esPropietario
+properties:
+  usuarioId:
+    type: integer
+    nullable: true
+  condominioId:
+    type: integer
+  viviendaNumero:
+    type: string
+  nombre:
+    type: string
+  apellido:
+    type: string
+  rut:
+    type: string
+  telefono:
+    type: string
+  email:
+    type: string
+    format: email
+  esPropietario:
+    type: boolean
+  fechaIngreso:
+    type: string
+    format: date

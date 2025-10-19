@@ -1,0 +1,58 @@
+espaciosComunes:
+  get:
+    tags:
+      - Espacios Comunes
+    summary: Listar espacios comunes
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioId'
+      - in: query
+        name: tipo
+        schema:
+          type: string
+          enum: [ESTACIONAMIENTO, QUINCHO, MULTICANCHA, SALA_EVENTOS]
+      - in: query
+        name: disponible
+        schema:
+          type: boolean
+    responses:
+      '200':
+        description: Lista de espacios comunes
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../components/schemas/espacios/EspacioComun.yaml'
+
+  post:
+    tags:
+      - Espacios Comunes
+    summary: Crear espacio común
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/espacios/EspacioComunInput.yaml'
+    responses:
+      '201':
+        description: Espacio común creado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/espacios/EspacioComun.yaml'
+
+espacioComunById:
+  get:
+    tags:
+      - Espacios Comunes
+    summary: Obtener espacio común
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/espacioComunIdPath'
+    responses:
+      '200':
+        description: Detalles del espacio común
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/espacios/EspacioComun.yaml'

@@ -1,0 +1,32 @@
+type: object
+properties:
+  id:
+    type: integer
+  espacioComunId:
+    type: integer
+  residenteId:
+    type: integer
+  fechaReserva:
+    type: string
+    format: date
+  horaInicio:
+    type: string
+    format: time
+  horaFin:
+    type: string
+    format: time
+  estado:
+    type: string
+    enum: [PENDIENTE_PAGO, CONFIRMADA, CANCELADA, COMPLETADA]
+  montoPago:
+    type: number
+    format: decimal
+    nullable: true
+  pagoId:
+    type: integer
+    nullable: true
+  observaciones:
+    type: string
+  fechaCreacion:
+    type: string
+    format: date-time

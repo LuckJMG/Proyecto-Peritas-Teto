@@ -1,0 +1,84 @@
+condominios:
+  get:
+    tags:
+      - Condominios
+    summary: Listar condominios
+    responses:
+      '200':
+        description: Lista de condominios
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../components/schemas/condominios/Condominio.yaml'
+
+  post:
+    tags:
+      - Condominios
+    summary: Crear condominio (Solo Súper Administrador)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/condominios/CondominioInput.yaml'
+    responses:
+      '201':
+        description: Condominio creado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/condominios/Condominio.yaml'
+      '403':
+        $ref: '../components/responses/errors.yaml#/Forbidden'
+
+condominioById:
+  get:
+    tags:
+      - Condominios
+    summary: Obtener detalles de condominio
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioIdPath'
+    responses:
+      '200':
+        description: Detalles del condominio
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/condominios/Condominio.yaml'
+      '404':
+        $ref: '../components/responses/errors.yaml#/NotFound'
+
+  put:
+    tags:
+      - Condominios
+    summary: Actualizar condominio
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioIdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/condominios/CondominioInput.yaml'
+    responses:
+      '200':
+        description: Condominio actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/condominios/Condominio.yaml'
+
+  delete:
+    tags:
+      - Condominios
+    summary: Eliminar condominio
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioIdPath'
+    responses:
+      '204':
+        description: Condominio eliminado

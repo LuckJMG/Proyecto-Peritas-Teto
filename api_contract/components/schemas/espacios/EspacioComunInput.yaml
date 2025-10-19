@@ -1,0 +1,25 @@
+type: object
+required:
+  - condominioId
+  - nombre
+  - tipo
+properties:
+  condominioId:
+    type: integer
+  nombre:
+    type: string
+  tipo:
+    type: string
+    enum: [ESTACIONAMIENTO, QUINCHO, MULTICANCHA, SALA_EVENTOS]
+  capacidad:
+    type: integer
+    minimum: 1
+  costoPorHora:
+    type: number
+    format: decimal
+    minimum: 0
+    nullable: true
+  descripcion:
+    type: string
+  requierePago:
+    type: boolean

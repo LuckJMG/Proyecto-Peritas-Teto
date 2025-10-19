@@ -1,0 +1,21 @@
+type: object
+required:
+  - residenteId
+  - condominioId
+  - tipo
+  - descripcion
+  - monto
+properties:
+  residenteId:
+    type: integer
+  condominioId:
+    type: integer
+  tipo:
+    type: string
+    enum: [RETRASO_PAGO, INFRAESTRUCTURA, RUIDO, MASCOTA, OTRO]
+  descripcion:
+    type: string
+  monto:
+    type: number
+    format: decimal
+    minimum: 0

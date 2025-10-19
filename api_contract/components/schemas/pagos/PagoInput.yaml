@@ -1,0 +1,27 @@
+type: object
+required:
+  - condominioId
+  - residenteId
+  - tipo
+  - referenciaId
+  - monto
+  - metodoPago
+properties:
+  condominioId:
+    type: integer
+  residenteId:
+    type: integer
+  tipo:
+    type: string
+    enum: [GASTO_COMUN, MULTA, RESERVA]
+  referenciaId:
+    type: integer
+  monto:
+    type: number
+    format: decimal
+    minimum: 0
+  metodoPago:
+    type: string
+    enum: [TRANSFERENCIA, TARJETA, EFECTIVO, WEBPAY, KHIPU]
+  numeroTransaccion:
+    type: string

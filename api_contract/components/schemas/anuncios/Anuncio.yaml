@@ -1,0 +1,17 @@
+type: object
+properties:
+  id:
+    type: integer
+  condominioId:
+    type: integer
+  titulo:
+    type: string
+  contenido:
+    type: string
+  activo:
+    type: boolean
+  fechaPublicacion:
+    type: string
+    format: date-time
+  creadoPor:
+    type: integer

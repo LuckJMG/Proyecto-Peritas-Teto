@@ -1,0 +1,97 @@
+pagos:
+  get:
+    tags:
+      - Pagos
+    summary: Listar pagos
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioId'
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+      - in: query
+        name: tipo
+        schema:
+          type: string
+          enum: [GASTO_COMUN, MULTA, RESERVA]
+    responses:
+      '200':
+        description: Lista de pagos
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../components/schemas/pagos/Pago.yaml'
+
+  post:
+    tags:
+      - Pagos
+    summary: Registrar pago
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/pagos/PagoInput.yaml'
+    responses:
+      '201':
+        description: Pago registrado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/pagos/Pago.yaml'
+
+pagoById:
+  get:
+    tags:
+      - Pagos
+    summary: Obtener pago
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/pagoIdPath'
+    responses:
+      '200':
+        description: Detalles del pago
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/pagos/Pago.yaml'
+
+comprobante:
+  post:
+    tags:
+      - Pagos
+    summary: Adjuntar comprobante de pago
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/pagoIdPath'
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              archivo:
+                type: string
+                format: binary
+    responses:
+      '200':
+        description: Comprobante adjuntado
+
+  get:
+    tags:
+      - Pagos
+    summary: Obtener comprobante de pago
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/pagoIdPath'
+    responses:
+      '200':
+        description: Comprobante de pago
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary

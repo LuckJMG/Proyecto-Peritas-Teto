@@ -1,0 +1,124 @@
+gastosComunes:
+  get:
+    tags:
+      - Gastos Comunes
+    summary: Listar gastos comunes
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/condominioId'
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+      - in: query
+        name: mes
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 12
+      - in: query
+        name: anio
+        schema:
+          type: integer
+      - in: query
+        name: estado
+        schema:
+          type: string
+          enum: [PENDIENTE, PAGADO, VENCIDO, MOROSO]
+    responses:
+      '200':
+        description: Lista de gastos comunes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../components/schemas/gastos-comunes/GastoComun.yaml'
+
+  post:
+    tags:
+      - Gastos Comunes
+    summary: Crear gasto común
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/gastos-comunes/GastoComunInput.yaml'
+    responses:
+      '201':
+        description: Gasto común creado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/gastos-comunes/GastoComun.yaml'
+
+gastoComunById:
+  get:
+    tags:
+      - Gastos Comunes
+    summary: Obtener gasto común
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/gastoComunIdPath'
+    responses:
+      '200':
+        description: Detalles del gasto común
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/gastos-comunes/GastoComun.yaml'
+
+  put:
+    tags:
+      - Gastos Comunes
+    summary: Actualizar gasto común
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/gastoComunIdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/gastos-comunes/GastoComunInput.yaml'
+    responses:
+      '200':
+        description: Gasto común actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/gastos-comunes/GastoComun.yaml'
+
+observaciones:
+  post:
+    tags:
+      - Gastos Comunes
+    summary: Agregar observación al gasto común
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/gastoComunIdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - observacion
+            properties:
+              observacion:
+                type: string
+    responses:
+      '201':
+        description: Observación agregada
+
+notificar:
+  post:
+    tags:
+      - Gastos Comunes
+    summary: Enviar notificación de gasto común por correo
+    parameters:
+      - $ref: '../components/parameters/ids.yaml#/gastoComunIdPath'
+    responses:
+      '200':
+        description: Notificación enviada

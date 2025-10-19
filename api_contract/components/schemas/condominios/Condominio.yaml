@@ -1,0 +1,15 @@
+type: object
+properties:
+  id:
+    type: integer
+  nombre:
+    type: string
+  direccion:
+    type: string
+  totalViviendas:
+    type: integer
+  activo:
+    type: boolean
+  fechaCreacion:
+    type: string
+    format: date-time
