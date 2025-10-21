@@ -6,7 +6,23 @@ condominioId:
     type: integer
   description: ID del condominio
 
+condominioIdPath:
+  name: condominioId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del condominio
+
 usuarioId:
+  name: usuarioId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del usuario
+
+usuarioIdPath:
   name: usuarioId
   in: path
   required: true
@@ -22,7 +38,23 @@ residenteId:
     type: integer
   description: ID del residente
 
+residenteIdPath:
+  name: residenteId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del residente
+
 gastoComunId:
+  name: gastoComunId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del gasto común
+
+gastoComunIdPath:
   name: gastoComunId
   in: path
   required: true
@@ -38,7 +70,23 @@ multaId:
     type: integer
   description: ID de la multa
 
+multaIdPath:
+  name: multaId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID de la multa
+
 espacioComunId:
+  name: espacioComunId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del espacio común
+
+espacioComunIdPath:
   name: espacioComunId
   in: path
   required: true
@@ -54,6 +102,14 @@ reservaId:
     type: integer
   description: ID de la reserva
 
+reservaIdPath:
+  name: reservaId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID de la reserva
+
 pagoId:
   name: pagoId
   in: path
@@ -62,7 +118,23 @@ pagoId:
     type: integer
   description: ID del pago
 
+pagoIdPath:
+  name: pagoId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del pago
+
 anuncioId:
+  name: anuncioId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del anuncio
+
+anuncioIdPath:
   name: anuncioId
   in: path
   required: true

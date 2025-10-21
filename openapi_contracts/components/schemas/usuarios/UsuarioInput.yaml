@@ -14,7 +14,7 @@ properties:
   apellido:
     type: string
   rol:
-    $ref: './RolUsuario'
+    $ref: './RolUsuario.yaml'
   condominioId:
     type: integer
     nullable: true
