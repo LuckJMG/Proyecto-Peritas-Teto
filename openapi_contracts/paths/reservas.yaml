@@ -45,7 +45,7 @@ reservas:
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/espacios/ReservaInput.yaml'
+            $ref: '../components/schemas/espacios/ReservasInput.yaml'
     responses:
       '201':
         description: Reserva creada

@@ -90,14 +90,14 @@ paths:
     $ref: './paths/pagos.yaml#/comprobante'
 
   # REPORTES
-  /reportes/uso-espacios:
-    $ref: './paths/reportes.yaml#/usoEspacios'
-  /reportes/gastos-comunes:
-    $ref: './paths/reportes.yaml#/gastosComunes'
-  /reportes/morosidad:
-    $ref: './paths/reportes.yaml#/morosidad'
-  /reportes/comportamiento-pago:
-    $ref: './paths/reportes.yaml#/comportamientoPago'
+  # /reportes/uso-espacios:
+  #   $ref: './paths/reportes.yaml#/usoEspacios'
+  # /reportes/gastos-comunes:
+  #   $ref: './paths/reportes.yaml#/gastosComunes'
+  # /reportes/morosidad:
+  #   $ref: './paths/reportes.yaml#/morosidad'
+  # /reportes/comportamiento-pago:
+  #   $ref: './paths/reportes.yaml#/comportamientoPago'
 
   # ANUNCIOS
   /anuncios:
@@ -137,64 +137,64 @@ components:
       $ref: './components/responses/errors.yaml#/BadRequest'
 
   schemas:
-      # Auth
-      AuthResponse:
-        $ref: './components/schemas/auth/AuthResponse.yaml'
+    # Auth
+    AuthResponse:
+      $ref: './components/schemas/auth/AuthResponse.yaml'
 
-      # Usuarios
-      Usuario:
-        $ref: './components/schemas/usuarios/Usuario.yaml'
-      UsuarioInput:
-        $ref: './components/schemas/usuarios/UsuarioInput.yaml'
-      RolUsuario:
-        $ref: './components/schemas/usuarios/RolUsuario.yaml'
+    # Usuarios
+    Usuario:
+      $ref: './components/schemas/usuarios/Usuario.yaml'
+    UsuarioInput:
+      $ref: './components/schemas/usuarios/UsuarioInput.yaml'
+    RolUsuario:
+      $ref: './components/schemas/usuarios/RolUsuario.yaml'
 
-      # Condominios
-      Condominio:
-        $ref: './components/schemas/condominios/Condominio.yaml'
-      CondominioInput:
-        $ref: './components/schemas/condominios/CondominioInput.yaml'
+    # Condominios
+    Condominio:
+      $ref: './components/schemas/condominios/Condominio.yaml'
+    CondominioInput:
+      $ref: './components/schemas/condominios/CondominioInput.yaml'
 
-      # Residentes
-      Residente:
-        $ref: './components/schemas/residentes/Residente.yaml'
-      ResidenteInput:
-        $ref: './components/schemas/residentes/ResidenteInput.yaml'
+    # Residentes
+    Residente:
+      $ref: './components/schemas/residentes/Residente.yaml'
+    ResidenteInput:
+      $ref: './components/schemas/residentes/ResidenteInput.yaml'
 
-      # Gastos Comunes
-      GastoComun:
-        $ref: './components/schemas/gastos-comunes/GastoComun.yaml'
-      GastoComunInput:
-        $ref: './components/schemas/gastos-comunes/GastoComunInput.yaml'
+    # Gastos Comunes
+    GastoComun:
+      $ref: './components/schemas/gastos-comunes/GastoComun.yaml'
+    GastoComunInput:
+      $ref: './components/schemas/gastos-comunes/GastoComunInput.yaml'
 
-      # Multas
-      Multa:
-        $ref: './components/schemas/multas/Multa.yaml'
-      MultaInput:
-        $ref: './components/schemas/multas/MultaInput.yaml'
+    # Multas
+    Multa:
+      $ref: './components/schemas/multas/Multa.yaml'
+    MultaInput:
+      $ref: './components/schemas/multas/MultaInput.yaml'
 
-      # Espacios
-      EspacioComun:
-        $ref: './components/schemas/espacios/EspacioComun.yaml'
-      EspacioComunInput:
-        $ref: './components/schemas/espacios/EspacioComunInput.yaml'
-      Reserva:
-        $ref: './components/schemas/espacios/Reserva.yaml'
-      ReservaInput:
-        $ref: './components/schemas/espacios/ReservasInput.yaml'
+    # Espacios
+    EspacioComun:
+      $ref: './components/schemas/espacios/EspacioComun.yaml'
+    EspacioComunInput:
+      $ref: './components/schemas/espacios/EspacioComunInput.yaml'
+    Reserva:
+      $ref: './components/schemas/espacios/Reserva.yaml'
+    ReservaInput:
+      $ref: './components/schemas/espacios/ReservasInput.yaml'
 
-      # Pagos
-      Pago:
-        $ref: './components/schemas/pagos/Pago.yaml'
-      PagoInput:
-        $ref: './components/schemas/pagos/PagoInput.yaml'
+    # Pagos
+    Pago:
+      $ref: './components/schemas/pagos/Pago.yaml'
+    PagoInput:
+      $ref: './components/schemas/pagos/PagoInput.yaml'
 
-      # Anuncios
-      Anuncio:
-        $ref: './components/schemas/anuncios/Anuncio.yaml'
-      AnuncioInput:
-        $ref: './components/schemas/anuncios/AnuncioInput.yaml'
+    # Anuncios
+    Anuncio:
+      $ref: './components/schemas/anuncios/Anuncio.yaml'
+    AnuncioInput:
+      $ref: './components/schemas/anuncios/AnuncioInput.yaml'
 
-      # Common
-      Error:
-        $ref: './components/schemas/common/Error.yaml'
+    # Common
+    Error:
+      $ref: './components/schemas/common/Error.yaml'

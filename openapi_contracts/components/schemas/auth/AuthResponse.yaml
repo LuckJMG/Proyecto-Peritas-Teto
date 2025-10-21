@@ -5,4 +5,4 @@ properties:
   refreshToken:
     type: string
   usuario:
-    $ref: '../usuario/Usuario.yaml'
+    $ref: '../usuarios/Usuario.yaml'

@@ -1,0 +1,2360 @@
+openapi: 3.0.3
+info:
+  description: API para Sistema de Gestión de Condominios
+  title: Casitas Teto API
+  version: 1.0.0
+servers:
+- url: /
+tags:
+- description: Gestión de autenticación y sesiones
+  name: Autenticación
+- description: Administración de condominios
+  name: Condominios
+- description: Gestión de usuarios del sistema
+  name: Usuarios
+- description: Gestión de residentes
+  name: Residentes
+- description: Gestión de gastos comunes
+  name: Gastos Comunes
+- description: Gestión de multas
+  name: Multas
+- description: Gestión y reserva de espacios comunes
+  name: Espacios Comunes
+- description: Gestión de pagos
+  name: Pagos
+- description: Gestión de anuncios
+  name: Anuncios
+paths:
+  /auth/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_login_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          description: Login exitoso
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: No autorizado
+      security: []
+      summary: Iniciar sesión
+      tags:
+      - Autenticación
+  /auth/logout:
+    post:
+      responses:
+        "204":
+          description: Sesión cerrada exitosamente
+      summary: Cerrar sesión
+      tags:
+      - Autenticación
+  /condominios:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_condominios_get_200_response"
+          description: Lista de condominios
+      summary: Listar condominios
+      tags:
+      - Condominios
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CondominioInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Condominio"
+          description: Condominio creado
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Acceso denegado
+      summary: Crear condominio (Solo Súper Administrador)
+      tags:
+      - Condominios
+  /condominios/{condominioId}:
+    delete:
+      parameters:
+      - description: ID del condominio
+        in: path
+        name: condominioId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: Condominio eliminado
+      summary: Eliminar condominio
+      tags:
+      - Condominios
+    get:
+      parameters:
+      - description: ID del condominio
+        in: path
+        name: condominioId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Condominio"
+          description: Detalles del condominio
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Recurso no encontrado
+      summary: Obtener detalles de condominio
+      tags:
+      - Condominios
+    put:
+      parameters:
+      - description: ID del condominio
+        in: path
+        name: condominioId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CondominioInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Condominio"
+          description: Condominio actualizado
+      summary: Actualizar condominio
+      tags:
+      - Condominios
+  /usuarios:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: rol
+        schema:
+          $ref: "#/components/schemas/RolUsuario"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_usuarios_get_200_response"
+          description: Lista de usuarios
+      summary: Listar usuarios
+      tags:
+      - Usuarios
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsuarioInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+          description: Usuario creado
+      summary: Crear usuario
+      tags:
+      - Usuarios
+  /usuarios/{usuarioId}:
+    get:
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: usuarioId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+          description: Detalles del usuario
+      summary: Obtener usuario
+      tags:
+      - Usuarios
+    put:
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: usuarioId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsuarioInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+          description: Usuario actualizado
+      summary: Actualizar usuario
+      tags:
+      - Usuarios
+  /usuarios/{usuarioId}/deshabilitar:
+    patch:
+      parameters:
+      - description: ID del usuario
+        in: path
+        name: usuarioId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Usuario deshabilitado
+      summary: Deshabilitar usuario
+      tags:
+      - Usuarios
+  /residentes:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_residentes_get_200_response"
+          description: Lista de residentes
+      summary: Listar residentes
+      tags:
+      - Residentes
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResidenteInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Residente"
+          description: Residente registrado
+      summary: Registrar residente
+      tags:
+      - Residentes
+  /residentes/{residenteId}:
+    get:
+      parameters:
+      - description: ID del residente
+        in: path
+        name: residenteId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Residente"
+          description: Detalles del residente
+      summary: Obtener residente
+      tags:
+      - Residentes
+    put:
+      parameters:
+      - description: ID del residente
+        in: path
+        name: residenteId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResidenteInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Residente"
+          description: Residente actualizado
+      summary: Actualizar residente
+      tags:
+      - Residentes
+  /gastos-comunes:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+      - in: query
+        name: mes
+        schema:
+          maximum: 12
+          minimum: 1
+          type: integer
+      - in: query
+        name: anio
+        schema:
+          type: integer
+      - in: query
+        name: estado
+        schema:
+          enum:
+          - PENDIENTE
+          - PAGADO
+          - VENCIDO
+          - MOROSO
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_gastos_comunes_get_200_response"
+          description: Lista de gastos comunes
+      summary: Listar gastos comunes
+      tags:
+      - Gastos Comunes
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GastoComunInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GastoComun"
+          description: Gasto común creado
+      summary: Crear gasto común
+      tags:
+      - Gastos Comunes
+  /gastos-comunes/{gastoComunId}:
+    get:
+      parameters:
+      - description: ID del gasto común
+        in: path
+        name: gastoComunId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GastoComun"
+          description: Detalles del gasto común
+      summary: Obtener gasto común
+      tags:
+      - Gastos Comunes
+    put:
+      parameters:
+      - description: ID del gasto común
+        in: path
+        name: gastoComunId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GastoComunInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GastoComun"
+          description: Gasto común actualizado
+      summary: Actualizar gasto común
+      tags:
+      - Gastos Comunes
+  /gastos-comunes/{gastoComunId}/observaciones:
+    post:
+      parameters:
+      - description: ID del gasto común
+        in: path
+        name: gastoComunId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_gastos_comunes__gastoComunId__observaciones_post_request"
+        required: true
+      responses:
+        "201":
+          description: Observación agregada
+      summary: Agregar observación al gasto común
+      tags:
+      - Gastos Comunes
+  /gastos-comunes/{gastoComunId}/notificar:
+    post:
+      parameters:
+      - description: ID del gasto común
+        in: path
+        name: gastoComunId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Notificación enviada
+      summary: Enviar notificación de gasto común por correo
+      tags:
+      - Gastos Comunes
+  /multas:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_multas_get_200_response"
+          description: Lista de multas
+      summary: Listar multas
+      tags:
+      - Multas
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MultaInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Multa"
+          description: Multa creada
+      summary: Crear multa
+      tags:
+      - Multas
+  /multas/{multaId}:
+    get:
+      parameters:
+      - description: ID de la multa
+        in: path
+        name: multaId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Multa"
+          description: Detalles de la multa
+      summary: Obtener multa
+      tags:
+      - Multas
+    put:
+      parameters:
+      - description: ID de la multa
+        in: path
+        name: multaId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MultaInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Multa"
+          description: Multa actualizada
+      summary: Modificar multa
+      tags:
+      - Multas
+  /multas/{multaId}/condonar:
+    patch:
+      parameters:
+      - description: ID de la multa
+        in: path
+        name: multaId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_multas__multaId__condonar_patch_request"
+      responses:
+        "200":
+          description: Multa condonada
+      summary: Condonar multa
+      tags:
+      - Multas
+  /espacios-comunes:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: tipo
+        schema:
+          enum:
+          - ESTACIONAMIENTO
+          - QUINCHO
+          - MULTICANCHA
+          - SALA_EVENTOS
+          type: string
+      - in: query
+        name: disponible
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/EspacioComun"
+                type: array
+          description: Lista de espacios comunes
+      summary: Listar espacios comunes
+      tags:
+      - Espacios Comunes
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EspacioComunInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EspacioComun"
+          description: Espacio común creado
+      summary: Crear espacio común
+      tags:
+      - Espacios Comunes
+  /espacios-comunes/{espacioComunId}:
+    get:
+      parameters:
+      - description: ID del espacio común
+        in: path
+        name: espacioComunId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EspacioComun"
+          description: Detalles del espacio común
+      summary: Obtener espacio común
+      tags:
+      - Espacios Comunes
+  /reservas:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: espacioComunId
+        schema:
+          type: integer
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+      - in: query
+        name: fechaDesde
+        schema:
+          format: date
+          type: string
+      - in: query
+        name: fechaHasta
+        schema:
+          format: date
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_reservas_get_200_response"
+          description: Lista de reservas
+      summary: Listar reservas
+      tags:
+      - Espacios Comunes
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservasInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reserva"
+          description: Reserva creada
+        "409":
+          description: Espacio no disponible
+      summary: Crear reserva
+      tags:
+      - Espacios Comunes
+  /reservas/{reservaId}:
+    delete:
+      parameters:
+      - description: ID de la reserva
+        in: path
+        name: reservaId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: Reserva cancelada
+      summary: Cancelar reserva
+      tags:
+      - Espacios Comunes
+    get:
+      parameters:
+      - description: ID de la reserva
+        in: path
+        name: reservaId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reserva"
+          description: Detalles de la reserva
+      summary: Obtener reserva
+      tags:
+      - Espacios Comunes
+  /pagos:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: residenteId
+        schema:
+          type: integer
+      - in: query
+        name: tipo
+        schema:
+          enum:
+          - GASTO_COMUN
+          - MULTA
+          - RESERVA
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_pagos_get_200_response"
+          description: Lista de pagos
+      summary: Listar pagos
+      tags:
+      - Pagos
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PagoInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pago"
+          description: Pago registrado
+      summary: Registrar pago
+      tags:
+      - Pagos
+  /pagos/{pagoId}:
+    get:
+      parameters:
+      - description: ID del pago
+        in: path
+        name: pagoId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pago"
+          description: Detalles del pago
+      summary: Obtener pago
+      tags:
+      - Pagos
+  /pagos/{pagoId}/comprobante:
+    get:
+      parameters:
+      - description: ID del pago
+        in: path
+        name: pagoId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/pdf:
+              schema:
+                format: binary
+                type: string
+          description: Comprobante de pago
+      summary: Obtener comprobante de pago
+      tags:
+      - Pagos
+    post:
+      parameters:
+      - description: ID del pago
+        in: path
+        name: pagoId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/_pagos__pagoId__comprobante_post_request"
+        required: true
+      responses:
+        "200":
+          description: Comprobante adjuntado
+      summary: Adjuntar comprobante de pago
+      tags:
+      - Pagos
+  /anuncios:
+    get:
+      parameters:
+      - description: ID del condominio
+        in: query
+        name: condominioId
+        required: false
+        schema:
+          type: integer
+      - in: query
+        name: activo
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_anuncios_get_200_response"
+          description: Lista de anuncios
+      summary: Listar anuncios
+      tags:
+      - Anuncios
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnuncioInput"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Anuncio"
+          description: Anuncio creado
+      summary: Crear anuncio
+      tags:
+      - Anuncios
+  /anuncios/{anuncioId}:
+    delete:
+      parameters:
+      - description: ID del anuncio
+        in: path
+        name: anuncioId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: Anuncio eliminado
+      summary: Eliminar anuncio
+      tags:
+      - Anuncios
+    get:
+      parameters:
+      - description: ID del anuncio
+        in: path
+        name: anuncioId
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Anuncio"
+          description: Detalles del anuncio
+      summary: Obtener anuncio
+      tags:
+      - Anuncios
+    put:
+      parameters:
+      - description: ID del anuncio
+        in: path
+        name: anuncioId
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnuncioInput"
+        required: true
+      responses:
+        "200":
+          description: Anuncio actualizado
+      summary: Actualizar anuncio
+      tags:
+      - Anuncios
+components:
+  parameters:
+    condominioId:
+      description: ID del condominio
+      in: query
+      name: condominioId
+      required: false
+      schema:
+        type: integer
+    usuarioId:
+      description: ID del usuario
+      in: path
+      name: usuarioId
+      required: true
+      schema:
+        type: integer
+    residenteId:
+      description: ID del residente
+      in: path
+      name: residenteId
+      required: true
+      schema:
+        type: integer
+    gastoComunId:
+      description: ID del gasto común
+      in: path
+      name: gastoComunId
+      required: true
+      schema:
+        type: integer
+    multaId:
+      description: ID de la multa
+      in: path
+      name: multaId
+      required: true
+      schema:
+        type: integer
+    espacioComunId:
+      description: ID del espacio común
+      in: path
+      name: espacioComunId
+      required: true
+      schema:
+        type: integer
+    reservaId:
+      description: ID de la reserva
+      in: path
+      name: reservaId
+      required: true
+      schema:
+        type: integer
+    pagoId:
+      description: ID del pago
+      in: path
+      name: pagoId
+      required: true
+      schema:
+        type: integer
+    anuncioId:
+      description: ID del anuncio
+      in: path
+      name: anuncioId
+      required: true
+      schema:
+        type: integer
+    condominioIdPath:
+      description: ID del condominio
+      in: path
+      name: condominioId
+      required: true
+      schema:
+        type: integer
+    usuarioIdPath:
+      description: ID del usuario
+      in: path
+      name: usuarioId
+      required: true
+      schema:
+        type: integer
+    residenteIdPath:
+      description: ID del residente
+      in: path
+      name: residenteId
+      required: true
+      schema:
+        type: integer
+    gastoComunIdPath:
+      description: ID del gasto común
+      in: path
+      name: gastoComunId
+      required: true
+      schema:
+        type: integer
+    multaIdPath:
+      description: ID de la multa
+      in: path
+      name: multaId
+      required: true
+      schema:
+        type: integer
+    espacioComunIdPath:
+      description: ID del espacio común
+      in: path
+      name: espacioComunId
+      required: true
+      schema:
+        type: integer
+    reservaIdPath:
+      description: ID de la reserva
+      in: path
+      name: reservaId
+      required: true
+      schema:
+        type: integer
+    pagoIdPath:
+      description: ID del pago
+      in: path
+      name: pagoId
+      required: true
+      schema:
+        type: integer
+    anuncioIdPath:
+      description: ID del anuncio
+      in: path
+      name: anuncioId
+      required: true
+      schema:
+        type: integer
+  responses:
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: No autorizado
+    Forbidden:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Acceso denegado
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Recurso no encontrado
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: ./components/schemas/common/Error.yaml
+      description: Solicitud inválida
+  schemas:
+    AuthResponse:
+      example:
+        usuario:
+          apellido: apellido
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          condominioId: 6
+          id: 0
+          ultimoAcceso: 2000-01-23T04:56:07.000+00:00
+          nombre: nombre
+          email: email
+          rol: SUPER_ADMINISTRADOR
+          activo: true
+        accessToken: accessToken
+        refreshToken: refreshToken
+      properties:
+        accessToken:
+          title: accessToken
+          type: string
+        refreshToken:
+          title: refreshToken
+          type: string
+        usuario:
+          $ref: "#/components/schemas/Usuario"
+      title: AuthResponse
+      type: object
+    Usuario:
+      example:
+        apellido: apellido
+        fechaCreacion: 2000-01-23T04:56:07.000+00:00
+        condominioId: 6
+        id: 0
+        ultimoAcceso: 2000-01-23T04:56:07.000+00:00
+        nombre: nombre
+        email: email
+        rol: SUPER_ADMINISTRADOR
+        activo: true
+      properties:
+        id:
+          title: id
+          type: integer
+        email:
+          format: email
+          title: email
+          type: string
+        nombre:
+          title: nombre
+          type: string
+        apellido:
+          title: apellido
+          type: string
+        rol:
+          $ref: "#/components/schemas/RolUsuario"
+        condominioId:
+          nullable: true
+          title: condominioId
+          type: integer
+        activo:
+          title: activo
+          type: boolean
+        fechaCreacion:
+          format: date-time
+          title: fechaCreacion
+          type: string
+        ultimoAcceso:
+          format: date-time
+          nullable: true
+          title: ultimoAcceso
+          type: string
+      title: Usuario
+      type: object
+    UsuarioInput:
+      example:
+        password: password
+        apellido: apellido
+        condominioId: 0
+        nombre: nombre
+        email: email
+        rol: SUPER_ADMINISTRADOR
+      properties:
+        email:
+          format: email
+          title: email
+          type: string
+        nombre:
+          title: nombre
+          type: string
+        apellido:
+          title: apellido
+          type: string
+        rol:
+          $ref: "#/components/schemas/RolUsuario"
+        condominioId:
+          nullable: true
+          title: condominioId
+          type: integer
+        password:
+          format: password
+          minLength: 8
+          title: password
+          type: string
+      required:
+      - apellido
+      - email
+      - nombre
+      - password
+      - rol
+      title: UsuarioInput
+      type: object
+    RolUsuario:
+      enum:
+      - SUPER_ADMINISTRADOR
+      - ADMINISTRADOR
+      - CONSERJE
+      - DIRECTIVA
+      - RESIDENTE
+      title: RolUsuario
+      type: string
+    Condominio:
+      example:
+        direccion: direccion
+        fechaCreacion: 2000-01-23T04:56:07.000+00:00
+        totalViviendas: 6
+        id: 0
+        nombre: nombre
+        activo: true
+      properties:
+        id:
+          title: id
+          type: integer
+        nombre:
+          title: nombre
+          type: string
+        direccion:
+          title: direccion
+          type: string
+        totalViviendas:
+          title: totalViviendas
+          type: integer
+        activo:
+          title: activo
+          type: boolean
+        fechaCreacion:
+          format: date-time
+          title: fechaCreacion
+          type: string
+      title: Condominio
+      type: object
+    CondominioInput:
+      example:
+        direccion: direccion
+        totalViviendas: 1
+        nombre: nombre
+      properties:
+        nombre:
+          title: nombre
+          type: string
+        direccion:
+          title: direccion
+          type: string
+        totalViviendas:
+          minimum: 1
+          title: totalViviendas
+          type: integer
+      required:
+      - direccion
+      - nombre
+      - totalViviendas
+      title: CondominioInput
+      type: object
+    Residente:
+      example:
+        rut: rut
+        viviendaNumero: viviendaNumero
+        fechaIngreso: 2000-01-23
+        apellido: apellido
+        condominioId: 1
+        id: 0
+        telefono: telefono
+        usuarioId: 6
+        nombre: nombre
+        esPropietario: true
+        email: email
+        activo: true
+      properties:
+        id:
+          title: id
+          type: integer
+        usuarioId:
+          title: usuarioId
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        viviendaNumero:
+          title: viviendaNumero
+          type: string
+        nombre:
+          title: nombre
+          type: string
+        apellido:
+          title: apellido
+          type: string
+        rut:
+          title: rut
+          type: string
+        telefono:
+          title: telefono
+          type: string
+        email:
+          format: email
+          title: email
+          type: string
+        esPropietario:
+          title: esPropietario
+          type: boolean
+        fechaIngreso:
+          format: date
+          title: fechaIngreso
+          type: string
+        activo:
+          title: activo
+          type: boolean
+      title: Residente
+      type: object
+    ResidenteInput:
+      example:
+        rut: rut
+        viviendaNumero: viviendaNumero
+        fechaIngreso: 2000-01-23
+        apellido: apellido
+        condominioId: 6
+        telefono: telefono
+        usuarioId: 0
+        nombre: nombre
+        esPropietario: true
+        email: email
+      properties:
+        usuarioId:
+          nullable: true
+          title: usuarioId
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        viviendaNumero:
+          title: viviendaNumero
+          type: string
+        nombre:
+          title: nombre
+          type: string
+        apellido:
+          title: apellido
+          type: string
+        rut:
+          title: rut
+          type: string
+        telefono:
+          title: telefono
+          type: string
+        email:
+          format: email
+          title: email
+          type: string
+        esPropietario:
+          title: esPropietario
+          type: boolean
+        fechaIngreso:
+          format: date
+          title: fechaIngreso
+          type: string
+      required:
+      - apellido
+      - condominioId
+      - email
+      - esPropietario
+      - nombre
+      - rut
+      - viviendaNumero
+      title: ResidenteInput
+      type: object
+    GastoComun:
+      example:
+        multas: 3.616076749251911
+        estado: PENDIENTE
+        fechaVencimiento: 2000-01-23
+        residenteId: 6
+        fechaEmision: 2000-01-23
+        fechaPago: 2000-01-23T04:56:07.000+00:00
+        cuotaMantencion: 7.061401241503109
+        servicios: 9.301444243932576
+        observaciones:
+        - texto: texto
+          fecha: 2000-01-23T04:56:07.000+00:00
+          usuarioId: 4
+        - texto: texto
+          fecha: 2000-01-23T04:56:07.000+00:00
+          usuarioId: 4
+        montoBase: 2.3021358869347655
+        condominioId: 1
+        mes: 5
+        id: 0
+        año: 5
+        montoTotal: 2.027123023002322
+      properties:
+        id:
+          title: id
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        mes:
+          title: mes
+          type: integer
+        año:
+          title: año
+          type: integer
+        montoBase:
+          format: decimal
+          title: montoBase
+          type: number
+        cuotaMantencion:
+          format: decimal
+          title: cuotaMantencion
+          type: number
+        servicios:
+          format: decimal
+          title: servicios
+          type: number
+        multas:
+          format: decimal
+          title: multas
+          type: number
+        montoTotal:
+          format: decimal
+          title: montoTotal
+          type: number
+        estado:
+          enum:
+          - PENDIENTE
+          - PAGADO
+          - VENCIDO
+          - MOROSO
+          title: estado
+          type: string
+        fechaEmision:
+          format: date
+          title: fechaEmision
+          type: string
+        fechaVencimiento:
+          format: date
+          title: fechaVencimiento
+          type: string
+        fechaPago:
+          format: date-time
+          nullable: true
+          title: fechaPago
+          type: string
+        observaciones:
+          items:
+            $ref: "#/components/schemas/GastoComun_observaciones_inner"
+          title: observaciones
+          type: array
+      title: GastoComun
+      type: object
+    GastoComunInput:
+      example:
+        servicios: 0.23021358869347652
+        fechaVencimiento: 2000-01-23
+        residenteId: 0
+        montoBase: 0.5637376656633328
+        condominioId: 6
+        mes: 2
+        año: 5
+      properties:
+        residenteId:
+          title: residenteId
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        mes:
+          maximum: 12
+          minimum: 1
+          title: mes
+          type: integer
+        año:
+          title: año
+          type: integer
+        montoBase:
+          format: decimal
+          minimum: 0
+          title: montoBase
+          type: number
+        servicios:
+          format: decimal
+          minimum: 0
+          title: servicios
+          type: number
+        fechaVencimiento:
+          format: date
+          title: fechaVencimiento
+          type: string
+      required:
+      - año
+      - condominioId
+      - mes
+      - montoBase
+      - residenteId
+      - servicios
+      title: GastoComunInput
+      type: object
+    Multa:
+      example:
+        descripcion: descripcion
+        creadoPor: 5
+        tipo: RETRASO_PAGO
+        estado: PENDIENTE
+        monto: 5.962133916683182
+        motivoCondonacion: motivoCondonacion
+        residenteId: 6
+        condominioId: 1
+        fechaEmision: 2000-01-23
+        id: 0
+        fechaPago: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          title: id
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        tipo:
+          enum:
+          - RETRASO_PAGO
+          - INFRAESTRUCTURA
+          - RUIDO
+          - MASCOTA
+          - OTRO
+          title: tipo
+          type: string
+        descripcion:
+          title: descripcion
+          type: string
+        monto:
+          format: decimal
+          title: monto
+          type: number
+        estado:
+          enum:
+          - PENDIENTE
+          - PAGADA
+          - CONDONADA
+          title: estado
+          type: string
+        fechaEmision:
+          format: date
+          title: fechaEmision
+          type: string
+        fechaPago:
+          format: date-time
+          nullable: true
+          title: fechaPago
+          type: string
+        motivoCondonacion:
+          nullable: true
+          title: motivoCondonacion
+          type: string
+        creadoPor:
+          title: creadoPor
+          type: integer
+      title: Multa
+      type: object
+    MultaInput:
+      example:
+        descripcion: descripcion
+        tipo: RETRASO_PAGO
+        monto: 0.14658129805029452
+        residenteId: 0
+        condominioId: 6
+      properties:
+        residenteId:
+          title: residenteId
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        tipo:
+          enum:
+          - RETRASO_PAGO
+          - INFRAESTRUCTURA
+          - RUIDO
+          - MASCOTA
+          - OTRO
+          title: tipo
+          type: string
+        descripcion:
+          title: descripcion
+          type: string
+        monto:
+          format: decimal
+          minimum: 0
+          title: monto
+          type: number
+      required:
+      - condominioId
+      - descripcion
+      - monto
+      - residenteId
+      - tipo
+      title: MultaInput
+      type: object
+    EspacioComun:
+      example:
+        descripcion: descripcion
+        tipo: ESTACIONAMIENTO
+        costoPorHora: 5.962133916683182
+        requierePago: true
+        condominioId: 6
+        id: 0
+        nombre: nombre
+        capacidad: 1
+        activo: true
+      properties:
+        id:
+          title: id
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        nombre:
+          title: nombre
+          type: string
+        tipo:
+          enum:
+          - ESTACIONAMIENTO
+          - QUINCHO
+          - MULTICANCHA
+          - SALA_EVENTOS
+          title: tipo
+          type: string
+        capacidad:
+          title: capacidad
+          type: integer
+        costoPorHora:
+          format: decimal
+          nullable: true
+          title: costoPorHora
+          type: number
+        descripcion:
+          title: descripcion
+          type: string
+        activo:
+          title: activo
+          type: boolean
+        requierePago:
+          title: requierePago
+          type: boolean
+      title: EspacioComun
+      type: object
+    EspacioComunInput:
+      example:
+        descripcion: descripcion
+        tipo: ESTACIONAMIENTO
+        costoPorHora: 0.14658129805029452
+        requierePago: true
+        condominioId: 0
+        nombre: nombre
+        capacidad: 1
+      properties:
+        condominioId:
+          title: condominioId
+          type: integer
+        nombre:
+          title: nombre
+          type: string
+        tipo:
+          enum:
+          - ESTACIONAMIENTO
+          - QUINCHO
+          - MULTICANCHA
+          - SALA_EVENTOS
+          title: tipo
+          type: string
+        capacidad:
+          minimum: 1
+          title: capacidad
+          type: integer
+        costoPorHora:
+          format: decimal
+          minimum: 0
+          nullable: true
+          title: costoPorHora
+          type: number
+        descripcion:
+          title: descripcion
+          type: string
+        requierePago:
+          title: requierePago
+          type: boolean
+      required:
+      - condominioId
+      - nombre
+      - tipo
+      title: EspacioComunInput
+      type: object
+    Reserva:
+      example:
+        horaFin: horaFin
+        espacioComunId: 6
+        estado: PENDIENTE_PAGO
+        pagoId: 5
+        residenteId: 1
+        montoPago: 5.962133916683182
+        observaciones: observaciones
+        fechaCreacion: 2000-01-23T04:56:07.000+00:00
+        id: 0
+        horaInicio: horaInicio
+        fechaReserva: 2000-01-23
+      properties:
+        id:
+          title: id
+          type: integer
+        espacioComunId:
+          title: espacioComunId
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        fechaReserva:
+          format: date
+          title: fechaReserva
+          type: string
+        horaInicio:
+          format: time
+          title: horaInicio
+          type: string
+        horaFin:
+          format: time
+          title: horaFin
+          type: string
+        estado:
+          enum:
+          - PENDIENTE_PAGO
+          - CONFIRMADA
+          - CANCELADA
+          - COMPLETADA
+          title: estado
+          type: string
+        montoPago:
+          format: decimal
+          nullable: true
+          title: montoPago
+          type: number
+        pagoId:
+          nullable: true
+          title: pagoId
+          type: integer
+        observaciones:
+          title: observaciones
+          type: string
+        fechaCreacion:
+          format: date-time
+          title: fechaCreacion
+          type: string
+      title: Reserva
+      type: object
+    ReservaInput:
+      example:
+        horaFin: horaFin
+        espacioComunId: 0
+        residenteId: 6
+        observaciones: observaciones
+        horaInicio: horaInicio
+        fechaReserva: 2000-01-23
+      properties:
+        espacioComunId:
+          title: espacioComunId
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        fechaReserva:
+          format: date
+          title: fechaReserva
+          type: string
+        horaInicio:
+          format: time
+          title: horaInicio
+          type: string
+        horaFin:
+          format: time
+          title: horaFin
+          type: string
+        observaciones:
+          title: observaciones
+          type: string
+      required:
+      - espacioComunId
+      - fechaReserva
+      - horaFin
+      - horaInicio
+      - residenteId
+      title: ReservasInput
+      type: object
+    Pago:
+      example:
+        referenciaId: 5
+        metodoPago: TRANSFERENCIA
+        tipo: GASTO_COMUN
+        monto: 5.637376656633329
+        numeroTransaccion: numeroTransaccion
+        comprobanteUrl: https://openapi-generator.tech
+        residenteId: 1
+        condominioId: 6
+        registradoPor: 2
+        id: 0
+        estadoPago: PENDIENTE
+        fechaPago: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          title: id
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        tipo:
+          enum:
+          - GASTO_COMUN
+          - MULTA
+          - RESERVA
+          title: tipo
+          type: string
+        referenciaId:
+          title: referenciaId
+          type: integer
+        monto:
+          format: decimal
+          title: monto
+          type: number
+        metodoPago:
+          enum:
+          - TRANSFERENCIA
+          - TARJETA
+          - EFECTIVO
+          - WEBPAY
+          - KHIPU
+          title: metodoPago
+          type: string
+        estadoPago:
+          enum:
+          - PENDIENTE
+          - APROBADO
+          - RECHAZADO
+          - REVERSADO
+          title: estadoPago
+          type: string
+        numeroTransaccion:
+          nullable: true
+          title: numeroTransaccion
+          type: string
+        fechaPago:
+          format: date-time
+          title: fechaPago
+          type: string
+        comprobanteUrl:
+          format: uri
+          nullable: true
+          title: comprobanteUrl
+          type: string
+        registradoPor:
+          title: registradoPor
+          type: integer
+      title: Pago
+      type: object
+    PagoInput:
+      example:
+        referenciaId: 1
+        metodoPago: TRANSFERENCIA
+        tipo: GASTO_COMUN
+        monto: 0.5962133916683182
+        numeroTransaccion: numeroTransaccion
+        residenteId: 6
+        condominioId: 0
+      properties:
+        condominioId:
+          title: condominioId
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        tipo:
+          enum:
+          - GASTO_COMUN
+          - MULTA
+          - RESERVA
+          title: tipo
+          type: string
+        referenciaId:
+          title: referenciaId
+          type: integer
+        monto:
+          format: decimal
+          minimum: 0
+          title: monto
+          type: number
+        metodoPago:
+          enum:
+          - TRANSFERENCIA
+          - TARJETA
+          - EFECTIVO
+          - WEBPAY
+          - KHIPU
+          title: metodoPago
+          type: string
+        numeroTransaccion:
+          title: numeroTransaccion
+          type: string
+      required:
+      - condominioId
+      - metodoPago
+      - monto
+      - referenciaId
+      - residenteId
+      - tipo
+      title: PagoInput
+      type: object
+    Anuncio:
+      example:
+        creadoPor: 1
+        contenido: contenido
+        titulo: titulo
+        condominioId: 6
+        id: 0
+        fechaPublicacion: 2000-01-23T04:56:07.000+00:00
+        activo: true
+      properties:
+        id:
+          title: id
+          type: integer
+        condominioId:
+          title: condominioId
+          type: integer
+        titulo:
+          title: titulo
+          type: string
+        contenido:
+          title: contenido
+          type: string
+        activo:
+          title: activo
+          type: boolean
+        fechaPublicacion:
+          format: date-time
+          title: fechaPublicacion
+          type: string
+        creadoPor:
+          title: creadoPor
+          type: integer
+      title: Anuncio
+      type: object
+    AnuncioInput:
+      example:
+        contenido: contenido
+        titulo: titulo
+        condominioId: 0
+      properties:
+        condominioId:
+          title: condominioId
+          type: integer
+        titulo:
+          title: titulo
+          type: string
+        contenido:
+          title: contenido
+          type: string
+      required:
+      - condominioId
+      - contenido
+      - tipo
+      - titulo
+      title: AnuncioInput
+      type: object
+    Error:
+      example:
+        codigo: codigo
+        detalles:
+        - detalles
+        - detalles
+        mensaje: mensaje
+      properties:
+        codigo:
+          title: codigo
+          type: string
+        mensaje:
+          title: mensaje
+          type: string
+        detalles:
+          items:
+            type: string
+          title: detalles
+          type: array
+      title: Error
+      type: object
+    ReservasInput:
+      example:
+        horaFin: horaFin
+        espacioComunId: 0
+        residenteId: 6
+        observaciones: observaciones
+        horaInicio: horaInicio
+        fechaReserva: 2000-01-23
+      properties:
+        espacioComunId:
+          title: espacioComunId
+          type: integer
+        residenteId:
+          title: residenteId
+          type: integer
+        fechaReserva:
+          format: date
+          title: fechaReserva
+          type: string
+        horaInicio:
+          format: time
+          title: horaInicio
+          type: string
+        horaFin:
+          format: time
+          title: horaFin
+          type: string
+        observaciones:
+          title: observaciones
+          type: string
+      required:
+      - espacioComunId
+      - fechaReserva
+      - horaFin
+      - horaInicio
+      - residenteId
+      title: ReservasInput
+      type: object
+    _auth_login_post_request:
+      properties:
+        email:
+          format: email
+          title: email
+          type: string
+        password:
+          format: password
+          title: password
+          type: string
+      required:
+      - email
+      - password
+      title: _auth_login_post_request
+      type: object
+    _condominios_get_200_response:
+      example:
+        data:
+        - direccion: direccion
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          totalViviendas: 6
+          id: 0
+          nombre: nombre
+          activo: true
+        - direccion: direccion
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          totalViviendas: 6
+          id: 0
+          nombre: nombre
+          activo: true
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Condominio"
+          title: data
+          type: array
+      title: _condominios_get_200_response
+      type: object
+    _usuarios_get_200_response:
+      example:
+        data:
+        - apellido: apellido
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          condominioId: 6
+          id: 0
+          ultimoAcceso: 2000-01-23T04:56:07.000+00:00
+          nombre: nombre
+          email: email
+          rol: SUPER_ADMINISTRADOR
+          activo: true
+        - apellido: apellido
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          condominioId: 6
+          id: 0
+          ultimoAcceso: 2000-01-23T04:56:07.000+00:00
+          nombre: nombre
+          email: email
+          rol: SUPER_ADMINISTRADOR
+          activo: true
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Usuario"
+          title: data
+          type: array
+      title: _usuarios_get_200_response
+      type: object
+    _residentes_get_200_response:
+      example:
+        data:
+        - rut: rut
+          viviendaNumero: viviendaNumero
+          fechaIngreso: 2000-01-23
+          apellido: apellido
+          condominioId: 1
+          id: 0
+          telefono: telefono
+          usuarioId: 6
+          nombre: nombre
+          esPropietario: true
+          email: email
+          activo: true
+        - rut: rut
+          viviendaNumero: viviendaNumero
+          fechaIngreso: 2000-01-23
+          apellido: apellido
+          condominioId: 1
+          id: 0
+          telefono: telefono
+          usuarioId: 6
+          nombre: nombre
+          esPropietario: true
+          email: email
+          activo: true
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Residente"
+          title: data
+          type: array
+      title: _residentes_get_200_response
+      type: object
+    _gastos_comunes_get_200_response:
+      example:
+        data:
+        - multas: 3.616076749251911
+          estado: PENDIENTE
+          fechaVencimiento: 2000-01-23
+          residenteId: 6
+          fechaEmision: 2000-01-23
+          fechaPago: 2000-01-23T04:56:07.000+00:00
+          cuotaMantencion: 7.061401241503109
+          servicios: 9.301444243932576
+          observaciones:
+          - texto: texto
+            fecha: 2000-01-23T04:56:07.000+00:00
+            usuarioId: 4
+          - texto: texto
+            fecha: 2000-01-23T04:56:07.000+00:00
+            usuarioId: 4
+          montoBase: 2.3021358869347655
+          condominioId: 1
+          mes: 5
+          id: 0
+          año: 5
+          montoTotal: 2.027123023002322
+        - multas: 3.616076749251911
+          estado: PENDIENTE
+          fechaVencimiento: 2000-01-23
+          residenteId: 6
+          fechaEmision: 2000-01-23
+          fechaPago: 2000-01-23T04:56:07.000+00:00
+          cuotaMantencion: 7.061401241503109
+          servicios: 9.301444243932576
+          observaciones:
+          - texto: texto
+            fecha: 2000-01-23T04:56:07.000+00:00
+            usuarioId: 4
+          - texto: texto
+            fecha: 2000-01-23T04:56:07.000+00:00
+            usuarioId: 4
+          montoBase: 2.3021358869347655
+          condominioId: 1
+          mes: 5
+          id: 0
+          año: 5
+          montoTotal: 2.027123023002322
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/GastoComun"
+          title: data
+          type: array
+      title: _gastos_comunes_get_200_response
+      type: object
+    _gastos_comunes__gastoComunId__observaciones_post_request:
+      properties:
+        observacion:
+          title: observacion
+          type: string
+      required:
+      - observacion
+      title: _gastos_comunes__gastoComunId__observaciones_post_request
+      type: object
+    _multas_get_200_response:
+      example:
+        data:
+        - descripcion: descripcion
+          creadoPor: 5
+          tipo: RETRASO_PAGO
+          estado: PENDIENTE
+          monto: 5.962133916683182
+          motivoCondonacion: motivoCondonacion
+          residenteId: 6
+          condominioId: 1
+          fechaEmision: 2000-01-23
+          id: 0
+          fechaPago: 2000-01-23T04:56:07.000+00:00
+        - descripcion: descripcion
+          creadoPor: 5
+          tipo: RETRASO_PAGO
+          estado: PENDIENTE
+          monto: 5.962133916683182
+          motivoCondonacion: motivoCondonacion
+          residenteId: 6
+          condominioId: 1
+          fechaEmision: 2000-01-23
+          id: 0
+          fechaPago: 2000-01-23T04:56:07.000+00:00
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Multa"
+          title: data
+          type: array
+      title: _multas_get_200_response
+      type: object
+    _multas__multaId__condonar_patch_request:
+      properties:
+        motivo:
+          title: motivo
+          type: string
+      title: _multas__multaId__condonar_patch_request
+      type: object
+    _reservas_get_200_response:
+      example:
+        data:
+        - horaFin: horaFin
+          espacioComunId: 6
+          estado: PENDIENTE_PAGO
+          pagoId: 5
+          residenteId: 1
+          montoPago: 5.962133916683182
+          observaciones: observaciones
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          id: 0
+          horaInicio: horaInicio
+          fechaReserva: 2000-01-23
+        - horaFin: horaFin
+          espacioComunId: 6
+          estado: PENDIENTE_PAGO
+          pagoId: 5
+          residenteId: 1
+          montoPago: 5.962133916683182
+          observaciones: observaciones
+          fechaCreacion: 2000-01-23T04:56:07.000+00:00
+          id: 0
+          horaInicio: horaInicio
+          fechaReserva: 2000-01-23
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Reserva"
+          title: data
+          type: array
+      title: _reservas_get_200_response
+      type: object
+    _pagos_get_200_response:
+      example:
+        data:
+        - referenciaId: 5
+          metodoPago: TRANSFERENCIA
+          tipo: GASTO_COMUN
+          monto: 5.637376656633329
+          numeroTransaccion: numeroTransaccion
+          comprobanteUrl: https://openapi-generator.tech
+          residenteId: 1
+          condominioId: 6
+          registradoPor: 2
+          id: 0
+          estadoPago: PENDIENTE
+          fechaPago: 2000-01-23T04:56:07.000+00:00
+        - referenciaId: 5
+          metodoPago: TRANSFERENCIA
+          tipo: GASTO_COMUN
+          monto: 5.637376656633329
+          numeroTransaccion: numeroTransaccion
+          comprobanteUrl: https://openapi-generator.tech
+          residenteId: 1
+          condominioId: 6
+          registradoPor: 2
+          id: 0
+          estadoPago: PENDIENTE
+          fechaPago: 2000-01-23T04:56:07.000+00:00
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Pago"
+          title: data
+          type: array
+      title: _pagos_get_200_response
+      type: object
+    _pagos__pagoId__comprobante_post_request:
+      properties:
+        archivo:
+          format: binary
+          type: string
+      type: object
+    _anuncios_get_200_response:
+      example:
+        data:
+        - creadoPor: 1
+          contenido: contenido
+          titulo: titulo
+          condominioId: 6
+          id: 0
+          fechaPublicacion: 2000-01-23T04:56:07.000+00:00
+          activo: true
+        - creadoPor: 1
+          contenido: contenido
+          titulo: titulo
+          condominioId: 6
+          id: 0
+          fechaPublicacion: 2000-01-23T04:56:07.000+00:00
+          activo: true
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Anuncio"
+          title: data
+          type: array
+      title: _anuncios_get_200_response
+      type: object
+    GastoComun_observaciones_inner:
+      example:
+        texto: texto
+        fecha: 2000-01-23T04:56:07.000+00:00
+        usuarioId: 4
+      properties:
+        fecha:
+          format: date-time
+          title: fecha
+          type: string
+        texto:
+          title: texto
+          type: string
+        usuarioId:
+          title: usuarioId
+          type: integer
+      title: GastoComun_observaciones_inner
+      type: object
