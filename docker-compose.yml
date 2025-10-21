@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15
+    container_name: peritas_db
+    restart: always
+    environment:
+      POSTGRES_USER: peritas
+      POSTGRES_PASSWORD: peritas123
+      POSTGRES_DB: peritas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: peritas_api
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://peritas:peritas123@db:5432/peritas_db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
