@@ -17,7 +17,7 @@ class Usuario(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     nombre: str
     apellido: str
-    password_hash: str  # Nunca expongas esto en la API
+    password_hash: str  # NO EXPONER EN LA API
     rol: RolUsuario
     condominio_id: Optional[int] = Field(default=None, foreign_key="condominios.id")
     activo: bool = Field(default=True)
