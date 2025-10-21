@@ -11,10 +11,10 @@ rebuild:
 	sudo docker compose --profile local up --build
 
 logs-db:
-	sudo docker compose logs -f peritas_db
+	sudo docker compose logs -f db
 
-logs-api:
-	sudo docker compose logs -f peritas_api
+logs-backend:
+	sudo docker compose logs -f backend
 
 # Database commands
 db-shell:
