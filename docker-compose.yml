@@ -12,8 +12,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U peritas"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U peritas -d peritas_db"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -21,6 +21,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
+      target: service
     container_name: peritas_api
     restart: always
     depends_on:
@@ -30,17 +31,23 @@ services:
       DATABASE_URL: postgresql+psycopg2://peritas:peritas123@db:5432/peritas_db
       SECRET_KEY: your-secret-key-change-in-production-please
       PYTHONPATH: /app
+      PYTHONUNBUFFERED: 1
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
     command: >
       sh -c "
-        echo 'Esperando base de datos...' &&
-        sleep 5 &&
+        echo '=== Iniciando Backend Peritas ===' &&
+        echo 'Python version:' && python --version &&
+        echo 'Alembic version:' && alembic --version &&
+        echo '' &&
+        echo 'Esperando conexión a base de datos...' &&
+        sleep 3 &&
         echo 'Aplicando migraciones...' &&
         alembic upgrade head &&
-        echo 'Iniciando servidor...' &&
+        echo '' &&
+        echo 'Iniciando servidor en http://0.0.0.0:8000' &&
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
     profiles:

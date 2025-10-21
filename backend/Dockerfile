@@ -1,30 +1,49 @@
-FROM python:3.7 AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /usr/src/app
 
-RUN python3 -m venv /venv
-ENV PATH="/venv/bin:$PATH"
+# Instalar dependencias del sistema necesarias para psycopg2
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
+# Copiar solo requirements primero (cache de Docker)
+COPY requirements.txt .
 
+# Instalar dependencias
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copiar el resto del código
 COPY . .
-RUN pip install --no-cache-dir .
 
+# Stage final - imagen limpia
+FROM python:3.11-slim AS service
 
-FROM python:3.7 AS test_runner
-WORKDIR /tmp
-COPY --from=builder /venv /venv
-COPY --from=builder /usr/src/app/tests tests
-ENV PATH=/venv/bin:$PATH
+WORKDIR /app
 
-# install test dependencies
-RUN pip install pytest
+# Instalar solo las dependencias de runtime necesarias
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# run tests Desactivado por ahora
-# RUN pytest tests
+# Copiar las dependencias de Python instaladas
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
+# Copiar código de la aplicación
+COPY --from=builder /usr/src/app /app
 
-FROM python:3.7 AS service
-WORKDIR /root/app/site-packages
-COPY --from=test_runner /venv /venv
-ENV PATH=/venv/bin:$PATH
+# Variables de entorno
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1
+
+# Verificar instalación
+RUN python --version && \
+    pip --version && \
+    alembic --version
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
