@@ -11,20 +11,40 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U peritas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: peritas_api
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql+psycopg2://peritas:peritas123@db:5432/peritas_db
+      SECRET_KEY: your-secret-key-change-in-production-please
+      PYTHONPATH: /app
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "
+        echo 'Esperando base de datos...' &&
+        sleep 5 &&
+        echo 'Aplicando migraciones...' &&
+        alembic upgrade head &&
+        echo 'Iniciando servidor...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    profiles:
+      - local
 
 volumes:
   postgres_data:
