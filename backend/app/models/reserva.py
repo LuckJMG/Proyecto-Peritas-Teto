@@ -14,8 +14,8 @@ class Reserva(SQLModel, table=True):
     __tablename__ = "reservas"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    espacio_comun_id: int = Field(foreign_key="espacios_comunes.id")
-    residente_id: int = Field(foreign_key="residentes.id")
+    espacio_comun_id: int = Field(foreign_key="espacios_comunes.id", index=True)
+    residente_id: int = Field(foreign_key="residentes.id", index=True)
     fecha_reserva: date
     hora_inicio: time
     hora_fin: time
@@ -28,4 +28,6 @@ class Reserva(SQLModel, table=True):
     # Relationships
     espacio_comun: "EspacioComun" = Relationship(back_populates="reservas")
     residente: "Residente" = Relationship(back_populates="reservas")
-    pago: Optional["Pago"] = Relationship(back_populates="reservas")
+    pago: Optional["Pago"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[Reserva.pago_id]"}
+    )

@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import date, datetime
+from datetime import date
 from typing import Optional, List
 
 class Residente(SQLModel, table=True):
@@ -15,7 +15,7 @@ class Residente(SQLModel, table=True):
     telefono: Optional[str] = None
     email: str = Field(index=True)
     es_propietario: bool
-    fecha_ingreso: date
+    fecha_ingreso: date = Field(default_factory=date.today)
     activo: bool = Field(default=True)
     
     # Relationships
@@ -24,3 +24,4 @@ class Residente(SQLModel, table=True):
     gastos_comunes: List["GastoComun"] = Relationship(back_populates="residente")
     multas: List["Multa"] = Relationship(back_populates="residente")
     reservas: List["Reserva"] = Relationship(back_populates="residente")
+    pagos: List["Pago"] = Relationship(back_populates="residente") 

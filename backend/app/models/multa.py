@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional
 from enum import Enum
 from decimal import Decimal
 
@@ -20,8 +20,8 @@ class Multa(SQLModel, table=True):
     __tablename__ = "multas"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    residente_id: int = Field(foreign_key="residentes.id")
-    condominio_id: int = Field(foreign_key="condominios.id")
+    residente_id: int = Field(foreign_key="residentes.id", index=True)
+    condominio_id: int = Field(foreign_key="condominios.id", index=True)
     tipo: TipoMulta
     descripcion: str
     monto: Decimal = Field(max_digits=10, decimal_places=2)
@@ -35,4 +35,3 @@ class Multa(SQLModel, table=True):
     residente: "Residente" = Relationship(back_populates="multas")
     condominio: "Condominio" = Relationship(back_populates="multas")
     creador: "Usuario" = Relationship()
-    pagos: List["Pago"] = Relationship(back_populates="multa")

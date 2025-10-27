@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from enum import Enum
 from decimal import Decimal
 
@@ -26,10 +26,10 @@ class Pago(SQLModel, table=True):
     __tablename__ = "pagos"
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    condominio_id: int = Field(foreign_key="condominios.id")
-    residente_id: int = Field(foreign_key="residentes.id")
+    condominio_id: int = Field(foreign_key="condominios.id", index=True)
+    residente_id: int = Field(foreign_key="residentes.id", index=True)
     tipo: TipoPago
-    referencia_id: int  # ID del gasto comun, multa o reserva
+    referencia_id: int  # ID genérico (gasto_comun_id, multa_id o reserva_id)
     monto: Decimal = Field(max_digits=10, decimal_places=2)
     metodo_pago: MetodoPago
     estado_pago: EstadoPago = Field(default=EstadoPago.PENDIENTE)
@@ -40,10 +40,5 @@ class Pago(SQLModel, table=True):
     
     # Relationships
     condominio: "Condominio" = Relationship()
-    residente: "Residente" = Relationship()
+    residente: "Residente" = Relationship(back_populates="pagos")
     registrador: "Usuario" = Relationship()
-    
-    # Relaciones condicionales basadas en tipo y referencia_id
-    gasto_comun: Optional["GastoComun"] = Relationship(back_populates="pagos")
-    multa: Optional["Multa"] = Relationship(back_populates="pagos")
-    reservas: List["Reserva"] = Relationship(back_populates="pago")
