@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, condominio, espacio_comun, residente, multa, reserva
+from app.api.v1 import auth, condominio, espacio_comun, residente, multa, reserva, usuario, gasto_comun, anuncios, pago
 
 api_router = APIRouter()
 
@@ -10,3 +10,7 @@ api_router.include_router(espacio_comun.router)
 api_router.include_router(residente.router)
 api_router.include_router(multa.router)
 api_router.include_router(reserva.router)
+api_router.include_router(usuario.router)
+api_router.include_router(gasto_comun.router)
+api_router.include_router(anuncios.router)
+api_router.include_router(pago.router)
