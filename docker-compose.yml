@@ -32,6 +32,7 @@ services:
       SECRET_KEY: your-secret-key-change-in-production-please
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
+      AUTO_INIT_DB: "true"
     ports:
       - "8000:8000"
     volumes:
@@ -47,6 +48,12 @@ services:
         echo 'Aplicando migraciones...' &&
         alembic upgrade head &&
         echo '' &&
+        if [ \"$$AUTO_INIT_DB\" = \"true\" ]; then
+          echo 'Inicializando datos de ejemplo...' &&
+          python scripts/init_db.py &&
+          echo 'Datos de ejemplo cargados' &&
+          echo '';
+        fi &&
         echo 'Iniciando servidor en http://localhost:8000' &&
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
