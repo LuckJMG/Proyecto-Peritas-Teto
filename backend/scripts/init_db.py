@@ -414,7 +414,7 @@ def init_database(force_recreate=False):
     print("\n" + "=" * 60)
     print("✓ BASE DE DATOS INICIALIZADA CORRECTAMENTE")
     print("=" * 60)
-    print("\nCREDENCIALES DE ACCESO:")
+    print("\n CREDENCIALES DE ACCESO:")
     print("-" * 60)
     print("Super Admin:")
     print("  Email: superadmin@casitasteto.cl")
