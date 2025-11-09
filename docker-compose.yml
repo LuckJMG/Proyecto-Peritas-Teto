@@ -39,24 +39,37 @@ services:
       - ./backend:/app
     command: >
       sh -c "
-        echo '=== Iniciando Backend Peritas ===' &&
-        echo 'Python version:' && python --version &&
-        echo 'Alembic version:' && alembic --version &&
-        echo '' &&
-        echo 'Esperando conexión a base de datos...' &&
-        sleep 3 &&
-        echo 'Aplicando migraciones...' &&
-        alembic upgrade head &&
-        echo '' &&
-        if [ \"$$AUTO_INIT_DB\" = \"true\" ]; then
-          echo 'Inicializando datos de ejemplo...' &&
-          python scripts/init_db.py &&
-          echo 'Datos de ejemplo cargados' &&
-          echo '';
-        fi &&
-        echo 'Iniciando servidor en http://localhost:8000' &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      echo '=== Iniciando Backend Peritas ===' &&
+      echo 'Python version:' && python --version &&
+      echo 'Alembic version:' && alembic --version &&
+      echo '' &&
+      echo 'Esperando conexión a base de datos...' &&
+      sleep 3 &&
+      echo 'Aplicando migraciones...' &&
+      alembic upgrade head &&
+      echo '' &&
+      if [ \"$$AUTO_INIT_DB\" = \"true\" ]; then
+      echo 'Inicializando datos de ejemplo...' &&
+      python scripts/init_db.py &&
+      echo 'Datos de ejemplo cargados' &&
+      echo '';
+      fi &&
+      echo 'Iniciando servidor en http://localhost:8000' &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
       "
+    profiles:
+      - local
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
     profiles:
       - local
 
