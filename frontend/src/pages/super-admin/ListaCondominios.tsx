@@ -134,7 +134,7 @@ export default function ListaCondominios() {
                 <Search className="h-5 w-5 text-gray-600" />
               </div>
             </div>
-            <Button 
+            <Button
               onClick={() => setShowAddDialog(true)}
               className="bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
             >
@@ -148,53 +148,61 @@ export default function ListaCondominios() {
             <table className="w-full">
               <thead className="bg-[#e5e5e5] border-b border-gray-300">
                 <tr>
-                  <th className="px-4 py-2 text-left">
-                    <button 
+                  <th className="px-4 py-2 text-center"> {/* CAMBIO: text-center */}
+                    <button
                       onClick={() => handleSort('nombre')}
-                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto" // CAMBIO: mx-auto
                     >
                       Nombre del condominio
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-left">
-                    <button 
+                  <th className="px-4 py-2 text-center"> {/* CAMBIO: text-center */}
+                    <button
                       onClick={() => handleSort('ingresos')}
-                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto" // CAMBIO: mx-auto
                     >
                       Ingresos
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-left">
-                    <button 
+                  <th className="px-4 py-2 text-center"> {/* CAMBIO: text-center */}
+                    <button
                       onClick={() => handleSort('fecha')}
-                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto" // CAMBIO: mx-auto
                     >
                       Última modificación
                       <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="px-4 py-2 text-center">
-                    <span className="text-xs font-semibold text-gray-700">Acciones</span>
+                  <th className="px-4 py-2 text-center"> {/* CAMBIO: text-center */}
+                    <button
+                      disabled
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto" // CAMBIO: mx-auto
+                    >
+                      Acciones
+                    </button>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {sortedCondominios.map((condo, index) => (
-                  <tr 
-                    key={condo.id} 
+                  <tr
+                    key={condo.id}
                     className={`${index % 2 === 0 ? 'bg-white' : 'bg-[#F3F3F3]'} hover:bg-gray-100 transition-colors border-b border-gray-200`}
                   >
-                    <td className="px-4 py-4 text-sm text-gray-900">{condo.nombre}</td>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 text-sm text-gray-900 text-center"> {/* CAMBIO: text-center */}
+                      {condo.nombre}
+                    </td>
+                    <td className="px-4 py-4 text-center"> {/* CAMBIO: text-center */}
                       <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-white ${getIngresosColor(condo.ingresosValor)}`}>
                         <span className="text-xs">●</span>
                         {condo.ingresos}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      {/* CAMBIO: justify-center agregado al div interno */}
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
                           <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
@@ -205,6 +213,7 @@ export default function ListaCondominios() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
+                      {/* Esta celda ya estaba centrada con flex justify-center */}
                       <div className="flex justify-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -218,7 +227,7 @@ export default function ListaCondominios() {
                               <Eye className="mr-2 h-4 w-4" />
                               Ver condominio
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDelete(condo)}
                               className="text-[#e05959]"
                             >
