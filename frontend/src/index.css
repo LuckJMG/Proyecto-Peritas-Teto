@@ -8,70 +8,86 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-   --radius: 0.65rem;
-   --background:  oklch(1 0 0);
-   --foreground:  oklch(0.141 0.005 285.823);
-   --card:  oklch(1 0 0);
-   --card-foreground:  oklch(0.141 0.005 285.823);
-   --popover:  oklch(1 0 0);
-   --popover-foreground:  oklch(0.141 0.005 285.823);
-   --primary:  oklch(0.648 0.2 131.684);
-   --primary-foreground:  oklch(0.986 0.031 120.757);
-   --secondary:  oklch(0.967 0.001 286.375);
-   --secondary-foreground:  oklch(0.21 0.006 285.885);
-   --muted:  oklch(0.967 0.001 286.375);
-   --muted-foreground:  oklch(0.552 0.016 285.938);
-   --accent:  oklch(0.967 0.001 286.375);
-   --accent-foreground:  oklch(0.21 0.006 285.885);
-   --destructive:  oklch(0.577 0.245 27.325);
-   --border:  oklch(0.92 0.004 286.32);
-   --input:  oklch(0.92 0.004 286.32);
-   --ring:  oklch(0.841 0.238 128.85);
-   --chart-1:  oklch(0.871 0.15 154.449);
-   --chart-2:  oklch(0.723 0.219 149.579);
-   --chart-3:  oklch(0.627 0.194 149.214);
-   --chart-4:  oklch(0.527 0.154 150.069);
-   --chart-5:  oklch(0.448 0.119 151.328);
-   --sidebar:  oklch(0.985 0 0);
-   --sidebar-foreground:  oklch(0.141 0.005 285.823);
-   --sidebar-primary:  oklch(0.648 0.2 131.684);
-   --sidebar-primary-foreground:  oklch(0.986 0.031 120.757);
-   --sidebar-accent:  oklch(0.967 0.001 286.375);
-   --sidebar-accent-foreground:  oklch(0.21 0.006 285.885);
-   --sidebar-border:  oklch(0.92 0.004 286.32);
-   --sidebar-ring:  oklch(0.841 0.238 128.85);
+  
+  --radius: 0.65rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.648 0.2 131.684);
+  --primary-foreground: oklch(0.986 0.031 120.757);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.841 0.238 128.85);
+  --chart-1: oklch(0.871 0.15 154.449);
+  --chart-2: oklch(0.723 0.219 149.579);
+  --chart-3: oklch(0.627 0.194 149.214);
+  --chart-4: oklch(0.527 0.154 150.069);
+  --chart-5: oklch(0.448 0.119 151.328);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.648 0.2 131.684);
+  --sidebar-primary-foreground: oklch(0.986 0.031 120.757);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.841 0.238 128.85);
 }
 
+/* Asegurar altura completa */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+/* Links */
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
+/* Headings */
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+/* Buttons - estilos base más neutrales */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -79,31 +95,16 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
+/* Theme inline variables */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -142,6 +143,7 @@ button:focus-visible {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Dark mode - opcional, solo se activa si agregas la clase .dark */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -176,6 +178,7 @@ button:focus-visible {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Base layer - aplicar estilos de Tailwind */
 @layer base {
   * {
     @apply border-border outline-ring/50;

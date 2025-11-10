@@ -1,14 +1,11 @@
 import { useState } from "react";
-import { Bell, Moon, Search, ChevronDown, ChevronRight, Eye, Trash2, Home } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Search, ArrowUpDown, Eye, Trash2, Home, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -19,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Navbar from "@/components/Navbar";
 
 // Tipos
 interface Condominio {
@@ -52,18 +50,12 @@ export default function ListaCondominios() {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [showAddDialog, setShowAddDialog] = useState<boolean>(false);
   const [selectedCondominio, setSelectedCondominio] = useState<Condominio | null>(null);
-  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({});
   const [newCondominioName, setNewCondominioName] = useState<string>("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'asc' });
 
   const getIngresosColor = (valor: number): string => {
-    if (valor < 0) return "bg-red-400";
-    if (valor > 1000000) return "bg-green-400";
-    return "bg-lime-300";
-  };
-
-  const toggleRow = (id: number) => {
-    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+    if (valor < 0) return "bg-[#e05959]";
+    return "bg-[#bbd386]";
   };
 
   const handleDelete = (condominio: Condominio) => {
@@ -98,7 +90,6 @@ export default function ListaCondominios() {
       let aValue: string | number = a[sortConfig.key!];
       let bValue: string | number = b[sortConfig.key!];
 
-      // Para ingresos, usar el valor numérico
       if (sortConfig.key === 'ingresos') {
         aValue = a.ingresosValor;
         bValue = b.ingresosValor;
@@ -122,174 +113,104 @@ export default function ListaCondominios() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="border-b bg-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/peritas-teto-logo.png" 
-                alt="Logo" 
-                className="h-10 w-auto"
-              />
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-500 hover:text-gray-700 cursor-pointer">
-                Dashboard
-              </span>
-              <span className="text-gray-400">/</span>
-              <span className="font-medium text-gray-900">Título</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="rounded-full text-lime-400">
-              <Moon className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full relative text-lime-400">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-green-500 rounded-full"></span>
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-3 h-auto py-1 px-2 hover:bg-gray-50">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">Ricardo Alvear</p>
-                    <p className="text-xs text-gray-500">Administrador</p>
-                  </div>
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src="https://avatar.vercel.sh/ricardoalvear" />
-                    <AvatarFallback className="bg-purple-500 text-white">RA</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Perfil</DropdownMenuItem>
-                <DropdownMenuItem>Configuración</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  Cerrar sesión
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </nav>
+      {/* Navbar importado como componente */}
+      <Navbar />
 
       {/* Contenido principal */}
-      <div className="p-6">
-        <div className="mx-auto max-w-7xl">
-          {/* Barra de búsqueda y botón añadir */}
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header con búsqueda y botón */}
           <div className="mb-6 flex items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <div className="relative w-80">
               <Input
                 type="text"
-                placeholder="Buscar"
+                placeholder="Condominio"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-4 pr-10 bg-white border-gray-300 rounded-full h-12 text-gray-700 placeholder:text-gray-400"
               />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                <div className="w-px h-6 bg-gray-300"></div>
+                <Search className="h-5 w-5 text-gray-600" />
+              </div>
             </div>
             <Button 
               onClick={() => setShowAddDialog(true)}
-              className="bg-green-500 hover:bg-green-600 text-white font-medium border-0"
-              style={{ backgroundColor: '#22c55e' }}
+              className="bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
             >
-              <div className="relative mr-2">
-                <Home className="h-4 w-4" />
-                <span className="absolute -top-1 -right-1 text-xs font-bold">+</span>
-              </div>
+              <Home className="h-4 w-4 mr-2" />
               Añadir Condominio
             </Button>
           </div>
 
-          {/* Tabla */}
-          <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
+          {/* Tabla mejorada */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <table className="w-full">
-              <thead>
-                <tr className="bg-gray-100 border-b">
-                  <th className="w-12 p-4"></th>
-                  <th className="w-16 p-4 text-left text-sm font-medium text-gray-700">CI</th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">
+              <thead className="bg-[#e5e5e5] border-b border-gray-300">
+                <tr>
+                  <th className="px-4 py-2 text-left">
                     <button 
                       onClick={() => handleSort('nombre')}
-                      className="flex items-center gap-1 hover:text-gray-900 cursor-pointer"
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
                     >
                       Nombre del condominio
-                      <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${
-                        sortConfig.key === 'nombre' && sortConfig.direction === 'desc' ? 'rotate-180' : ''
-                      }`} />
+                      <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">
+                  <th className="px-4 py-2 text-left">
                     <button 
                       onClick={() => handleSort('ingresos')}
-                      className="flex items-center gap-1 hover:text-gray-900 cursor-pointer"
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
                     >
                       Ingresos
-                      <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${
-                        sortConfig.key === 'ingresos' && sortConfig.direction === 'desc' ? 'rotate-180' : ''
-                      }`} />
+                      <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="p-4 text-left text-sm font-medium text-gray-700">
+                  <th className="px-4 py-2 text-left">
                     <button 
                       onClick={() => handleSort('fecha')}
-                      className="flex items-center gap-1 hover:text-gray-900 cursor-pointer"
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
                     >
                       Última modificación
-                      <ChevronDown className={`h-4 w-4 text-gray-600 transition-transform ${
-                        sortConfig.key === 'fecha' && sortConfig.direction === 'desc' ? 'rotate-180' : ''
-                      }`} />
+                      <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </th>
-                  <th className="p-4 text-right text-sm font-medium text-gray-700">Acciones</th>
+                  <th className="px-4 py-2 text-center">
+                    <span className="text-xs font-semibold text-gray-700">Acciones</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {sortedCondominios.map((condo) => (
-                  <>
-                    <tr key={condo.id} className="border-b hover:bg-gray-50">
-                      <td className="p-4">
-                        <button
-                          onClick={() => toggleRow(condo.id)}
-                          className="h-8 w-8 flex items-center justify-center hover:bg-gray-200 rounded"
-                        >
-                          {expandedRows[condo.id] ? (
-                            <ChevronDown className="h-5 w-5 text-gray-700" />
-                          ) : (
-                            <ChevronRight className="h-5 w-5 text-gray-700" />
-                          )}
-                        </button>
-                      </td>
-                      <td className="p-4 font-medium text-sm">CI</td>
-                      <td className="p-4 text-sm">{condo.nombre}</td>
-                      <td className="p-4">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium text-white ${getIngresosColor(condo.ingresosValor)}`}>
-                          <span className="text-xs">◉</span>
-                          {condo.ingresos}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
-                          {condo.fecha}
-                        </div>
-                      </td>
-                      <td className="p-4 text-right">
+                {sortedCondominios.map((condo, index) => (
+                  <tr 
+                    key={condo.id} 
+                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-[#F3F3F3]'} hover:bg-gray-100 transition-colors border-b border-gray-200`}
+                  >
+                    <td className="px-4 py-4 text-sm text-gray-900">{condo.nombre}</td>
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-white ${getIngresosColor(condo.ingresosValor)}`}>
+                        <span className="text-xs">●</span>
+                        {condo.ingresos}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
+                          <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" />
+                          <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
+                        </svg>
+                        <span>{condo.fecha}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex justify-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button className="bg-gray-800 hover:bg-gray-900 text-white">
+                            <Button className="bg-[#404040] hover:bg-[#303030] text-white text-sm flex items-center gap-2">
                               Administrar
-                              <ChevronDown className="ml-2 h-4 w-4" />
+                              <ChevronDown className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -299,25 +220,16 @@ export default function ListaCondominios() {
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleDelete(condo)}
-                              className="text-red-600"
+                              className="text-[#e05959]"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Aniquilar condominio
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </td>
-                    </tr>
-                    {expandedRows[condo.id] && (
-                      <tr>
-                        <td colSpan={6} className="bg-gray-50 p-4">
-                          <div className="text-sm text-gray-600">
-                            Información adicional del {condo.nombre}...
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -329,17 +241,17 @@ export default function ListaCondominios() {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-xl font-semibold">
               ¿Deshabilitar condominio?
             </DialogTitle>
-            <DialogDescription className="text-base text-gray-600 pt-2">
+            <DialogDescription className="text-sm text-gray-600 pt-2">
               ¿Estás seguro de que quieres Deshabilitar este condominio?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <DialogFooter className="flex-col gap-2 sm:flex-col mt-4">
             <Button
               onClick={confirmDelete}
-              className="w-full bg-red-400 hover:bg-red-500 text-white"
+              className="w-full bg-[#e05959] hover:bg-[#d04848] text-white"
             >
               Deshabilitar
             </Button>
@@ -358,10 +270,10 @@ export default function ListaCondominios() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-xl font-semibold">
               Añadir Condominio
             </DialogTitle>
-            <DialogDescription className="text-base text-gray-600 pt-2">
+            <DialogDescription className="text-sm text-gray-600 pt-2">
               Ingresa el nombre del nuevo condominio
             </DialogDescription>
           </DialogHeader>
@@ -370,12 +282,13 @@ export default function ListaCondominios() {
               placeholder="Nombre del condominio"
               value={newCondominioName}
               onChange={(e) => setNewCondominioName(e.target.value)}
+              className="w-full"
             />
           </div>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
               onClick={handleAddCondominio}
-              className="w-full bg-lime-400 hover:bg-lime-500 text-gray-900"
+              className="w-full bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
               disabled={!newCondominioName.trim()}
             >
               Crear Condominio
