@@ -8,6 +8,7 @@ import EstadoPage from "@/pages/residente/EstadoCuenta"
 import ListaUsuarios from "@/pages/admin/ListaUsuarios";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
+// no quiero
 export default function App() {
   return (
     <BrowserRouter>
@@ -37,9 +38,9 @@ export default function App() {
         } />
 
         <Route path="/usuarios" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
+          // <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaUsuarios />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
       </Routes>
     </BrowserRouter>

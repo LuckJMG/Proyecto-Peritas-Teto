@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
 
 # Dependencias
 from app.api.deps import get_db
@@ -11,12 +11,20 @@ from app.models.espacio_comun import EspacioComun
 router = APIRouter(prefix="/espacios-comunes", tags=["Espacios Comunes"])
 
 # GET /espacios-comunes - Listar todos
-@router.get("", response_model=List[EspacioComun])
-async def listar_espacios_comunes(db: Session = Depends(get_db)):
+@router.get("", response_model=list[EspacioComun])
+async def listar_espacios_comunes(
+    condominio_id: Optional[int] = Query(None, description="ID del condominio"),
+    db: Session = Depends(get_db),
+):
     """
-    Obtiene una lista de todos los espacios comunes.
+    Obtiene una lista de espacios comunes.
+    Si se entrega 'condominio_id', filtra por ese condominio.
     """
-    items = db.exec(select(EspacioComun)).all()
+    query = select(EspacioComun)
+    if condominio_id is not None:
+        query = query.where(EspacioComun.condominio_id == condominio_id)
+
+    items = db.exec(query).all()
     return items
 
 # POST /espacios-comunes - Crear
@@ -26,13 +34,19 @@ async def crear_espacio_comun(data: EspacioComun, db: Session = Depends(get_db))
     Crea un nuevo espacio común.
     """
     # Creamos la instancia del modelo de DB directamente desde el body
-    item = EspacioComun.model_validate(data)
+    from app.models.condominio import Condominio
+    condominio = db.get(Condominio, data.condominio_id)
+    if not condominio:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Condominio con id {data.condominio_id} no encontrado"
+        )
     
-    db.add(item)
+    db.add(data)
     db.commit()
-    db.refresh(item)
+    db.refresh(data)
     
-    return item
+    return data
 
 # GET /espacios-comunes/{item_id} - Obtener uno
 @router.get("/{item_id}", response_model=EspacioComun)

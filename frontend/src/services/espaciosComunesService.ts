@@ -2,31 +2,31 @@
 
 export interface EspacioComun {
   id: number;
-  condominioId: number;
+  condominio_id: number;
   nombre: string;
   tipo: 'ESTACIONAMIENTO' | 'QUINCHO' | 'MULTICANCHA' | 'SALA_EVENTOS';
   capacidad: number;
-  costoPorHora: number | null;
+  costo_por_hora: number | null;
   descripcion: string;
   activo: boolean;
-  requierePago: boolean;
+  requiere_pago: boolean;
 }
 
 export interface EspacioComunInput {
-  condominioId: number;
+  condominio_id: number;
   nombre: string;
   tipo: 'ESTACIONAMIENTO' | 'QUINCHO' | 'MULTICANCHA' | 'SALA_EVENTOS';
   capacidad: number;
-  costoPorHora?: number | null;
+  costo_por_hora?: number | null;
   descripcion?: string;
-  requierePago: boolean;
+  requiere_pago: boolean;
 }
 
 class EspaciosComunesService {
-  private baseUrl = '/api/espacios-comunes';
+  private baseUrl = '/api/v1/espacios-comunes';
 
   async getByCondominio(condominioId: number): Promise<EspacioComun[]> {
-    const response = await fetch(`${this.baseUrl}?condominioId=${condominioId}`);
+    const response = await fetch(`${this.baseUrl}?condominio_id=${condominioId}`);
     
     if (!response.ok) {
       throw new Error('Error al cargar espacios comunes');
@@ -46,6 +46,13 @@ class EspaciosComunesService {
   }
 
   async create(data: EspacioComunInput): Promise<EspacioComun> {
+    // Validar que condominio_id existe
+    if (!data.condominio_id) {
+      throw new Error('condominio_id es requerido');
+    }
+
+    console.log('Enviando datos:', JSON.stringify(data, null, 2));
+    
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
@@ -55,7 +62,9 @@ class EspaciosComunesService {
     });
     
     if (!response.ok) {
-      throw new Error('Error al crear espacio común');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Error del servidor:', errorData);
+      throw new Error(errorData.detail || 'Error al crear espacio común');
     }
     
     return response.json();
@@ -91,7 +100,7 @@ class EspaciosComunesService {
     condominioId: number, 
     tipo: EspacioComun['tipo']
   ): Promise<EspacioComun[]> {
-    const response = await fetch(`${this.baseUrl}?condominioId=${condominioId}&tipo=${tipo}`);
+    const response = await fetch(`${this.baseUrl}?condominio_id=${condominioId}&tipo=${tipo}`);
     
     if (!response.ok) {
       throw new Error('Error al cargar espacios comunes');
@@ -101,7 +110,7 @@ class EspaciosComunesService {
   }
 
   async getDisponibles(condominioId: number): Promise<EspacioComun[]> {
-    const response = await fetch(`${this.baseUrl}?condominioId=${condominioId}&disponible=true`);
+    const response = await fetch(`${this.baseUrl}?condominio_id=${condominioId}&disponible=true`);
     
     if (!response.ok) {
       throw new Error('Error al cargar espacios disponibles');
