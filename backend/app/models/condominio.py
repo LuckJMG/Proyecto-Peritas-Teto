@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 from typing import Optional, List
+from decimal import Decimal
 
 class Condominio(SQLModel, table=True):
     __tablename__ = "condominios"
@@ -9,6 +10,7 @@ class Condominio(SQLModel, table=True):
     nombre: str = Field(index=True)
     direccion: str
     total_viviendas: int
+    ingresos: Decimal = Field(default=Decimal("0"), max_digits=12, decimal_places=2)
     activo: bool = Field(default=True)
     fecha_creacion: datetime = Field(default_factory=datetime.utcnow)
     

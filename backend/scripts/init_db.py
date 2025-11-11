@@ -85,6 +85,7 @@ def init_database(force_recreate=False):
             nombre="Condominio Los Pinos",
             direccion="Av. Los Pinos 123, Santiago",
             total_viviendas=50,
+            ingresos=Decimal("5750000"),  # Ejemplo: ingresos mensuales del condominio
             activo=True,
             fecha_creacion=datetime.utcnow()
         )
@@ -92,6 +93,7 @@ def init_database(force_recreate=False):
         session.commit()
         session.refresh(condominio)
         print(f"   ✓ Condominio: {condominio.nombre} (ID: {condominio.id})")
+        print(f"   ✓ Ingresos mensuales: ${condominio.ingresos:,.0f}")
         
         print("\n4. Creando usuarios...")
         usuarios_data = [
