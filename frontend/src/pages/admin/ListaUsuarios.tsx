@@ -382,23 +382,30 @@ const [newUsuario, setNewUsuario] = useState({
               .
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-4 flex-col gap-2">
+          <DialogFooter className="flex justify-between mt-6 w-full">
             <Button
-              onClick={confirmDelete}
-              disabled={submitting}
-              className="w-full bg-[#e05959] text-white hover:bg-[#d04848]"
+                onClick={confirmDelete}
+                disabled={submitting}
+                className="w-1/2 bg-[#e05959] hover:bg-[#d04848] text-white font-semibold h-12"
             >
-              {submitting ? "Eliminando..." : "Eliminar"}
+                {submitting ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Eliminando...
+                </>
+                ) : (
+                'Eliminar'
+                )}
             </Button>
             <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={submitting}
+                onClick={() => setShowDeleteDialog(false)}
+                variant="outline"
+                className="w-1/2 h-12 font-semibold"
+                disabled={submitting}
             >
-              Cancelar
+                Cancelar
             </Button>
-          </DialogFooter>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
 
