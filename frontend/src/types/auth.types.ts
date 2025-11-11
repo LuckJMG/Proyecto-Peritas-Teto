@@ -1,7 +1,20 @@
+// frontend/src/types/auth.types.ts
+
 export interface LoginCredentials {
   email: string;
   password: string;
   remember: boolean;
+}
+
+export interface LoginFormProps {
+  onSubmit: (credentials: LoginCredentials) => void;
+  loading?: boolean;
+}
+
+export interface FormPanelProps {
+  onLogin: (credentials: LoginCredentials) => void;
+  loading?: boolean;
+  error?: string;
 }
 
 export interface EmailFieldProps {
@@ -17,12 +30,4 @@ export interface PasswordFieldProps {
 export interface RememberMeCheckboxProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
-}
-
-export interface LoginFormProps {
-  onSubmit: (credentials: LoginCredentials) => void;
-}
-
-export interface FormPanelProps {
-  onLogin: (credentials: LoginCredentials) => void;
 }
