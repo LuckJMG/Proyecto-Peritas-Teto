@@ -31,33 +31,11 @@ export default function App() {
         } />
         
         <Route path="/condominios" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
-            <ListaCondominios />
-          </ProtectedRoute>
-        } />
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/estado" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE]}>
-            <EstadoPage />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/dashboard" element={
-          <ProtectedRoute allowedRoles={[
-            RolUsuario.ADMINISTRADOR,
-            RolUsuario.CONSERJE,
-            RolUsuario.DIRECTIVA
-          ]}>
-            <DashboardPage />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/condominios" element={
           <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaCondominios />
           </ProtectedRoute>
         } />
+
         <Route path="/usuarios" element={
           <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaUsuarios />
