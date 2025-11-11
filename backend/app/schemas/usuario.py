@@ -10,7 +10,7 @@ class UsuarioBase(BaseModel):
     apellido: str
     rol: RolUsuario
     activo: bool = True
-
+    condominio_id: Optional[int] = None
 
 class UsuarioCreate(UsuarioBase):
     password_hash: str  # o password si luego la encriptas
