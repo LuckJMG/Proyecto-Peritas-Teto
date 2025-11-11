@@ -9,6 +9,7 @@ interface CondominiosTableProps {
   onSort: (key: keyof Condominio) => void;
   onEdit: (condominio: Condominio) => void;
   onDelete: (condominio: Condominio) => void;
+  onViewEspacios: (condominio: Condominio) => void;
 }
 
 export default function CondominiosTable({ 
@@ -16,7 +17,8 @@ export default function CondominiosTable({
   sortConfig, 
   onSort,
   onEdit,
-  onDelete 
+  onDelete,
+  onViewEspacios
 }: CondominiosTableProps) {
   const getSortIcon = (key: keyof Condominio) => {
     if (sortConfig.key !== key) {
@@ -69,9 +71,9 @@ export default function CondominiosTable({
               </button>
             </th>
             <th className="px-4 py-2 text-center">
-              <button className="flex items-center gap-2 text-xs font-semibold text-gray-700 mx-auto">
+              <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 mx-auto">
                 Acciones
-              </button>
+              </div>
             </th>
           </tr>
         </thead>
@@ -90,6 +92,7 @@ export default function CondominiosTable({
                 index={index}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onViewEspacios={onViewEspacios}
               />
             ))
           )}

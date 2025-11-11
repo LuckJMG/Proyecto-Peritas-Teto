@@ -7,6 +7,7 @@ import SearchBar from "./SearchBar";
 import CondominiosTable from "./CondominiosTable";
 import DeleteDialog from "./DeleteDialog";
 import CondominioFormDialog from "./CondominioFormDialog";
+import EspaciosComunesDialog from "./EspaciosComunesDialog";
 import type { Condominio, SortConfig, ValidationErrors, CondominioFormData } from "./types";
 
 export default function ListaCondominios() {
@@ -19,6 +20,7 @@ export default function ListaCondominios() {
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [showAddDialog, setShowAddDialog] = useState<boolean>(false);
   const [showEditDialog, setShowEditDialog] = useState<boolean>(false);
+  const [showEspaciosDialog, setShowEspaciosDialog] = useState<boolean>(false);
   const [selectedCondominio, setSelectedCondominio] = useState<Condominio | null>(null);
   
   const [newCondominio, setNewCondominio] = useState<CondominioFormData>({
@@ -216,6 +218,11 @@ export default function ListaCondominios() {
     setValidationErrors({ ...validationErrors, [field]: undefined });
   };
 
+  const handleViewEspacios = (condominio: Condominio) => {
+    setSelectedCondominio(condominio);
+    setShowEspaciosDialog(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -264,6 +271,7 @@ export default function ListaCondominios() {
             onSort={handleSort}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onViewEspacios={handleViewEspacios}
           />
         </div>
       </div>
@@ -306,6 +314,17 @@ export default function ListaCondominios() {
         onFormChange={(data) => setEditCondominio({ ...editCondominio, ...data })}
         onSubmit={handleUpdateCondominio}
         onValidationErrorClear={handleValidationErrorClear}
+      />
+
+      <EspaciosComunesDialog
+        open={showEspaciosDialog}
+        condominio={selectedCondominio}
+        onOpenChange={(open) => {
+          setShowEspaciosDialog(open);
+          if (!open) {
+            setSelectedCondominio(null);
+          }
+        }}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 // TableRow.tsx
-import { Eye, Trash2, Edit, ChevronDown } from "lucide-react";
+import { Eye, Trash2, Edit, ChevronDown, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ interface TableRowProps {
   index: number;
   onEdit: (condominio: Condominio) => void;
   onDelete: (condominio: Condominio) => void;
+  onViewEspacios: (condominio: Condominio) => void;
 }
 
 const formatCurrency = (value: number): string => {
@@ -40,7 +41,7 @@ const formatDate = (dateString: string): string => {
   });
 };
 
-export default function TableRow({ condominio, index, onEdit, onDelete }: TableRowProps) {
+export default function TableRow({ condominio, index, onEdit, onDelete, onViewEspacios }: TableRowProps) {
   return (
     <tr
       className={`${index % 2 === 0 ? 'bg-white' : 'bg-[#F3F3F3]'} hover:bg-gray-100 transition-colors border-b border-gray-200`}
@@ -81,6 +82,10 @@ export default function TableRow({ condominio, index, onEdit, onDelete }: TableR
               <DropdownMenuItem>
                 <Eye className="mr-2 h-4 w-4" />
                 Ver condominio
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onViewEspacios(condominio)}>
+                <Building2 className="mr-2 h-4 w-4" />
+                Ver espacios comunes
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit(condominio)}>
                 <Edit className="mr-2 h-4 w-4" />

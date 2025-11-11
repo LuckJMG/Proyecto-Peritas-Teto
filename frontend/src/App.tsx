@@ -31,9 +31,9 @@ export default function App() {
         } />
         
         <Route path="/condominios" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
+          // <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
             <ListaCondominios />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
 
         <Route path="/usuarios" element={
