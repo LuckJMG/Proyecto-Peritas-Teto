@@ -5,7 +5,7 @@ import ListaCondominios from "@/pages/super-admin/ListaCondominios"
 import Login from "@/pages/auth/Login"
 import DashboardPage from "@/pages/admin/DashboardCondominio"
 import EstadoPage from "@/pages/residente/EstadoCuenta"
-
+import ListaUsuarios from "@/pages/admin/ListaUsuarios";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 export default function App() {
@@ -31,11 +31,17 @@ export default function App() {
         } />
         
         <Route path="/condominios" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
+          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaCondominios />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/usuarios" element={
+          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
+            <ListaUsuarios />
           </ProtectedRoute>
         } />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
