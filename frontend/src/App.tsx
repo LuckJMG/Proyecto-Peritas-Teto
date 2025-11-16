@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import ListaCondominios from "@/pages/super-admin/ListaCondominios"
 import Login from "@/pages/auth/Login"
 import DashboardPage from "@/pages/admin/DashboardCondominio"
-import EstadoPage from "@/pages/residente/EstadoCuenta"
+import EstadoCuenta from "@/pages/residente/EstadoCuenta"
 import ListaUsuarios from "@/pages/admin/ListaUsuarios";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
@@ -16,9 +16,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         
         <Route path="/estado" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE]}>
-            <EstadoPage />
-          </ProtectedRoute>
+          // <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE]}>
+            <EstadoCuenta />
+          // </ProtectedRoute>
         } />
         
         <Route path="/dashboard" element={

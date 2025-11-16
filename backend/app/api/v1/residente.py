@@ -67,7 +67,9 @@ async def crear_residente(data: Residente, db: Session = Depends(get_db)):
 # GET /residentes/{item_id} - Obtener uno
 @router.get("/{item_id}", response_model=Residente)
 async def obtener_residente(item_id: int, db: Session = Depends(get_db)):
-    item = db.get(Residente, item_id)
+    from sqlmodel import select
+    statement = select(Residente).where(Residente.id == item_id)
+    item = db.exec(statement).first()
     if not item:
         raise HTTPException(status_code=404, detail="Residente no encontrado")
     return item
