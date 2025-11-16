@@ -1,20 +1,24 @@
 # Docker commands
 start:
-	sudo docker compose --profile local up --build
+	sudo docker compose up --build -d
 
 stop:
 	sudo docker compose down
 
-rebuild:
+nuke:
 	sudo docker compose down --volumes
 	sudo docker compose build --no-cache
-	sudo docker compose --profile local up --build
+	sudo docker compose up --build
 
 logs-db:
 	sudo docker compose logs -f db
 
 logs-backend:
 	sudo docker compose logs -f backend
+
+rebuild:
+	sudo docker compose up --build -d
+
 
 # Database commands
 db-shell:
