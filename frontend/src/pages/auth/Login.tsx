@@ -14,11 +14,13 @@ const LoginPage: React.FC = () => {
       setError('');
       setLoading(true);
 
-      await authService.login(credentials.email, credentials.password);
-      const user = authService.getUser();
-      const ruta = authService.getRouteByRole(user.rol);
-      window.location.href = ruta;
+      const data = await authService.login(credentials.email, credentials.password);
       
+      // Obtener la ruta según el rol del usuario
+      const redirectRoute = authService.getRouteByRole(data.usuario.rol);
+      
+      // Redirigir a la página correspondiente
+      window.location.href = redirectRoute;
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
@@ -28,7 +30,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="h-screen flex overflow-hidden">
       <ImagePanel />
       <FormPanel onLogin={handleLogin} loading={loading} error={error} />
     </div>

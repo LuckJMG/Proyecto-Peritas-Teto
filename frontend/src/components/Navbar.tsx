@@ -1,4 +1,4 @@
-import { Bell, ChevronRight } from "lucide-react";
+import { Bell, ChevronRight, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { authService } from "@/services/authService";
 
 // Función para generar breadcrumbs basados en la ruta
 const getBreadcrumbs = (pathname: string) => {
@@ -24,6 +25,8 @@ const getBreadcrumbs = (pathname: string) => {
     'reportes': 'Reportes',
     'configuracion': 'Configuración',
     'perfil': 'Perfil',
+    'condominios': 'Condominios',
+    'estado': 'Estado de Cuenta',
   };
 
   // Siempre comenzar con Dashboard
@@ -45,7 +48,19 @@ const getBreadcrumbs = (pathname: string) => {
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const breadcrumbs = getBreadcrumbs(location.pathname);
+  
+  // Obtener información del usuario
+  const user = authService.getUser();
+  const userInitials = user 
+    ? `${user.nombre.charAt(0)}${user.apellido.charAt(0)}`.toUpperCase()
+    : 'U';
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-3">
@@ -97,13 +112,17 @@ export default function Navbar() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div className="text-left">
-                  <div className="text-sm font-semibold text-gray-900">Ricardo Alvear</div>
-                  <div className="text-xs text-gray-400">Administrador</div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {user?.rol || 'Usuario'}
+                  </div>
                 </div>
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="https://avatar.vercel.sh/ricardoalvear" />
+                  <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
                   <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white">
-                    RA
+                    {userInitials}
                   </AvatarFallback>
                 </Avatar>
               </button>
@@ -111,10 +130,22 @@ export default function Navbar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configuración</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/perfil" className="w-full">
+                  Perfil
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/configuracion" className="w-full">
+                  Configuración
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem 
+                className="text-red-600 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>

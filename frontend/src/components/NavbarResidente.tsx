@@ -7,63 +7,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-
-interface Residente {
-  id: number;
-  nombre: string;
-  apellido: string;
-  vivienda_numero: string;
-  condominio: {
-    nombre: string;
-  };
-}
+import { Link, useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
+import { authService } from "@/services/authService";
 
 export default function Navbar() {
-  const [residente, setResidente] = useState<Residente | null>(null);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const user = authService.getUser();
 
-  useEffect(() => {
-    const fetchResidente = async () => {
-      try {
-        // Obtener el ID del residente desde localStorage o context
-        const residenteId = localStorage.getItem("residenteId");
-        if (!residenteId) return;
-
-        const response = await fetch(`/api/v1/residentes/${residenteId}`);
-        if (!response.ok) throw new Error("Error al cargar datos");
-        
-        const data = await response.json();
-        setResidente(data);
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResidente();
-  }, []);
-
-  const nombreCompleto = residente 
-    ? `${residente.nombre} ${residente.apellido}` 
-    : "Cargando...";
+  const nombreCompleto = user 
+    ? `${user.nombre} ${user.apellido}` 
+    : "Usuario";
   
-  const residencia = residente 
-    ? `${residente.vivienda_numero}, ${residente.condominio.nombre}` 
+  const residencia = user?.condominioId 
+    ? `Condominio ${user.condominioId}` 
     : "";
 
-  const iniciales = residente 
-    ? `${residente.nombre[0]}${residente.apellido[0]}` 
-    : "RA";
+  const iniciales = user 
+    ? `${user.nombre.charAt(0)}${user.apellido.charAt(0)}`.toUpperCase() 
+    : "U";
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
+  };
 
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Logo y Nombre */}
         <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to="/estado" className="flex items-center gap-3">
             <img 
               src="/peritas-teto-logo.png" 
               alt="Logo" 
@@ -79,7 +53,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 hover:opacity-80 transition-opacity" disabled={loading}>
+              <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div className="text-left">
                   <div className="text-sm font-semibold text-gray-900">{nombreCompleto}</div>
                   {residencia && (
@@ -87,8 +61,8 @@ export default function Navbar() {
                   )}
                 </div>
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={`https://avatar.vercel.sh/${nombreCompleto.toLowerCase().replace(" ", "")}`} />
-                  <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white">
+                  <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
+                  <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white">
                     {iniciales}
                   </AvatarFallback>
                 </Avatar>
@@ -97,10 +71,22 @@ export default function Navbar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configuración</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/perfil" className="w-full">
+                  Perfil
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/configuracion" className="w-full">
+                  Configuración
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem 
+                className="text-red-600 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>

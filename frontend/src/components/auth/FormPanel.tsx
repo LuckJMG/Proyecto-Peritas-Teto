@@ -2,7 +2,6 @@
 import React from 'react';
 import { CompanyBrand } from './CompanyBrand';
 import { LoginForm } from '../auth/LoginForm';
-import { RegisterLink } from '../auth/RegisterLink';
 import { Footer } from './LoginFooter';
 import type { FormPanelProps } from '@/types/auth.types';
 
@@ -23,7 +22,6 @@ export const FormPanel: React.FC<FormPanelProps> = ({
         )}
         
         <LoginForm onSubmit={onLogin} loading={loading} />
-        <RegisterLink />
         <Footer />
       </div>
     </div>
