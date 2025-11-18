@@ -11,6 +11,13 @@ export interface LoginFormProps {
   loading?: boolean;
 }
 
+export interface RegisterCredentials {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+}
+
 export interface FormPanelProps {
   onLogin: (credentials: LoginCredentials) => void;
   loading?: boolean;

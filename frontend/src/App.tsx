@@ -6,6 +6,7 @@ import Login from "@/pages/auth/Login"
 import DashboardPage from "@/pages/admin/DashboardCondominio"
 import EstadoCuenta from "@/pages/residente/EstadoCuenta"
 import ListaUsuarios from "@/pages/admin/ListaUsuarios";
+import RegisterPage from "./pages/auth/register";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 // no quiero
@@ -14,11 +15,13 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        
+
+        <Route path="/register" element={<RegisterPage/>} />
+
         <Route path="/estado" element={
-          // <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE]}>
+          <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE]}>
             <EstadoCuenta />
-          // </ProtectedRoute>
+          </ProtectedRoute>
         } />
         
         <Route path="/dashboard" element={
@@ -32,17 +35,19 @@ export default function App() {
         } />
         
         <Route path="/condominios" element={
-          // <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
+          <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
             <ListaCondominios />
-          // </ProtectedRoute>
+          </ProtectedRoute>
         } />
 
         <Route path="/usuarios" element={
-          // <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
+          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaUsuarios />
-          // </ProtectedRoute>
+          </ProtectedRoute>
         } />
       </Routes>
+
+      
     </BrowserRouter>
   );
 }

@@ -1,6 +1,8 @@
 // frontend/src/services/authService.ts
 const API_URL = 'http://localhost:8000/api/v1';
 
+import type { RegisterCredentials } from '@/types/auth.types';
+
 // Usar const object en lugar de enum
 export const RolUsuario = {
   SUPER_ADMINISTRADOR: 'SUPER_ADMINISTRADOR',
@@ -24,6 +26,16 @@ interface LoginResponse {
     condominioId?: number;
     activo: boolean;
   };
+}
+
+export interface CrearUsuarioDTO {
+  email: string;
+  nombre: string;
+  apellido: string;
+  rol: RolUsuario;
+  activo: boolean;
+  condominio_id?: number;
+  password_hash: string; // contraseña en texto plano
 }
 
 export const authService = {
@@ -79,7 +91,34 @@ export const authService = {
     };
     
     return routes[rol] || '/estado';
+  },
+
+   async registerAndLogin(data: RegisterCredentials) {
+    // 1) crear usuario RESIDENTE activo
+    const res = await fetch(`${API_URL}/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: data.email,
+        nombre: data.nombre,
+        apellido: data.apellido,
+        rol: 'RESIDENTE',      // fijo residente
+        activo: true,
+        condominio_id: null,
+        password_hash: data.password
+      })
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.detail || 'Error al registrarse');
+    }
+
+    // 2) login normal
+    const loginData = await this.login(data.email, data.password);
+    return loginData;
   }
+
 };
 
 // Hook para usar en componentes protegidos

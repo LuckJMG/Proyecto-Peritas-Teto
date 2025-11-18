@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const RegisterLink: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleRegisterClick = () => {
-    // Navegar a registro
-    console.log('Navegar a registro');
+    navigate('/register'); // redirige a la ruta de registro
   };
 
   return (

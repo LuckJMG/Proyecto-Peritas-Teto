@@ -3,7 +3,8 @@ from sqlmodel import Session, select
 from typing import List
 from app.api.deps import get_db
 from app.models.usuario import Usuario  # modelo SQLModel (tabla real)
-from app.schemas.usuario import UsuarioRead, UsuarioCreate, UsuarioUpdate  # esquemas Pydantic
+from app.schemas.usuario import UsuarioRead, UsuarioCreate, UsuarioUpdate  # esquemas Pydantic`
+from app.core.security import get_password_hash
 
 router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 
@@ -21,7 +22,18 @@ async def listar_usuarios(db: Session = Depends(get_db)):
 # ---------------------------
 @router.post("", response_model=UsuarioRead, status_code=status.HTTP_201_CREATED)
 async def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
-    nuevo_usuario = Usuario(**data.dict())
+    hashed_password = get_password_hash(data.password_hash)
+
+    nuevo_usuario = Usuario(
+        email=data.email,
+        nombre=data.nombre,
+        apellido=data.apellido,
+        password_hash=hashed_password,   # El hash de la password
+        rol=data.rol,
+        condominio_id=data.condominio_id,
+        activo=data.activo,
+    )
+
     db.add(nuevo_usuario)
     db.commit()
     db.refresh(nuevo_usuario)
