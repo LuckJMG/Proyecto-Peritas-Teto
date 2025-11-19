@@ -217,7 +217,7 @@ def init_database(force_recreate=False):
             )
             session.add(residente)
             residentes.append(residente)
-            print(f"   Residente: {residente.nombre} {residente.apellido} - Depto {residente.vivienda_numero}")
+            print(f"   ✓ Residente: {residente.nombre} {residente.apellido} - Depto {residente.vivienda_numero}")
         
         session.commit()
         for r in residentes:
@@ -289,6 +289,7 @@ def init_database(force_recreate=False):
         
         print("\n7. Creando gastos comunes...")
         hoy = date.today()
+        gastos_comunes = []
         for i, residente in enumerate(residentes[:3]):
             gasto = GastoComun(
                 residente_id=residente.id,
@@ -307,11 +308,15 @@ def init_database(force_recreate=False):
                 observaciones=[]
             )
             session.add(gasto)
+            gastos_comunes.append(gasto)
             print(f"   ✓ Gasto común para {residente.nombre} {residente.apellido}: ${gasto.monto_total}")
         
         session.commit()
+        for g in gastos_comunes:
+            session.refresh(g)
         
         print("\n8. Creando multas...")
+        multas_creadas = []
         multas_data = [
             {
                 "residente": residentes[0],
@@ -342,9 +347,12 @@ def init_database(force_recreate=False):
                 creado_por=usuarios[1].id
             )
             session.add(multa)
+            multas_creadas.append(multa)
             print(f"   ✓ Multa {multa.tipo.value} para {multa_data['residente'].nombre}: ${multa.monto}")
         
         session.commit()
+        for m in multas_creadas:
+            session.refresh(m)
         
         print("\n9. Creando reservas...")
         reservas_data = [
@@ -412,6 +420,97 @@ def init_database(force_recreate=False):
             print(f"   ✓ Anuncio: {anuncio.titulo}")
         
         session.commit()
+        
+        # ================================================================
+        # NUEVO: Crear PAGOS PENDIENTES para testing con Transbank
+        # ================================================================
+        print("\n11. Creando pagos pendientes para Transbank...")
+        
+        # Pagos para el primer residente (Pedro Martínez)
+        pagos_pedro = [
+            {
+                "tipo": TipoPago.GASTO_COMUN,
+                "referencia_id": gastos_comunes[0].id,  # Gasto común de Pedro
+                "monto": Decimal("115000"),
+                "concepto": "Gasto Común"
+            },
+            {
+                "tipo": TipoPago.MULTA,
+                "referencia_id": multas_creadas[0].id,  # Multa de Pedro
+                "monto": Decimal("15000"),
+                "concepto": "Multa por ruidos"
+            }
+        ]
+        
+        total_pagos_creados = 0
+        for pago_data in pagos_pedro:
+            pago = Pago(
+                condominio_id=condominio.id,
+                residente_id=residentes[0].id,  # Pedro Martínez
+                tipo=pago_data["tipo"],
+                referencia_id=pago_data["referencia_id"],
+                monto=pago_data["monto"],
+                metodo_pago=MetodoPago.WEBPAY,
+                estado_pago=EstadoPago.PENDIENTE,
+                numero_transaccion=None,
+                fecha_pago=datetime.utcnow(),
+                comprobante_url=None,
+                registrado_por=usuarios[1].id  # Admin
+            )
+            session.add(pago)
+            total_pagos_creados += 1
+            print(f"   ✓ Pago pendiente: {pago_data['concepto']} - ${pago_data['monto']} (Residente: Pedro Martínez)")
+        
+        # Pagos para el segundo residente (Ana Silva)
+        pagos_ana = [
+            {
+                "tipo": TipoPago.GASTO_COMUN,
+                "referencia_id": gastos_comunes[1].id,  # Gasto común de Ana
+                "monto": Decimal("115000"),
+                "concepto": "Gasto Común"
+            }
+        ]
+        
+        for pago_data in pagos_ana:
+            pago = Pago(
+                condominio_id=condominio.id,
+                residente_id=residentes[1].id,  # Ana Silva
+                tipo=pago_data["tipo"],
+                referencia_id=pago_data["referencia_id"],
+                monto=pago_data["monto"],
+                metodo_pago=MetodoPago.WEBPAY,
+                estado_pago=EstadoPago.PENDIENTE,
+                numero_transaccion=None,
+                fecha_pago=datetime.utcnow(),
+                comprobante_url=None,
+                registrado_por=usuarios[1].id
+            )
+            session.add(pago)
+            total_pagos_creados += 1
+            print(f"   ✓ Pago pendiente: {pago_data['concepto']} - ${pago_data['monto']} (Residente: Ana Silva)")
+        
+        # Pago de ejemplo APROBADO (para mostrar historial)
+        pago_aprobado = Pago(
+            condominio_id=condominio.id,
+            residente_id=residentes[2].id,  # Carlos Rojas
+            tipo=TipoPago.GASTO_COMUN,
+            referencia_id=gastos_comunes[2].id,
+            monto=Decimal("115000"),
+            metodo_pago=MetodoPago.WEBPAY,
+            estado_pago=EstadoPago.APROBADO,
+            numero_transaccion=f"ORD{residentes[2].id}{int(datetime.now().timestamp())}",
+            fecha_pago=datetime.utcnow() - timedelta(days=5),
+            comprobante_url=None,
+            registrado_por=usuarios[1].id
+        )
+        session.add(pago_aprobado)
+        print(f"   ✓ Pago aprobado (historial): Gasto Común - $115000 (Residente: Carlos Rojas)")
+        
+        session.commit()
+        
+        print(f"\n   Total de pagos creados: {total_pagos_creados + 1}")
+        print(f"   Pagos PENDIENTES: {total_pagos_creados}")
+        print(f"   Pagos APROBADOS: 1 (para historial)")
     
     print("\n" + "=" * 60)
     print("✓ BASE DE DATOS INICIALIZADA CORRECTAMENTE")
@@ -431,8 +530,31 @@ def init_database(force_recreate=False):
     print("  Email: directiva@lospinos.cl")
     print("  Password: directiva123")
     print("-" * 60)
-    print("\nLa API está disponible en: http://localhost:8000")
-    print("Documentación: http://localhost:8000/docs")
+    
+    print("\n TESTING CON TRANSBANK:")
+    print("-" * 60)
+    print("Página de pagos: http://localhost:3000/sistema-pago")
+    print("\nResidentes con pagos pendientes:")
+    print("  1. Pedro Martínez (ID: 1) - Depto 101")
+    print("     - Gasto Común: $115.000")
+    print("     - Multa: $15.000")
+    print("     TOTAL: $130.000")
+    print("\n  2. Ana Silva (ID: 2) - Depto 102")
+    print("     - Gasto Común: $115.000")
+    print("     TOTAL: $115.000")
+    print("\nTarjetas de prueba Transbank:")
+    print("  VISA (Aprobada): 4051 8856 0044 6623")
+    print("  Mastercard (Rechazada): 5186 0595 5959 0568")
+    print("  CVV: cualquiera | Fecha: cualquier fecha futura")
+    print("-" * 60)
+    
+    print("\n🔗 ENLACES ÚTILES:")
+    print("-" * 60)
+    print("API: http://localhost:8000")
+    print("Documentación API: http://localhost:8000/docs")
+    print("Frontend: http://localhost:3000")
+    print("Sistema de Pagos: http://localhost:3000/sistema-pago")
+    print("-" * 60)
     print()
 
 

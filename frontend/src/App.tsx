@@ -7,6 +7,7 @@ import DashboardPage from "@/pages/admin/DashboardCondominio"
 import EstadoCuenta from "@/pages/residente/EstadoCuenta"
 import ListaUsuarios from "@/pages/admin/ListaUsuarios";
 import RegisterPage from "./pages/auth/register";
+import SistemaPago from './pages/residente/SistemaPago';
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 // no quiero
@@ -45,9 +46,9 @@ export default function App() {
             <ListaUsuarios />
           </ProtectedRoute>
         } />
+        
+        <Route path="/sistema-pago" element={<SistemaPago />} />
       </Routes>
-
-      
     </BrowserRouter>
   );
 }
