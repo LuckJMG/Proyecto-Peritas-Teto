@@ -1,0 +1,10 @@
+type: string
+enum:
+  - RESERVA
+  - ANUNCIO
+  - MULTA
+  - PAGO
+  - EDICION
+  - ELIMINACION
+  - CREACION
+  - OTRO

@@ -1,0 +1,29 @@
+type: object
+properties:
+  id:
+    type: integer
+  usuarioId:
+    type: integer
+  tipoEvento:
+    $ref: './TipoEvento.yaml'
+  detalle:
+    type: string
+  monto:
+    type: number
+    format: decimal
+    nullable: true
+  condominioId:
+    type: integer
+    nullable: true
+  datosAdicionales:
+    type: string
+    nullable: true
+  fechaCreacion:
+    type: string
+    format: date-time
+  usuarioNombre:
+    type: string
+    nullable: true
+  usuarioApellido:
+    type: string
+    nullable: true
