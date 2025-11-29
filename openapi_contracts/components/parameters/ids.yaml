@@ -141,3 +141,19 @@ anuncioIdPath:
   schema:
     type: integer
   description: ID del anuncio
+
+registroId:
+  name: registroId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del registro
+
+registroIdPath:
+  name: registroId
+  in: path
+  required: true
+  schema:
+    type: integer
+  description: ID del registro

@@ -1,13 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { RolUsuario } from '@/services/authService';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import ListaCondominios from "@/pages/super-admin/ListaCondominios"
-import Login from "@/pages/auth/Login"
-import DashboardPage from "@/pages/admin/DashboardCondominio"
-import EstadoCuenta from "@/pages/residente/EstadoCuenta"
+import ListaCondominios from "@/pages/super-admin/ListaCondominios";
+import Login from "@/pages/auth/Login";
+import DashboardPage from "@/pages/admin/DashboardCondominio";
+import EstadoCuenta from "@/pages/residente/EstadoCuenta";
 import ListaUsuarios from "@/pages/admin/ListaUsuarios";
 import RegisterPage from "./pages/auth/register";
 import SistemaPago from './pages/residente/SistemaPago';
+import RegistrosPage from "@/pages/admin/LibroRegistros";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 // no quiero
@@ -48,6 +49,7 @@ export default function App() {
         } />
         
         <Route path="/sistema-pago" element={<SistemaPago />} />
+        <Route path="/registros" element={<RegistrosPage />}/>
       </Routes>
     </BrowserRouter>
   );

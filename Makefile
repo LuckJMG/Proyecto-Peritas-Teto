@@ -25,13 +25,13 @@ db-shell:
 	sudo docker compose exec db psql -U peritas -d peritas_db
 
 db-migrate:
-	cd backend && alembic revision --autogenerate -m "$(msg)"
+	sudo docker compose exec backend alembic revision --autogenerate -m "$(msg)"
 
 db-upgrade:
-	cd backend && alembic upgrade head
+	sudo docker compose exec backend alembic upgrade head
 
 db-downgrade:
-	cd backend && alembic downgrade -1
+	sudo docker compose exec backend alembic downgrade -1
 
 db-reset:
 	sudo docker compose down --volumes

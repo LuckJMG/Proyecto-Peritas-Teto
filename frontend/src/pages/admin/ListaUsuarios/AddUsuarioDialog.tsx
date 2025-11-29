@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { usuarioService, type RolUsuario, type UsuarioCreate } from "@/services/usuarioService";
 import type { Condominio } from "@/services/condominioService";
+import { useRegistroAutomatico } from "@/services/registroService";
 
 interface AddUsuarioDialogProps {
   open: boolean;
@@ -38,6 +39,8 @@ export function AddUsuarioDialog({
     condominio_id: undefined,
     activo: true,
   });
+  
+  const { registrar } = useRegistroAutomatico();
 
   const handleSubmit = async () => {
     if (
@@ -64,6 +67,12 @@ export function AddUsuarioDialog({
         condominio_id: undefined,
         activo: true,
       });
+      
+      registrar(
+        "CREACION", 
+        `Nuevo usuario registrado: ${formData.nombre} ${formData.apellido}`,
+        { datos_adicionales: { email: formData.email, rol: formData.rol } }
+      );
       
       onSuccess();
       onOpenChange(false);

@@ -23,6 +23,8 @@ tags:
     description: Gestión de pagos
   - name: Anuncios
     description: Gestión de anuncios
+  - name: Registros
+    description: Libro de registros y auditoria
 
 paths:
   # AUTENTICACIÓN
@@ -105,6 +107,12 @@ paths:
   /anuncios/{anuncioId}:
     $ref: './paths/anuncios.yaml#/anuncioById'
 
+  # REGISTROS 
+  /registros:
+    $ref: './paths/registros.yaml#/registros'
+  /registros/{registroId}:
+    $ref: './paths/registros.yaml#/registroById'
+
 components:
   parameters:
     condominioId:
@@ -125,6 +133,8 @@ components:
       $ref: './components/parameters/ids.yaml#/pagoId'
     anuncioId:
       $ref: './components/parameters/ids.yaml#/anuncioId'
+    registroId:
+      $ref: './components/parameters/ids.yaml#/registroId'
 
   responses:
     Unauthorized:
@@ -194,6 +204,14 @@ components:
       $ref: './components/schemas/anuncios/Anuncio.yaml'
     AnuncioInput:
       $ref: './components/schemas/anuncios/AnuncioInput.yaml'
+
+    # Registros
+    Registro:
+      $ref: './components/schemas/registros/Registro.yaml'
+    RegistroInput:
+      $ref: './components/schemas/registros/RegistroInput.yaml'
+    TipoEvento:
+      $ref: './components/schemas/registros/TipoEvento.yaml'
 
     # Common
     Error:
