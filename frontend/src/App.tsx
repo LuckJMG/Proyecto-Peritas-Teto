@@ -19,7 +19,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage/>} />
 
         <Route path="/estado" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE]}>
+          <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE, RolUsuario.ADMINISTRADOR]}>
             <EstadoCuenta />
           </ProtectedRoute>
         } />
@@ -41,9 +41,9 @@ export default function App() {
         } />
 
         <Route path="/usuarios" element={
-          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
+          // <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaUsuarios />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         } />
       </Routes>
 

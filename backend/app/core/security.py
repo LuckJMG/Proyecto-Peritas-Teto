@@ -8,6 +8,21 @@ from sqlmodel import Session, select
 from app.core.database import get_session
 from app.models.usuario import Usuario
 import os
+import bcrypt
+
+# --- MONKEYPATCH PARA BCRYPT 4.0+ / PASSLIB ---
+# Passlib 1.7.4 busca el atributo '__about__' en bcrypt, que fue eliminado en la v4.0.0.
+# Esto hace que passlib falle al cargar el handler de bcrypt y lance UnknownHashError.
+if not hasattr(bcrypt, '__about__'):
+    try:
+        from bcrypt import __version__ as bcrypt_version
+        # Creamos un objeto dummy que tenga las propiedades esperadas
+        class BcryptAbout:
+            __version__ = bcrypt_version
+        bcrypt.__about__ = BcryptAbout()
+    except ImportError:
+        pass
+# -----------------------------------------------
 
 # Configuracion de seguridad
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
@@ -15,13 +30,20 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
+# Ahora CryptContext cargará correctamente el esquema bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica que la contrasena coincida con el hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        # Fallback de seguridad: si el hash no es identificable, retornamos False
+        # en lugar de crashear el servidor con 500.
+        print(f"Error verificando password: {e}")
+        return False
 
 
 def get_password_hash(password: str) -> str:

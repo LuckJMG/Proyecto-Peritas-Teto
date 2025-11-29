@@ -6,7 +6,7 @@ export type RolUsuario =
   | "ADMINISTRADOR"
   | "CONSERJE"
   | "DIRECTIVA"
-  | "RESIDENTE";   // 👈 iguales al Enum del backend
+  | "RESIDENTE";
 
 export interface Usuario {
   id: number;
@@ -20,6 +20,7 @@ export interface Usuario {
   estado_cuenta?: "DEUDA" | "AL_DIA";
   fecha_ultimo_pago?: string;
   condominio_id?: number;
+  total_deuda?: number; // Campo agregado
 }
 
 export interface UsuarioCreate {
@@ -27,7 +28,7 @@ export interface UsuarioCreate {
   apellido: string;
   email: string;
   rol: RolUsuario;
-  password_hash: string;
+  password_hash: string; // Nota: en backend corregimos a "password" en input, asegúrate de enviar el campo correcto
   condominio_id?: number;
   activo?: boolean;
 }
@@ -55,10 +56,16 @@ class UsuarioService {
   }
 
   async create(data: UsuarioCreate): Promise<Usuario> {
+    // Mapeo simple si tu backend espera "password" pero tu interfaz dice "password_hash"
+    const payload = {
+        ...data,
+        password: data.password_hash // Ajuste de compatibilidad
+    };
+    
     const res = await fetch(`${API_BASE_URL}/usuarios`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
