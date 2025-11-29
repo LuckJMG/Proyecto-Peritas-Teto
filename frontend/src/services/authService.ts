@@ -1,7 +1,8 @@
 // frontend/src/services/authService.ts
-const API_URL = 'http://localhost:8000/api/v1';
-
+import { safeStorage } from '@/lib/storage'; // <--- IMPORTANTE: Importamos la utilidad
 import type { RegisterCredentials } from '@/types/auth.types';
+
+const API_URL = 'http://localhost:8000/api/v1';
 
 // Usar const object en lugar de enum
 export const RolUsuario = {
@@ -35,7 +36,7 @@ export interface CrearUsuarioDTO {
   rol: RolUsuario;
   activo: boolean;
   condominio_id?: number;
-  password_hash: string; // contraseña en texto plano
+  password_hash: string; 
 }
 
 export const authService = {
@@ -53,34 +54,36 @@ export const authService = {
 
     const data: LoginResponse = await response.json();
     
-    // Guardar tokens
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('user', JSON.stringify(data.usuario));
+    safeStorage.setItem('accessToken', data.accessToken);
+    safeStorage.setItem('refreshToken', data.refreshToken);
+    safeStorage.setItem('user', JSON.stringify(data.usuario));
     
     return data;
   },
 
   logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    safeStorage.removeItem('accessToken');
+    safeStorage.removeItem('refreshToken');
+    safeStorage.removeItem('user');
   },
 
   getToken() {
-    return localStorage.getItem('accessToken');
+    return safeStorage.getItem('accessToken');
   },
 
   getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    const user = safeStorage.getItem('user');
+    try {
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
   },
 
   isAuthenticated() {
     return !!this.getToken();
   },
 
-  // Obtener la ruta según el rol del usuario
   getRouteByRole(rol: RolUsuario): string {
     const routes: Record<RolUsuario, string> = {
       [RolUsuario.SUPER_ADMINISTRADOR]: '/condominios',
@@ -94,7 +97,6 @@ export const authService = {
   },
 
    async registerAndLogin(data: RegisterCredentials) {
-    // 1) crear usuario RESIDENTE activo
     const res = await fetch(`${API_URL}/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,7 +104,7 @@ export const authService = {
         email: data.email,
         nombre: data.nombre,
         apellido: data.apellido,
-        rol: 'RESIDENTE',      // fijo residente
+        rol: 'RESIDENTE',
         activo: true,
         condominio_id: null,
         password_hash: data.password
@@ -114,11 +116,9 @@ export const authService = {
       throw new Error(error.detail || 'Error al registrarse');
     }
 
-    // 2) login normal
     const loginData = await this.login(data.email, data.password);
     return loginData;
   }
-
 };
 
 // Hook para usar en componentes protegidos
