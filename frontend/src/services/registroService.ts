@@ -21,7 +21,7 @@ export interface Registro {
   monto?: number;
   condominio_id?: number;
   datos_adicionales?: string;
-  fecha_creacion: string;
+  fecha_creacion: string; // ISO Date string
   usuario_nombre?: string;
   usuario_apellido?: string;
 }
@@ -76,16 +76,6 @@ export const registroService = {
     
     return response.json();
   },
-
-  async delete(id: number): Promise<void> {
-    const response = await fetchWithAuth(`${API_URL}/registros/${id}`, {
-      method: 'DELETE',
-    });
-    
-    if (!response.ok) {
-      throw new Error('Error al eliminar registro');
-    }
-  },
 };
 
 // Hook para registrar automáticamente acciones
@@ -101,7 +91,8 @@ export const useRegistroAutomatico = () => {
   ) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
+      if (!user.id) return;
+
       await registroService.create({
         usuario_id: user.id,
         tipo_evento,

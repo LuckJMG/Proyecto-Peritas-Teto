@@ -21,7 +21,6 @@ export default function LibroRegistros() {
   const [page, setPage] = useState(1);
   
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     loadRegistros();
@@ -44,18 +43,6 @@ export default function LibroRegistros() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      setSubmitting(true);
-      await registroService.delete(id);
-      await loadRegistros();
-    } catch (err) {
-      setError("Error al eliminar registro");
-      console.error(err);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   // Filtrar por búsqueda
   const filtered = registros.filter((r) => {
@@ -96,8 +83,6 @@ export default function LibroRegistros() {
 
           <RegistrosTable
             registros={visible}
-            onDelete={handleDelete}
-            submitting={submitting}
           />
 
           <Pagination page={page} totalPages={totalPages} setPage={setPage} />

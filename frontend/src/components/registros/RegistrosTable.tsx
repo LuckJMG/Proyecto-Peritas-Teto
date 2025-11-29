@@ -1,11 +1,8 @@
 // src/components/registros/RegistrosTable.tsx
-import { Pencil, Trash2 } from "lucide-react";
 import type { Registro } from "@/services/registroService";
 
 interface RegistrosTableProps {
   registros: Registro[];
-  onDelete: (id: number) => void;
-  submitting: boolean;
 }
 
 const TIPO_LABELS: Record<string, string> = {
@@ -19,7 +16,7 @@ const TIPO_LABELS: Record<string, string> = {
   OTRO: "Otro",
 };
 
-export function RegistrosTable({ registros, onDelete, submitting }: RegistrosTableProps) {
+export function RegistrosTable({ registros }: RegistrosTableProps) {
   const formatMonto = (monto?: number) => {
     if (!monto) return "-";
     return new Intl.NumberFormat("es-CL", {
@@ -31,6 +28,16 @@ export function RegistrosTable({ registros, onDelete, submitting }: RegistrosTab
   const getInitials = (nombre?: string, apellido?: string) => {
     if (!nombre || !apellido) return "??";
     return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("es-CL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   return (
@@ -51,7 +58,7 @@ export function RegistrosTable({ registros, onDelete, submitting }: RegistrosTab
               Monto
             </th>
             <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600">
-              Acciones
+              Fecha
             </th>
           </tr>
         </thead>
@@ -89,23 +96,8 @@ export function RegistrosTable({ registros, onDelete, submitting }: RegistrosTab
                 <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">
                   {formatMonto(registro.monto)}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition-colors"
-                      title="Editar"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(registro.id)}
-                      disabled={submitting}
-                      className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                <td className="px-6 py-4 text-center text-sm text-gray-500">
+                  {formatDate(registro.fecha_creacion)}
                 </td>
               </tr>
             ))

@@ -27,6 +27,7 @@ async def get_registros(
     if condominio_id:
         statement = statement.where(RegistroModel.condominio_id == condominio_id)
     
+    # Ordenar por fecha de creación descendente (lo más nuevo primero)
     statement = statement.offset(skip).limit(limit).order_by(RegistroModel.fecha_creacion.desc())
     
     results = session.exec(statement).all()
@@ -70,7 +71,7 @@ async def create_registro(
     registro_data: RegistroCreate,
     session: Session = Depends(get_session)
 ):
-    """Crear un nuevo registro"""
+    """Crear un nuevo registro (Solo lectura/creación, inmutable)"""
     # Verificar que el usuario existe
     usuario = session.get(UsuarioModel, registro_data.usuario_id)
     if not usuario:
@@ -88,19 +89,3 @@ async def create_registro(
     registro_response.usuario_apellido = usuario.apellido
     
     return registro_response
-
-
-@router.delete("/{registro_id}")
-async def delete_registro(
-    registro_id: int,
-    session: Session = Depends(get_session)
-):
-    """Eliminar un registro"""
-    registro = session.get(RegistroModel, registro_id)
-    if not registro:
-        raise HTTPException(status_code=404, detail="Registro no encontrado")
-    
-    session.delete(registro)
-    session.commit()
-    
-    return {"message": "Registro eliminado exitosamente"}
