@@ -12,26 +12,27 @@ interface CreateAnuncioFormProps {
 
 export function CreateAnuncioForm({ onSuccess, onError }: CreateAnuncioFormProps) {
   const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const [contenido, setContenido] = useState(""); // CAMBIO: descripcion -> contenido
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); 
     
-    if(!titulo.trim() || !descripcion.trim()) {
-      onError("Por favor completa el título y la descripción.");
+    if(!titulo.trim() || !contenido.trim()) {
+      onError("Por favor completa el título y el contenido.");
       return;
     }
 
     setLoading(true);
     try {
-      await anuncioService.create({ titulo, descripcion });
+      // Enviamos 'contenido'
+      await anuncioService.create({ titulo, contenido });
       setTitulo("");
-      setDescripcion("");
+      setContenido("");
       onSuccess();
     } catch (error) {
       console.error(error);
-      onError("Error al conectar con el servidor. Verifica tu conexión.");
+      onError("Error al conectar con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -39,7 +40,6 @@ export function CreateAnuncioForm({ onSuccess, onError }: CreateAnuncioFormProps
 
   return (
     <div className="bg-white rounded-2xl shadow-lg shadow-[#99D050]/20 border border-[#99D050]/30 h-full flex flex-col overflow-hidden">
-      {/* Header #99D050 */}
       <div className="bg-[#99D050] px-6 py-4 shrink-0">
         <h3 className="font-bold text-white text-base flex items-center gap-2">
            <PlusCircle className="h-5 w-5 text-white" />
@@ -62,8 +62,8 @@ export function CreateAnuncioForm({ onSuccess, onError }: CreateAnuncioFormProps
           <label className="text-xs font-bold text-[#99D050] uppercase tracking-wide">Contenido</label>
           <Textarea
             placeholder="Describe los detalles del aviso..."
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
+            value={contenido}
+            onChange={(e) => setContenido(e.target.value)}
             className="bg-[#99D050]/5 border-[#99D050]/20 focus:border-[#99D050] focus:ring-[#99D050]/20 transition-all flex-1 min-h-[100px] resize-none p-4 leading-relaxed text-slate-600"
           />
         </div>

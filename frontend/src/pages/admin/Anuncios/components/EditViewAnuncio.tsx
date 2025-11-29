@@ -16,16 +16,16 @@ interface EditViewAnuncioProps {
 
 export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: EditViewAnuncioProps) {
   const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const [contenido, setContenido] = useState(""); // CAMBIO
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (anuncio) {
       setTitulo(anuncio.titulo);
-      setDescripcion(anuncio.descripcion);
+      setContenido(anuncio.contenido); // CAMBIO: Leemos contenido
     } else {
       setTitulo("");
-      setDescripcion("");
+      setContenido("");
     }
   }, [anuncio]);
 
@@ -36,17 +36,17 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
     if (!anuncio) return;
     setLoading(true);
     try {
-      await anuncioService.update(anuncio.id, { titulo, descripcion });
+      // Enviamos contenido
+      await anuncioService.update(anuncio.id, { titulo, contenido });
       onUpdate();
     } catch (error) {
       console.error(error);
-      onError("No se pudo actualizar el aviso. Intenta nuevamente.");
+      onError("No se pudo actualizar el aviso.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ESTADO VACÍO
   if (!anuncio || !mode) {
     return (
       <div className="h-full w-full bg-white border border-[#99D050]/30 rounded-2xl flex items-center justify-center shadow-lg shadow-[#99D050]/10">
@@ -62,24 +62,16 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
 
   return (
     <div className="bg-white rounded-2xl shadow-lg shadow-[#99D050]/20 border border-[#99D050]/30 h-full flex flex-col overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-300">
-      
-      {/* Header #99D050 */}
       <div className={`px-6 py-3 shrink-0 flex justify-between items-center border-b ${isEdit ? 'bg-amber-50 border-amber-100' : 'bg-[#99D050]/10 border-[#99D050]/20'}`}>
         <h3 className={`font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isEdit ? 'text-amber-700' : 'text-[#99D050]'}`}>
           {isEdit ? "Modo Edición" : "Modo Lectura"}
         </h3>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onClose} 
-          className="h-8 w-8 p-0 rounded-full hover:bg-black/5"
-        >
+        <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 rounded-full hover:bg-black/5">
           <X className="h-4 w-4 text-slate-500" />
         </Button>
       </div>
 
       <div className="p-6 flex-1 flex gap-8 overflow-hidden">
-        {/* Contenido Principal */}
         <div className="flex-1 flex flex-col gap-5 h-full overflow-y-auto">
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Título</label>
@@ -92,20 +84,17 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
           </div>
           
           <div className="space-y-2 flex-1 flex flex-col">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Descripción</label>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Contenido</label>
             <Textarea
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
+              value={contenido} // CAMBIO
+              onChange={(e) => setContenido(e.target.value)}
               disabled={isView}
               className={`flex-1 resize-none text-base leading-relaxed p-4 ${isView ? 'bg-transparent border-none px-0 shadow-none text-slate-600' : 'bg-[#99D050]/5 border-[#99D050]/20'}`}
             />
           </div>
         </div>
 
-        {/* Sidebar Lateral CON LAYOUT FIX */}
         <div className="w-72 border-l border-slate-100 pl-8 flex flex-col h-full overflow-hidden">
-          
-          {/* Parte Superior: Info (Con scroll si es necesario) */}
           <div className="flex-1 overflow-y-auto pt-2">
             <div className="bg-slate-50 p-4 rounded-xl space-y-3">
                <div>
@@ -114,29 +103,26 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
                </div>
                <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Fecha</span>
-                  <p className="text-sm font-medium text-slate-700">{new Date(anuncio.fecha_creacion).toLocaleDateString()}</p>
+                  {/* CAMBIO: fecha_publicacion */}
+                  <p className="text-sm font-medium text-slate-700">{new Date(anuncio.fecha_publicacion).toLocaleDateString()}</p>
                </div>
                <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Autor</span>
                   <div className="flex items-center gap-2">
                      <div className="h-5 w-5 rounded-full bg-slate-200 overflow-hidden">
-                        <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${anuncio.autor_id}`} alt="Avatar" />
+                        {/* CAMBIO: creado_por */}
+                        <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${anuncio.creado_por}`} alt="Avatar" />
                      </div>
-                     <p className="text-xs font-medium text-slate-700">Residente {anuncio.autor_id}</p>
+                     <p className="text-xs font-medium text-slate-700">Usuario {anuncio.creado_por}</p>
                   </div>
                </div>
             </div>
           </div>
 
-          {/* Parte Inferior: Botones (Fijos al fondo, nunca se cortan) */}
           <div className="shrink-0 pt-4 pb-1 space-y-3 border-t border-slate-100 mt-2">
             {isEdit ? (
               <>
-                <Button 
-                  onClick={handleUpdate} 
-                  disabled={loading} 
-                  className="w-full bg-[#99D050] hover:bg-[#86b845] text-white shadow-md shadow-[#99D050]/30"
-                >
+                <Button onClick={handleUpdate} disabled={loading} className="w-full bg-[#99D050] hover:bg-[#86b845] text-white shadow-md shadow-[#99D050]/30">
                   {loading ? "Guardando..." : "Guardar Cambios"}
                 </Button>
                 <Button variant="outline" onClick={onClose} className="w-full">
