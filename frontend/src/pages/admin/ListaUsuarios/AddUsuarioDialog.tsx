@@ -39,7 +39,7 @@ export function AddUsuarioDialog({
     condominio_id: undefined,
     activo: true,
   });
-  
+
   const { registrar } = useRegistroAutomatico();
 
   const handleSubmit = async () => {
@@ -67,13 +67,13 @@ export function AddUsuarioDialog({
         condominio_id: undefined,
         activo: true,
       });
-      
+
       registrar(
         "CREACION", 
         `Nuevo usuario registrado: ${formData.nombre} ${formData.apellido}`,
         { datos_adicionales: { email: formData.email, rol: formData.rol } }
       );
-      
+
       onSuccess();
       onOpenChange(false);
     } catch (err) {
