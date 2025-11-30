@@ -1,5 +1,7 @@
+// frontend/src/pages/residente/EstadoCuenta/ResumenGastoComun.tsx
 import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { authService, fetchWithAuth } from "@/services/authService";
 
 interface GastoComun {
@@ -7,7 +9,7 @@ interface GastoComun {
   residente_id: number;
   mes: number;
   anio: number;
-  monto_total: number | string; // Soporta string del backend "110000.00"
+  monto_total: number | string;
   estado: string;
   fecha_emision: string;
   fecha_vencimiento: string;
@@ -15,6 +17,7 @@ interface GastoComun {
 }
 
 export default function ResumenGastoComun() {
+  const navigate = useNavigate();
   const [gastoActual, setGastoActual] = useState<GastoComun | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +48,7 @@ export default function ResumenGastoComun() {
           (g) => g.residente_id === residente.id
         );
 
-        // 3. Obtener el más prioritario (Vencido/Pendiente o el más reciente)
+        // 3. Obtener el más prioritario
         const pendiente = gastosResidente
           .sort((a, b) => b.anio - a.anio || b.mes - a.mes)
           .find((g) => g.estado === "PENDIENTE" || g.estado === "VENCIDO" || g.estado === "MOROSO");
@@ -61,20 +64,28 @@ export default function ResumenGastoComun() {
     fetchGasto();
   }, []);
 
+  const handleVerDetalle = () => {
+    navigate('/historial-pagos');
+  };
+
+  const handlePagarCuenta = () => {
+    navigate('/sistema-pago');
+  };
+
+  const handleVerHistorial = () => {
+    navigate('/historial-pagos');
+  };
+
   if (loading) return <div className="p-5 text-gray-500">Cargando estado de cuenta...</div>;
   if (!gastoActual) return <div className="p-5 text-gray-500">No hay gastos registrados</div>;
 
-  // --- Lógica de Presentación Robusta ---
-  
-  // 1. Corregir Año/Mes si vienen en 0 (Fallback a fecha_emision)
+  // Lógica de presentación
   let displayAnio = gastoActual.anio;
   let displayMes = gastoActual.mes;
 
   if (displayAnio === 0 && gastoActual.fecha_emision) {
     const dateEmision = new Date(gastoActual.fecha_emision);
     displayAnio = dateEmision.getFullYear();
-    // Opcional: Si el mes también es sospechoso (ej: 1 fijo), usar el de emisión:
-    // displayMes = dateEmision.getMonth() + 1;
   }
 
   const meses = [
@@ -82,12 +93,10 @@ export default function ResumenGastoComun() {
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
   ];
 
-  // 2. Determinar Atraso Real (Estado explícito O fecha vencida)
   const isDateExpired = () => {
     if (!gastoActual.fecha_vencimiento) return false;
     const vencimiento = new Date(gastoActual.fecha_vencimiento);
     const hoy = new Date();
-    // Normalizar horas para comparar solo fechas
     vencimiento.setHours(0,0,0,0);
     hoy.setHours(0,0,0,0);
     return vencimiento < hoy;
@@ -122,10 +131,16 @@ export default function ResumenGastoComun() {
           </span>
           
           <div className="flex gap-2">
-            <button className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={handleVerDetalle}
+              className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+            >
               Ver Detalle
             </button>
-            <button className="px-4 py-2 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] transition-colors text-sm font-medium shadow-sm">
+            <button 
+              onClick={handlePagarCuenta}
+              className="px-4 py-2 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] transition-colors text-sm font-medium shadow-sm"
+            >
               Pagar Cuenta
             </button>
           </div>
@@ -152,7 +167,10 @@ export default function ResumenGastoComun() {
           </p>
         </div>
         
-        <button className="text-sm text-gray-600 hover:text-[#8BC34A] flex items-center gap-2 transition-colors">
+        <button 
+          onClick={handleVerHistorial}
+          className="text-sm text-gray-600 hover:text-[#8BC34A] flex items-center gap-2 transition-colors"
+        >
           <Calendar className="w-4 h-4" />
           Historial
         </button>

@@ -43,7 +43,7 @@ export function IngresarPagoDialog({ open, onOpenChange, onSuccess }: IngresarPa
       if (!user || !deuda) return;
 
       await pagoService.create({
-        condominio_id: user.condominioId || 1, // Fallback si no tiene condominio
+        condominio_id: user.condominio_id || 1, // Fallback si no tiene condominio
         residente_id: user.id,
         tipo: deuda.tipo,
         referencia_id: deuda.id,

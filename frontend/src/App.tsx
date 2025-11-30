@@ -65,7 +65,7 @@ export default function App() {
         
         <Route path="/sistema-pago" element={<SistemaPago />} />
         <Route path="/admin/registros" element={<RegistrosPage />}/>
-        <Route path="/historial-pago" element={<HistorialPagos />} />
+        <Route path="/historial-pagos" element={<HistorialPagos />} />
       </Routes>
     </BrowserRouter>
   );

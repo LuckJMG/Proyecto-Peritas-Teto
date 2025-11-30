@@ -1,3 +1,4 @@
+// frontend/src/components/NavbarResidente.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -7,20 +8,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { LogOut, Home, Calendar, FileText, Megaphone, AlertTriangle } from "lucide-react";
 import { authService } from "@/services/authService";
+import { cn } from "@/lib/utils";
 
-export default function Navbar() {
+export default function NavbarResidente() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = authService.getUser();
 
   const nombreCompleto = user 
     ? `${user.nombre} ${user.apellido}` 
     : "Usuario";
   
-  const residencia = user?.condominioId 
-    ? `Condominio ${user.condominioId}` 
+  const residencia = user?.condominio_id 
+    ? `Condominio ${user.condominio_id}` 
     : "";
 
   const iniciales = user 
@@ -32,29 +35,59 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const menuItems = [
+    { path: '/estado', label: 'Estado de Cuenta', icon: Home },
+    { path: '/sistema-reservas', label: 'Reservas', icon: Calendar },
+    { path: '/historial-pagos', label: 'Historial de Pagos', icon: FileText },
+    { path: '/anuncios', label: 'Anuncios', icon: Megaphone },
+    { path: '/multas', label: 'Multas', icon: AlertTriangle },
+  ];
+
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center justify-between">
-        {/* Logo y Nombre */}
-        <div className="flex items-center gap-8">
-          <Link to="/estado" className="flex items-center gap-3">
-            <img 
-              src="/peritas-teto-logo.png" 
-              alt="Logo" 
-              className="h-20 w-auto cursor-pointer hover:opacity-80 transition-opacity"
-            />
-            <p className="font-['Lato'] font-light text-[24px] leading-[100%] tracking-[-0.01em] text-[#000000]">
-              Casitas Teto
-            </p>
-          </Link>
+        {/* Logo */}
+        <Link to="/estado" className="flex items-center gap-3">
+          <img 
+            src="/peritas-teto-logo.png" 
+            alt="Logo" 
+            className="h-20 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+          />
+          <p className="font-['Lato'] font-light text-[24px] leading-[100%] tracking-[-0.01em] text-[#000000]">
+            Casitas Teto
+          </p>
+        </Link>
+
+        {/* Menu de Navegación */}
+        <div className="hidden md:flex items-center gap-1">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                  isActive 
+                    ? "bg-[#99D050] text-white" 
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Acciones del usuario */}
+        {/* Perfil del usuario */}
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div className="text-left">
+                <div className="text-left hidden sm:block">
                   <div className="text-sm font-semibold text-gray-900">{nombreCompleto}</div>
                   {residencia && (
                     <div className="text-xs text-gray-400">{residencia}</div>
@@ -71,15 +104,29 @@ export default function Navbar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link to="/perfil" className="w-full">
-                  Perfil
-                </Link>
+              
+              {/* Menu items visible en mobile */}
+              <div className="md:hidden">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={item.path}
+                      onClick={() => navigate(item.path)}
+                    >
+                      <Icon className="mr-2 h-4 w-4" />
+                      {item.label}
+                    </DropdownMenuItem>
+                  );
+                })}
+                <DropdownMenuSeparator />
+              </div>
+
+              <DropdownMenuItem onClick={() => navigate('/perfil')}>
+                Perfil
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link to="/configuracion" className="w-full">
-                  Configuración
-                </Link>
+              <DropdownMenuItem onClick={() => navigate('/configuracion')}>
+                Configuración
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
