@@ -11,6 +11,7 @@ import ListaCondominios from "./pages/super-admin/ListaCondominios";
 import DashboardCondominio from "./pages/admin/DashboardCondominio";
 import ListaUsuarios from "./pages/admin/ListaUsuarios";
 import AdminReservasPage from "./pages/admin/Reservas";
+import AdminAnunciosPage from "./pages/admin/Anuncios";
 
 // Residente Pages
 import EstadoCuentaPage from "./pages/residente/EstadoCuenta";
@@ -156,6 +157,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardCondominio />} />
         <Route path="/usuarios" element={<ListaUsuarios />} />
         <Route path="/admin/reservas" element={<AdminReservasPage />} />
+        <Route path="/admin/anuncios" element={<AdminAnunciosPage />} />
 
         {/* Residente */}
         <Route path="/estado" element={<EstadoCuentaPage />} />
