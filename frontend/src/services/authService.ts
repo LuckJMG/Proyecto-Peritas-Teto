@@ -3,7 +3,6 @@ const API_URL = 'http://localhost:8000/api/v1';
 
 import type { RegisterCredentials } from '@/types/auth.types';
 
-// Usar const object en lugar de enum
 export const RolUsuario = {
   SUPER_ADMINISTRADOR: 'SUPER_ADMINISTRADOR',
   ADMINISTRADOR: 'ADMINISTRADOR',
@@ -14,9 +13,10 @@ export const RolUsuario = {
 
 export type RolUsuario = typeof RolUsuario[keyof typeof RolUsuario];
 
+// CORRECCIÓN: Ajustado a snake_case para coincidir con backend Pydantic model
 interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
   usuario: {
     id: number;
     email: string;
@@ -35,7 +35,7 @@ export interface CrearUsuarioDTO {
   rol: RolUsuario;
   activo: boolean;
   condominio_id?: number;
-  password_hash: string; // contraseña en texto plano
+  password_hash: string;
 }
 
 export const authService = {
@@ -53,10 +53,12 @@ export const authService = {
 
     const data: LoginResponse = await response.json();
     
-    // Guardar tokens
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('user', JSON.stringify(data.usuario));
+    // Guardar tokens (Mapeando desde las propiedades correctas)
+    if (data.access_token) {
+        localStorage.setItem('accessToken', data.access_token);
+        localStorage.setItem('refreshToken', data.refresh_token);
+        localStorage.setItem('user', JSON.stringify(data.usuario));
+    }
     
     return data;
   },
@@ -80,7 +82,6 @@ export const authService = {
     return !!this.getToken();
   },
 
-  // Obtener la ruta según el rol del usuario
   getRouteByRole(rol: RolUsuario): string {
     const routes: Record<RolUsuario, string> = {
       [RolUsuario.SUPER_ADMINISTRADOR]: '/condominios',
@@ -94,7 +95,6 @@ export const authService = {
   },
 
    async registerAndLogin(data: RegisterCredentials) {
-    // 1) crear usuario RESIDENTE activo
     const res = await fetch(`${API_URL}/usuarios`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,7 +102,7 @@ export const authService = {
         email: data.email,
         nombre: data.nombre,
         apellido: data.apellido,
-        rol: 'RESIDENTE',      // fijo residente
+        rol: 'RESIDENTE',
         activo: true,
         condominio_id: null,
         password_hash: data.password
@@ -114,27 +114,33 @@ export const authService = {
       throw new Error(error.detail || 'Error al registrarse');
     }
 
-    // 2) login normal
     const loginData = await this.login(data.email, data.password);
     return loginData;
   }
-
 };
 
 // Hook para usar en componentes protegidos
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = authService.getToken();
   
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  // Solo inyectar Bearer si existe el token
+  if (token) {
+    (headers as any)['Authorization'] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(url, {
     ...options,
-    headers: {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
+    headers
   });
 
   if (response.status === 401) {
+    // Si el token es inválido o expiró, cerrar sesión
+    console.warn("Sesión expirada o token inválido (401). Redirigiendo a login.");
     authService.logout();
     window.location.href = '/login';
   }

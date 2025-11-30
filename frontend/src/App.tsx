@@ -10,6 +10,7 @@ import RegisterPage from "./pages/auth/register";
 import SistemaPago from './pages/residente/SistemaPago';
 import RegistrosPage from "@/pages/admin/LibroRegistros";
 import SistemaReservas from "./pages/residente/SistemaReservas";
+import Reservas from "./pages/admin/Reservas";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 // no quiero
@@ -21,6 +22,7 @@ export default function App() {
 
         <Route path="/register" element={<RegisterPage/>} />
         <Route path="/sistema-reservas" element={<SistemaReservas />} />
+        <Route path="/admin/reservas" element={<Reservas />} />
 
         <Route path="/estado" element={
           <ProtectedRoute allowedRoles={[RolUsuario.RESIDENTE, RolUsuario.ADMINISTRADOR]}>
