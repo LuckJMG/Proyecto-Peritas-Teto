@@ -4,9 +4,10 @@ import type { DateGroup } from "./types";
 interface ReservationsListProps {
   groups: DateGroup[];
   emptyMessage: string;
+  onDelete?: (id: string) => void;
 }
 
-export function ReservationsList({ groups, emptyMessage }: ReservationsListProps) {
+export function ReservationsList({ groups, emptyMessage, onDelete }: ReservationsListProps) {
   if (groups.length === 0) {
     return <p className="text-gray-400 text-center py-4">{emptyMessage}</p>;
   }
@@ -20,7 +21,11 @@ export function ReservationsList({ groups, emptyMessage }: ReservationsListProps
           </h4>
           <div className="flex flex-col gap-3">
             {group.items.map((item) => (
-              <ReservationCard key={item.id} item={item} />
+              <ReservationCard 
+                key={item.id} 
+                item={item} 
+                onDelete={onDelete} 
+              />
             ))}
           </div>
         </div>

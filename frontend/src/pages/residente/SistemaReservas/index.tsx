@@ -10,7 +10,8 @@ import {
 } from "@/services/espaciosComunesService";
 
 // Local Imports
-import { NewReservationDialog } from "./NewReservationDialog"; // Ajusta ruta si moviste el diálogo también
+import { NewReservationDialog } from "./NewReservationDialog";
+import { DeleteReservationDialog } from "./DeleteReservationDialog";
 import { ReservationsList } from "./ReservationsList";
 import type { DateGroup, ReservationView } from "./types";
 
@@ -27,6 +28,11 @@ export default function SistemaReservasPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showNewReservation, setShowNewReservation] = useState(false);
+  
+  // Delete State
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [reservationToDelete, setReservationToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleBackToAccount = () => {
     navigate("/estado");
@@ -69,7 +75,6 @@ export default function SistemaReservasPage() {
       const mappedReservations: ReservationView[] = misReservas.map((reserva) => {
         const espacio = espaciosDelCondominio.find((e) => e.id === reserva.espacio_comun_id);
         
-        // Construir fechas (Backend: YYYY-MM-DD + HH:MM:SS)
         const fechaInicio = new Date(`${reserva.fecha_reserva}T${reserva.hora_inicio}`);
         const fechaFin = new Date(`${reserva.fecha_reserva}T${reserva.hora_fin}`);
 
@@ -149,6 +154,29 @@ export default function SistemaReservasPage() {
     loadData();
   }, []);
 
+  // --- Handlers de Eliminación ---
+  const handleDeleteClick = (id: string) => {
+    setReservationToDelete(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!reservationToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await reservaService.delete(Number(reservationToDelete));
+      await loadData(); // Recargar datos
+      setShowDeleteDialog(false);
+      setReservationToDelete(null);
+    } catch (err) {
+      console.error("Error al eliminar reserva:", err);
+      alert("No se pudo eliminar la reserva");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading && !currentResidenteId) {
     return (
       <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
@@ -191,15 +219,19 @@ export default function SistemaReservasPage() {
             >
               Nueva Reserva
             </button>
+            
+            {/* Pasamos handleDeleteClick solo aquí */}
             <ReservationsList
               groups={futureReservations}
               emptyMessage="No tienes reservas próximas."
+              onDelete={handleDeleteClick}
             />
           </section>
 
           {/* Columna Derecha: Pasadas */}
           <section className="lg:col-span-5 flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm h-fit">
             <h2 className="text-2xl font-semibold text-gray-900">Reservas pasadas</h2>
+            {/* No pasamos onDelete, por lo que no aparecerá el botón */}
             <ReservationsList
               groups={pastReservations}
               emptyMessage="Sin historial."
@@ -208,12 +240,20 @@ export default function SistemaReservasPage() {
         </div>
       </main>
 
+      {/* Diálogos */}
       <NewReservationDialog
         open={showNewReservation}
         onOpenChange={setShowNewReservation}
         onSuccess={loadData}
         espacios={espacios}
         residenteId={currentResidenteId}
+      />
+
+      <DeleteReservationDialog 
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
       />
     </div>
   );
