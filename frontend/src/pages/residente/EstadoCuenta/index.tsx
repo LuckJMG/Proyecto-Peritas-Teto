@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'; // Importar hook de navegación
 import NavbarResidente from "@/components/NavbarResidente";
 import ResumenGastoComun from "./ResumenGastoComun";
 import ResumenMultas from "./ResumenMultas";
@@ -6,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export default function EstadoCuentaPage() {
+  const navigate = useNavigate(); // Inicializar hook
+
   return (
     <div className="min-h-screen bg-gray-50">
       <NavbarResidente />
@@ -24,7 +27,10 @@ export default function EstadoCuentaPage() {
             </p>
           </div>
           
-          <Button className="bg-[#99D050] hover:bg-[#88bf40] text-white font-medium shadow-sm transition-colors">
+          <Button 
+            onClick={() => navigate('/sistema-reservas')} // Conexión a Reservas
+            className="bg-[#99D050] hover:bg-[#88bf40] text-white font-medium shadow-sm transition-colors"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Agregar reserva
           </Button>
