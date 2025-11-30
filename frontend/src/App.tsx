@@ -23,6 +23,24 @@ import HistorialPagos from "./pages/residente/HistorialPagos/HistorialPagos";
 //            <AnunciosPage />
 //          </ProtectedRoute>
 //        } />
+
+/*
+
+<Route path="/admin/dashboard" element={
+          <ProtectedRoute allowedRoles={[
+            RolUsuario.ADMINISTRADOR,
+            RolUsuario.CONSERJE,
+            RolUsuario.DIRECTIVA
+          ]}>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+
+
+*/
+
+
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -40,13 +58,7 @@ export default function App() {
         } />
         
         <Route path="/admin/dashboard" element={
-          <ProtectedRoute allowedRoles={[
-            RolUsuario.ADMINISTRADOR,
-            RolUsuario.CONSERJE,
-            RolUsuario.DIRECTIVA
-          ]}>
             <DashboardPage />
-          </ProtectedRoute>
         } />
         
         <Route path="/admin/anuncios" element={<AnunciosPage />} />
