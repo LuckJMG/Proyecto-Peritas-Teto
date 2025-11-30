@@ -61,16 +61,13 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: frontend
     restart: always
     depends_on:
       - backend
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "3000:80"
 
 volumes:
   postgres_data:
