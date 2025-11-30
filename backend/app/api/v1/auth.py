@@ -2,14 +2,17 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from pydantic import BaseModel, EmailStr
+import uuid # <--- Importar uuid
 
 from app.api.deps import get_db
 from app.core.security import (
     verify_password,
     create_access_token,
-    create_refresh_token
+    create_refresh_token,
+    decode_token
 )
 from app.models.usuario import Usuario
+from app.models.residente import Residente
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -32,50 +35,72 @@ async def login(
     db: Session = Depends(get_db)
 ):
     """
-    Inicia sesión y devuelve tokens JWT
+    Inicia sesión y devuelve tokens JWT.
     """
-    # Buscar usuario por email
     statement = select(Usuario).where(Usuario.email == credentials.email)
     usuario = db.exec(statement).first()
     
-    # Verificar que el usuario existe
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales incorrectas"
         )
     
-    # Verificar que el usuario está activo
     if not usuario.activo:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuario inactivo"
         )
     
-    # Verificar la contraseña
     if not verify_password(credentials.password, usuario.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales incorrectas"
         )
     
-    # Actualizar último acceso
+    # --- AUTOCURACIÓN CORREGIDA ---
+    if usuario.rol == "RESIDENTE":
+        try:
+            stmt_res = select(Residente).where(Residente.usuario_id == usuario.id)
+            residente_existente = db.exec(stmt_res).first()
+            
+            if not residente_existente:
+                print(f"Auto-creando perfil de Residente para usuario {usuario.id}")
+                rut_temporal = f"TEMP-{uuid.uuid4().hex[:8]}"
+                
+                nuevo_residente = Residente(
+                    usuario_id=usuario.id,
+                    condominio_id=usuario.condominio_id or 1,
+                    # Campos obligatorios rellenados:
+                    nombre=usuario.nombre,
+                    apellido=usuario.apellido,
+                    email=usuario.email,
+                    rut=rut_temporal,
+                    vivienda_numero="S/N",
+                    es_propietario=False
+                )
+                db.add(nuevo_residente)
+                db.commit()
+                db.refresh(usuario)
+        except Exception as e:
+            print(f"Error en autocuración de residente: {e}")
+            # Continuamos el login aunque falle la creación del perfil
+    # ------------------------------
+
     usuario.ultimo_acceso = datetime.utcnow()
     db.add(usuario)
     db.commit()
     db.refresh(usuario)
     
-    # Crear tokens
     access_token = create_access_token(data={"sub": str(usuario.id)})
     refresh_token = create_refresh_token(data={"sub": str(usuario.id)})
     
-    # Preparar respuesta
     usuario_data = {
         "id": usuario.id,
         "email": usuario.email,
         "nombre": usuario.nombre,
         "apellido": usuario.apellido,
-        "rol": usuario.rol.value,
+        "rol": usuario.rol.value if hasattr(usuario.rol, 'value') else usuario.rol,
         "condominio_id": usuario.condominio_id,
         "activo": usuario.activo,
         "fecha_creacion": usuario.fecha_creacion.isoformat(),
@@ -91,11 +116,6 @@ async def login(
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout():
-    """
-    Cierra la sesión del usuario.
-    En JWT stateless, esto se maneja principalmente del lado del cliente.
-    """
-    # En producción, podrías implementar una blacklist de tokens aquí
     return None
 
 
@@ -104,11 +124,6 @@ async def refresh_token(
     refresh_token: str,
     db: Session = Depends(get_db)
 ):
-    """
-    Refresca el access token usando el refresh token
-    """
-    from app.core.security import decode_token
-    
     try:
         payload = decode_token(refresh_token)
         
@@ -128,7 +143,6 @@ async def refresh_token(
                 detail="Usuario inválido o inactivo"
             )
         
-        # Crear nuevo access token
         new_access_token = create_access_token(data={"sub": str(usuario.id)})
         
         return {

@@ -42,3 +42,16 @@ class Pago(SQLModel, table=True):
     condominio: "Condominio" = Relationship()
     residente: "Residente" = Relationship(back_populates="pagos")
     registrador: "Usuario" = Relationship()
+
+
+# --- NUEVO: Esquema para CREAR un pago ---
+class PagoCreate(SQLModel):
+    condominio_id: int
+    # residente_id es opcional aquí porque si es el propio residente quien paga, lo inferimos del token
+    residente_id: Optional[int] = None 
+    tipo: TipoPago
+    referencia_id: int
+    monto: Decimal
+    metodo_pago: MetodoPago
+    numero_transaccion: Optional[str] = None
+    detalle: Optional[str] = None # Campo extra que usa tu frontend

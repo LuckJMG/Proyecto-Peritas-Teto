@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
 from typing import List
 from decimal import Decimal
+import uuid # <--- IMPORTANTE: Agregamos esto
 
 from app.api.deps import get_db
 from app.models.usuario import Usuario
@@ -26,21 +27,18 @@ def calcular_deuda_usuario(usuario: Usuario) -> float:
     }
     
     for residente in usuario.residentes:
-        # Sumar gastos comunes pendientes
         if residente.gastos_comunes:
             deuda += sum(
                 gc.monto_total 
                 for gc in residente.gastos_comunes 
                 if gc.estado in estados_deuda_gc
             )
-        # Sumar multas pendientes
         if residente.multas:
             deuda += sum(
                 m.monto 
                 for m in residente.multas 
                 if m.estado == EstadoMulta.PENDIENTE
             )
-    
     return float(deuda)
 
 @router.get("", response_model=List[UsuarioRead])
@@ -53,10 +51,8 @@ async def listar_usuarios(db: Session = Depends(get_db)):
     )
     usuarios_db = db.exec(query).all()
     
-    # Conversión explícita a Pydantic antes de modificar
     usuarios_output = []
     for usuario in usuarios_db:
-        # 'from_orm' crea una copia en el esquema Pydantic que sí acepta el campo extra
         usuario_read = UsuarioRead.from_orm(usuario)
         usuario_read.total_deuda = calcular_deuda_usuario(usuario)
         usuarios_output.append(usuario_read)
@@ -65,6 +61,7 @@ async def listar_usuarios(db: Session = Depends(get_db)):
 
 @router.post("", response_model=UsuarioRead, status_code=status.HTTP_201_CREATED)
 async def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
+    # 1. Crear el Usuario
     hashed_password = get_password_hash(data.password)
     nuevo_usuario = Usuario(
         email=data.email,
@@ -79,8 +76,25 @@ async def crear_usuario(data: UsuarioCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(nuevo_usuario)
     
-    # No asignamos total_deuda manual aquí para evitar el error.
-    # El response_model (UsuarioRead) usará su default 0.0 automáticamente.
+    # 2. Crear Residente Automáticamente (SOLUCIÓN DEL ERROR 500)
+    if data.rol == "RESIDENTE":
+        # Generamos un RUT temporal único para cumplir la restricción UNIQUE de la BD
+        rut_temporal = f"TEMP-{uuid.uuid4().hex[:8]}"
+        
+        nuevo_residente = Residente(
+            usuario_id=nuevo_usuario.id,
+            condominio_id=nuevo_usuario.condominio_id or 1,
+            # Campos obligatorios que faltaban y causaban el crash:
+            nombre=nuevo_usuario.nombre,
+            apellido=nuevo_usuario.apellido,
+            email=nuevo_usuario.email,
+            rut=rut_temporal,          # Obligatorio y único
+            vivienda_numero="S/N",     # Obligatorio
+            es_propietario=False       # Obligatorio
+        )
+        db.add(nuevo_residente)
+        db.commit()
+    
     return nuevo_usuario
 
 @router.get("/{usuario_id}", response_model=UsuarioRead)
@@ -95,7 +109,6 @@ async def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    # Conversión explícita
     usuario_read = UsuarioRead.from_orm(usuario)
     usuario_read.total_deuda = calcular_deuda_usuario(usuario)
     return usuario_read
@@ -125,7 +138,6 @@ async def actualizar_usuario(usuario_id: int, data: UsuarioUpdate, db: Session =
     db.commit()
     db.refresh(usuario)
     
-    # Conversión explícita
     usuario_read = UsuarioRead.from_orm(usuario)
     usuario_read.total_deuda = calcular_deuda_usuario(usuario)
     return usuario_read

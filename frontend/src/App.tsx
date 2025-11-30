@@ -12,6 +12,7 @@ import RegistrosPage from "@/pages/admin/LibroRegistros";
 import SistemaReservas from "./pages/residente/SistemaReservas";
 import Reservas from "./pages/admin/Reservas";
 import AnunciosPage from './pages/admin/Anuncios';
+import HistorialPagos from "./pages/residente/HistorialPagos/HistorialPagos";
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 // no quiero
@@ -38,7 +39,7 @@ export default function App() {
           </ProtectedRoute>
         } />
         
-        <Route path="/dashboard" element={
+        <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={[
             RolUsuario.ADMINISTRADOR,
             RolUsuario.CONSERJE,
@@ -50,20 +51,21 @@ export default function App() {
         
         <Route path="/admin/anuncios" element={<AnunciosPage />} />
 
-        <Route path="/condominios" element={
+        <Route path="/super-admin/condominios" element={
           <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
             <ListaCondominios />
           </ProtectedRoute>
         } />
 
-        <Route path="/usuarios" element={
+        <Route path="/admin/usuarios" element={
           // <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
             <ListaUsuarios />
           // </ProtectedRoute>
         } />
         
         <Route path="/sistema-pago" element={<SistemaPago />} />
-        <Route path="/registros" element={<RegistrosPage />}/>
+        <Route path="/admin/registros" element={<RegistrosPage />}/>
+        <Route path="/historial-pago" element={<HistorialPagos />} />
       </Routes>
     </BrowserRouter>
   );

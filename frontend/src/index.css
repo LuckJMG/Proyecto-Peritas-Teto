@@ -187,3 +187,28 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  /* Asegúrate de que el diálogo tenga una clase específica o usa la estructura del portal */
+  [role="dialog"], [role="dialog"] * {
+    visibility: visible;
+  }
+  [role="dialog"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: white;
+  }
+  /* Ocultar botones de acción al imprimir */
+  .print\:hidden {
+    display: none !important;
+  }
+}
