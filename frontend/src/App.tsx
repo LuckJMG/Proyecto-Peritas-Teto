@@ -11,9 +11,17 @@ import SistemaPago from './pages/residente/SistemaPago';
 import RegistrosPage from "@/pages/admin/LibroRegistros";
 import SistemaReservas from "./pages/residente/SistemaReservas";
 import Reservas from "./pages/admin/Reservas";
+import AnunciosPage from './pages/admin/Anuncios';
 
 // PARA LOS QUE VIENEN DESPUES... usen ProtectedRoute para manejar los permisos por rol en las paginas!!!
 // no quiero
+
+// Aqui por mientras no se como entrar al admin
+//<Route path="/admin/anuncios" element={
+//          <ProtectedRoute allowedRoles={[RolUsuario.ADMINISTRADOR]}>
+//            <AnunciosPage />
+//          </ProtectedRoute>
+//        } />
 export default function App() {
   return (
     <BrowserRouter>
@@ -40,6 +48,8 @@ export default function App() {
           </ProtectedRoute>
         } />
         
+        <Route path="/admin/anuncios" element={<AnunciosPage />} />
+
         <Route path="/condominios" element={
           <ProtectedRoute allowedRoles={[RolUsuario.SUPER_ADMINISTRADOR]}>
             <ListaCondominios />

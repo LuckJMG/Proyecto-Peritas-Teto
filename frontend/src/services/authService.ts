@@ -1,8 +1,10 @@
 // frontend/src/services/authService.ts
-const API_URL = 'http://localhost:8000/api/v1';
-
+import { safeStorage } from '@/lib/storage'; // <--- IMPORTANTE: Importamos la utilidad
 import type { RegisterCredentials } from '@/types/auth.types';
 
+const API_URL = 'http://localhost:8000/api/v1';
+
+// Usar const object en lugar de enum
 export const RolUsuario = {
   SUPER_ADMINISTRADOR: 'SUPER_ADMINISTRADOR',
   ADMINISTRADOR: 'ADMINISTRADOR',
@@ -35,7 +37,7 @@ export interface CrearUsuarioDTO {
   rol: RolUsuario;
   activo: boolean;
   condominio_id?: number;
-  password_hash: string;
+  password_hash: string; 
 }
 
 export const authService = {
@@ -55,27 +57,31 @@ export const authService = {
     
     // Guardar tokens (Mapeando desde las propiedades correctas)
     if (data.access_token) {
-        localStorage.setItem('accessToken', data.access_token);
-        localStorage.setItem('refreshToken', data.refresh_token);
-        localStorage.setItem('user', JSON.stringify(data.usuario));
+        safeStorage.setItem('accessToken', data.access_token);
+        safeStorage.setItem('refreshToken', data.refresh_token);
+        safeStorage.setItem('user', JSON.stringify(data.usuario));
     }
     
     return data;
   },
 
   logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    safeStorage.removeItem('accessToken');
+    safeStorage.removeItem('refreshToken');
+    safeStorage.removeItem('user');
   },
 
   getToken() {
-    return localStorage.getItem('accessToken');
+    return safeStorage.getItem('accessToken');
   },
 
   getUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    const user = safeStorage.getItem('user');
+    try {
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
   },
 
   isAuthenticated() {

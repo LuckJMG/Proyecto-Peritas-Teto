@@ -1,6 +1,6 @@
 // src/services/usuarioService.ts
 
-const API_BASE_URL = "http://localhost:8000/api/v1";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 export type RolUsuario =
   | "ADMINISTRADOR"
@@ -20,7 +20,7 @@ export interface Usuario {
   estado_cuenta?: "DEUDA" | "AL_DIA";
   fecha_ultimo_pago?: string;
   condominio_id?: number;
-  total_deuda?: number; // Campo agregado
+  total_deuda?: number;
 }
 
 export interface UsuarioCreate {
@@ -28,7 +28,7 @@ export interface UsuarioCreate {
   apellido: string;
   email: string;
   rol: RolUsuario;
-  password_hash: string; // Nota: en backend corregimos a "password" en input, asegúrate de enviar el campo correcto
+  password_hash: string;
   condominio_id?: number;
   activo?: boolean;
 }
@@ -44,10 +44,18 @@ export type UsuarioUpdate = Partial<{
 }>;
 
 class UsuarioService {
+  private getHeaders() {
+     const token = localStorage.getItem("accessToken");
+     return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+     };
+  }
+
   async getAll(): Promise<Usuario[]> {
     const res = await fetch(`${API_BASE_URL}/usuarios`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
     });
     if (!res.ok) {
       throw new Error(`Error al obtener usuarios: ${res.status}`);
@@ -56,15 +64,14 @@ class UsuarioService {
   }
 
   async create(data: UsuarioCreate): Promise<Usuario> {
-    // Mapeo simple si tu backend espera "password" pero tu interfaz dice "password_hash"
     const payload = {
         ...data,
-        password: data.password_hash // Ajuste de compatibilidad
+        password: data.password_hash 
     };
     
     const res = await fetch(`${API_BASE_URL}/usuarios`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -79,7 +86,7 @@ class UsuarioService {
   async update(id: number, data: UsuarioUpdate): Promise<Usuario> {
     const res = await fetch(`${API_BASE_URL}/usuarios/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) {
@@ -94,7 +101,7 @@ class UsuarioService {
   async delete(id: number): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/usuarios/${id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
     });
     if (!res.ok) {
       throw new Error(`Error al eliminar usuario: ${res.status}`);
