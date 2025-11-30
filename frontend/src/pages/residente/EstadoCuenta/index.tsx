@@ -2,28 +2,45 @@ import NavbarResidente from "@/components/NavbarResidente";
 import ResumenGastoComun from "./ResumenGastoComun";
 import ResumenMultas from "./ResumenMultas";
 import TablonAnuncios from "./TablonAnuncios";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function EstadoCuentaPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-		<NavbarResidente/>
+      <NavbarResidente />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-		<div className="pb-4">
-		  <h1 className="font-['Inter'] font-medium text-xl pb-2">Estado de Cuenta</h1>
-		  <p className="text-sm text-gray-500">Resumen de tu hogar</p>
-		</div>
+        
+        {/* Header de la Página */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Estado de Cuenta
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Resumen de tu hogar
+            </p>
+          </div>
+          
+          <Button className="bg-[#99D050] hover:bg-[#88bf40] text-white font-medium shadow-sm transition-colors">
+            <Plus className="mr-2 h-4 w-4" />
+            Agregar reserva
+          </Button>
+        </div>
+
+        {/* Grid de contenido */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Estado de Cuenta - 2 columnas */}
+          {/* Columna Izquierda (2/3) */}
           <div className="lg:col-span-2 space-y-6">
-			<ResumenGastoComun />
-			<ResumenMultas />
+            <ResumenGastoComun />
+            <ResumenMultas />
           </div>
 
-          {/* Avisos - 1 columna */}
+          {/* Columna Derecha (1/3) */}
           <div className="lg:col-span-1">
-			<TablonAnuncios />
+            <TablonAnuncios />
           </div>
         </div>
       </div>
