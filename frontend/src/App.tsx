@@ -3,7 +3,6 @@ import { Shield, Users, Home, Building2, Calendar, FileText, KeyRound, Key } fro
 
 // Auth Pages
 import Login from "./pages/auth/Login";
-import Register from "./pages/auth/register";
 
 // Super Admin Pages
 import ListaCondominios from "./pages/super-admin/ListaCondominios";
@@ -42,9 +41,6 @@ function DevHome() {
             <div className="flex flex-col gap-2">
               <Link to="/login" className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium">
                 Iniciar Sesión
-              </Link>
-              <Link to="/register" className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium">
-                Registro
               </Link>
             </div>
           </div>
@@ -88,7 +84,7 @@ function DevHome() {
               <Link to="/estado" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><FileText className="w-4 h-4"/> Estado de Cuenta</div>
               </Link>
-              <Link to="/reservas" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
+              <Link to="/sistema-reservas" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><Calendar className="w-4 h-4"/> Mis Reservas</div>
               </Link>
             </div>
@@ -152,7 +148,6 @@ function App() {
         
         {/* Auth */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
         {/* Super Admin */}
         <Route path="/condominios" element={<ListaCondominios />} />
@@ -164,7 +159,7 @@ function App() {
 
         {/* Residente */}
         <Route path="/estado" element={<EstadoCuentaPage />} />
-        <Route path="/reservas" element={<SistemaReservasPage />} />
+        <Route path="/sistema-reservas" element={<SistemaReservasPage />} />
       </Routes>
     </BrowserRouter>
   );
