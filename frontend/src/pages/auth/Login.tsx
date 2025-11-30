@@ -4,7 +4,7 @@ import { authService } from "@/services/authService";
 import { CompanyBrand } from "@/components/auth/CompanyBrand";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { ImagePanel } from "@/components/auth/ImagePanel";
-import { Footer as LoginFooter } from "@/components/auth/LoginFooter"; // Corregido: Export es Footer
+import { Footer as LoginFooter } from "@/components/auth/LoginFooter";
 import type { LoginCredentials } from "@/types/auth.types";
 import { AlertCircle } from "lucide-react";
 
