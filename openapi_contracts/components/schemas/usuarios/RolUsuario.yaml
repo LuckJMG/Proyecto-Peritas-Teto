@@ -1,7 +1,0 @@
-type: string
-enum:
-  - SUPER_ADMINISTRADOR
-  - ADMINISTRADOR
-  - CONSERJE
-  - DIRECTIVA
-  - RESIDENTE
