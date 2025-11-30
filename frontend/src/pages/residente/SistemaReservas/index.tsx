@@ -103,6 +103,7 @@ export default function SistemaReservasPage() {
           timeRange,
           price: costoTotal,
           rawDate: isValidDate ? fechaInicio : new Date(0),
+          status: reserva.estado // Pasamos el estado al view
         };
       });
 
@@ -154,7 +155,6 @@ export default function SistemaReservasPage() {
     loadData();
   }, []);
 
-  // --- Handlers de Eliminación ---
   const handleDeleteClick = (id: string) => {
     setReservationToDelete(id);
     setShowDeleteDialog(true);
@@ -162,16 +162,15 @@ export default function SistemaReservasPage() {
 
   const confirmDelete = async () => {
     if (!reservationToDelete) return;
-    
     try {
       setIsDeleting(true);
       await reservaService.delete(Number(reservationToDelete));
-      await loadData(); // Recargar datos
+      await loadData();
       setShowDeleteDialog(false);
       setReservationToDelete(null);
     } catch (err) {
       console.error("Error al eliminar reserva:", err);
-      alert("No se pudo eliminar la reserva");
+      alert("No se pudo eliminar la reserva. Verifique que no esté pagada.");
     } finally {
       setIsDeleting(false);
     }
@@ -210,7 +209,6 @@ export default function SistemaReservasPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Columna Izquierda: Futuras */}
           <section className="lg:col-span-7 flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm h-fit">
             <h2 className="text-2xl font-semibold text-gray-900">Reservas futuras</h2>
             <button
@@ -219,8 +217,6 @@ export default function SistemaReservasPage() {
             >
               Nueva Reserva
             </button>
-            
-            {/* Pasamos handleDeleteClick solo aquí */}
             <ReservationsList
               groups={futureReservations}
               emptyMessage="No tienes reservas próximas."
@@ -228,10 +224,8 @@ export default function SistemaReservasPage() {
             />
           </section>
 
-          {/* Columna Derecha: Pasadas */}
           <section className="lg:col-span-5 flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm h-fit">
             <h2 className="text-2xl font-semibold text-gray-900">Reservas pasadas</h2>
-            {/* No pasamos onDelete, por lo que no aparecerá el botón */}
             <ReservationsList
               groups={pastReservations}
               emptyMessage="Sin historial."

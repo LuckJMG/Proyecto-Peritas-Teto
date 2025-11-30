@@ -4,6 +4,7 @@ export interface ReservationView {
   timeRange: string;
   price: number;
   rawDate: Date;
+  status: string;
 }
 
 export interface DateGroup {
