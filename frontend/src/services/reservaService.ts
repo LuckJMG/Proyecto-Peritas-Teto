@@ -2,21 +2,25 @@ import { fetchWithAuth } from "./authService";
 
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
+// Interfaz de Lectura (Lo que devuelve el GET)
 export interface Reserva {
   id: number;
   residente_id: number;
   espacio_comun_id: number;
-  fecha_inicio: string; // ISO 8601
-  fecha_fin: string;    // ISO 8601
+  fecha_reserva: string; // "YYYY-MM-DD"
+  hora_inicio: string;   // "HH:MM:SS"
+  hora_fin: string;      // "HH:MM:SS"
   estado: string;
-  cantidad_personas: number;
+  observaciones?: string;
+  // El backend calcula esto al crear, pero al leer viene separado
 }
 
+// Interfaz de Escritura (Lo que enviamos en el POST)
 export interface ReservaCreate {
   residente_id: number;
   espacio_comun_id: number;
-  fecha_inicio: string;
-  fecha_fin: string;
+  fecha_inicio: string; // ISO Datetime
+  fecha_fin: string;    // ISO Datetime
   cantidad_personas: number;
 }
 
