@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Loader2, Calendar as CalendarIcon, Users, Clock, Check } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Loader2, Calendar as CalendarIcon, Users, Clock, Check, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
-import { reservaService } from "@/services/reservaService";
+import { reservaService, type Reserva } from "@/services/reservaService";
 import type { EspacioComun } from "@/services/espaciosComunesService";
 
 interface NewReservationDialogProps {
@@ -57,7 +57,59 @@ export function NewReservationDialog({
   const [horaFin, setHoraFin] = useState("");
   const [cantidad, setCantidad] = useState("1");
 
-  // Generar intervalos de 30 minutos
+  // Estado para reservas existentes (para bloquear horarios)
+  const [existingReservations, setExistingReservations] = useState<Reserva[]>([]);
+  const [isLoadingReservations, setIsLoadingReservations] = useState(false);
+
+  // 1. Cargar reservas existentes cuando cambie el espacio o la fecha
+  useEffect(() => {
+    if (!espacioId || !date) {
+        setExistingReservations([]);
+        return;
+    }
+
+    const fetchConflicts = async () => {
+        setIsLoadingReservations(true);
+        try {
+            // Nota: Idealmente el backend tendría un filtro por fecha/espacio.
+            // Aquí traemos todas y filtramos en cliente por simplicidad/rapidez.
+            const all = await reservaService.getAll();
+            
+            const selectedDateStr = format(date, "yyyy-MM-dd");
+            const filtered = all.filter(r => 
+                r.espacio_comun_id === Number(espacioId) &&
+                r.fecha_reserva === selectedDateStr &&
+                r.estado !== "CANCELADA"
+            );
+            setExistingReservations(filtered);
+        } catch (err) {
+            console.error("Error cargando disponibilidad", err);
+        } finally {
+            setIsLoadingReservations(false);
+        }
+    };
+
+    fetchConflicts();
+  }, [espacioId, date]);
+
+  // 2. Helper para verificar si una hora está ocupada
+  const isTimeOccupied = (timeStr: string) => {
+    // timeStr viene como "HH:MM"
+    // Comparamos contra rangos existentes [hora_inicio, hora_fin)
+    // Asumimos formato HH:MM:SS del backend
+    return existingReservations.some(r => {
+        // Normalizar strings para comparar
+        const start = r.hora_inicio.substring(0, 5); // "14:00"
+        const end = r.hora_fin.substring(0, 5);      // "15:00"
+        
+        // Lógica simple de colisión para el selector:
+        // Si el tiempo seleccionado está DENTRO de una reserva existente
+        // (Nota: para Inicio, no puede ser >= start && < end)
+        return timeStr >= start && timeStr < end;
+    });
+  };
+
+  // 3. Generar intervalos de 30 minutos
   const timeSlots = useMemo(() => {
     const slots = [];
     for (let i = 0; i < 24 * 2; i++) {
@@ -84,22 +136,35 @@ export function NewReservationDialog({
       return;
     }
 
+    // Validación final de conflicto antes de enviar
+    const conflict = existingReservations.some(r => {
+        const rStart = r.hora_inicio.substring(0, 5);
+        const rEnd = r.hora_fin.substring(0, 5);
+        // Hay solapamiento si: (StartA < EndB) y (EndA > StartB)
+        return horaInicio < rEnd && horaFin > rStart;
+    });
+
+    if (conflict) {
+        setError("El horario seleccionado entra en conflicto con una reserva existente.");
+        return;
+    }
+
     try {
       setSubmitting(true);
       setError(null);
 
-      // Formatear fecha base YYYY-MM-DD
       const dateStr = format(date, "yyyy-MM-dd");
 
-      // Construir ISO Strings
-      const fechaInicioISO = new Date(`${dateStr}T${horaInicio}:00`).toISOString();
-      const fechaFinISO = new Date(`${dateStr}T${horaFin}:00`).toISOString();
+      // CORRECCIÓN TIMEZONE: Enviar string "YYYY-MM-DDTHH:mm:ss" SIN la 'Z' ni offset.
+      // Esto hace que el backend lo interprete como "Local Time" (Naive).
+      const fechaInicioNaive = `${dateStr}T${horaInicio}:00`;
+      const fechaFinNaive = `${dateStr}T${horaFin}:00`;
 
       await reservaService.create({
         residente_id: residenteId,
         espacio_comun_id: Number(espacioId),
-        fecha_inicio: fechaInicioISO,
-        fecha_fin: fechaFinISO,
+        fecha_inicio: fechaInicioNaive,
+        fecha_fin: fechaFinNaive,
         cantidad_personas: Number(cantidad),
       });
 
@@ -109,6 +174,7 @@ export function NewReservationDialog({
       setHoraInicio("");
       setHoraFin("");
       setCantidad("1");
+      setExistingReservations([]);
 
       onSuccess();
       onOpenChange(false);
@@ -124,7 +190,7 @@ export function NewReservationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] bg-white rounded-xl shadow-2xl border-0 p-0 overflow-hidden">
         
-        {/* Header con color de marca */}
+        {/* Header */}
         <div className="bg-gray-50 border-b border-gray-100 px-6 py-5">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -134,7 +200,7 @@ export function NewReservationDialog({
               Nueva Reserva
             </DialogTitle>
             <DialogDescription className="text-gray-500 mt-1.5 text-base">
-              Agenda tu espacio común favorito en simples pasos.
+              Agenda tu espacio común favorito.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -142,7 +208,7 @@ export function NewReservationDialog({
         <div className="px-6 py-6 space-y-6">
           {error && (
             <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200 flex items-center animate-in fade-in slide-in-from-top-1">
-              <span className="mr-2 font-bold">Error:</span> {error}
+              <AlertCircle className="w-4 h-4 mr-2" /> {error}
             </div>
           )}
 
@@ -168,7 +234,7 @@ export function NewReservationDialog({
             </Select>
           </div>
 
-          {/* Fecha (Calendar Popover) */}
+          {/* Fecha */}
           <div className="space-y-2 flex flex-col">
             <Label className="text-sm font-semibold text-gray-700">Fecha del evento</Label>
             <Popover>
@@ -197,29 +263,43 @@ export function NewReservationDialog({
                   onSelect={setDate}
                   disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                   initialFocus
-                  locale={es} // Localización en español
+                  locale={es}
                   className="rounded-md border"
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* Grid de Horarios */}
-          <div className="grid grid-cols-2 gap-5">
+          {/* Horarios con Bloqueo de Ocupados */}
+          <div className="grid grid-cols-2 gap-5 relative">
+            {isLoadingReservations && (
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-[#99D050]" />
+                </div>
+            )}
+            
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#99D050]" /> Inicio
               </Label>
-              <Select value={horaInicio} onValueChange={setHoraInicio}>
+              <Select value={horaInicio} onValueChange={setHoraInicio} disabled={!date || !espacioId}>
                 <SelectTrigger className="h-12 border-gray-200 shadow-sm">
                   <SelectValue placeholder="00:00" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[200px]">
-                  {timeSlots.map((time) => (
-                    <SelectItem key={`start-${time}`} value={time}>
-                      {time}
-                    </SelectItem>
-                  ))}
+                  {timeSlots.map((time) => {
+                    const occupied = isTimeOccupied(time);
+                    return (
+                        <SelectItem 
+                            key={`start-${time}`} 
+                            value={time}
+                            disabled={occupied}
+                            className={occupied ? "text-gray-300 line-through decoration-gray-300" : ""}
+                        >
+                        {time} {occupied && "(Ocupado)"}
+                        </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -228,7 +308,7 @@ export function NewReservationDialog({
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-red-400" /> Fin
               </Label>
-              <Select value={horaFin} onValueChange={setHoraFin}>
+              <Select value={horaFin} onValueChange={setHoraFin} disabled={!date || !espacioId}>
                 <SelectTrigger className="h-12 border-gray-200 shadow-sm">
                   <SelectValue placeholder="00:00" />
                 </SelectTrigger>
