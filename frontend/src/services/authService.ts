@@ -1,10 +1,8 @@
 // frontend/src/services/authService.ts
-import { safeStorage } from '@/lib/storage'; // <--- IMPORTANTE: Importamos la utilidad
-import type { RegisterCredentials } from '@/types/auth.types';
-
 const API_URL = 'http://localhost:8000/api/v1';
 
-// Usar const object en lugar de enum
+import type { RegisterCredentials } from '@/types/auth.types';
+
 export const RolUsuario = {
   SUPER_ADMINISTRADOR: 'SUPER_ADMINISTRADOR',
   ADMINISTRADOR: 'ADMINISTRADOR',
@@ -15,7 +13,6 @@ export const RolUsuario = {
 
 export type RolUsuario = typeof RolUsuario[keyof typeof RolUsuario];
 
-// CORRECCIÓN: Ajustado a snake_case para coincidir con backend Pydantic model
 interface LoginResponse {
   access_token: string;
   refresh_token: string;
@@ -37,7 +34,7 @@ export interface CrearUsuarioDTO {
   rol: RolUsuario;
   activo: boolean;
   condominio_id?: number;
-  password_hash: string; 
+  password_hash: string;
 }
 
 export const authService = {
@@ -55,48 +52,45 @@ export const authService = {
 
     const data: LoginResponse = await response.json();
     
-    // Guardar tokens (Mapeando desde las propiedades correctas)
     if (data.access_token) {
-        safeStorage.setItem('accessToken', data.access_token);
-        safeStorage.setItem('refreshToken', data.refresh_token);
-        safeStorage.setItem('user', JSON.stringify(data.usuario));
+        localStorage.setItem('accessToken', data.access_token);
+        localStorage.setItem('refreshToken', data.refresh_token);
+        localStorage.setItem('user', JSON.stringify(data.usuario));
     }
     
     return data;
   },
 
   logout() {
-    safeStorage.removeItem('accessToken');
-    safeStorage.removeItem('refreshToken');
-    safeStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
   },
 
   getToken() {
-    return safeStorage.getItem('accessToken');
+    return localStorage.getItem('accessToken');
   },
 
   getUser() {
-    const user = safeStorage.getItem('user');
-    try {
-      return user ? JSON.parse(user) : null;
-    } catch {
-      return null;
-    }
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   },
 
   isAuthenticated() {
     return !!this.getToken();
   },
 
+  // Lógica de redirección solicitada
   getRouteByRole(rol: RolUsuario): string {
     const routes: Record<RolUsuario, string> = {
       [RolUsuario.SUPER_ADMINISTRADOR]: '/condominios',
       [RolUsuario.ADMINISTRADOR]: '/dashboard',
       [RolUsuario.CONSERJE]: '/dashboard',
-      [RolUsuario.DIRECTIVA]: '/dashboard',
+      [RolUsuario.DIRECTIVA]: '/estado', // <-- Cambio: Directiva va a estado de cuenta
       [RolUsuario.RESIDENTE]: '/estado'
     };
     
+    // Fallback seguro
     return routes[rol] || '/estado';
   },
 
@@ -125,7 +119,6 @@ export const authService = {
   }
 };
 
-// Hook para usar en componentes protegidos
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   const token = authService.getToken();
   
@@ -134,7 +127,6 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     ...options.headers,
   };
 
-  // Solo inyectar Bearer si existe el token
   if (token) {
     (headers as any)['Authorization'] = `Bearer ${token}`;
   }
@@ -145,7 +137,6 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   });
 
   if (response.status === 401) {
-    // Si el token es inválido o expiró, cerrar sesión
     console.warn("Sesión expirada o token inválido (401). Redirigiendo a login.");
     authService.logout();
     window.location.href = '/login';
