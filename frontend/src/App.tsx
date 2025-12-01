@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { Shield, Users, Home, Building2, Calendar, FileText, KeyRound, Key } from "lucide-react";
+import { Shield, Users, Home, Building2, Calendar, FileText, KeyRound, Key, AlertCircle } from "lucide-react";
 
 // Auth Pages
 import Login from "./pages/auth/Login";
@@ -11,6 +11,7 @@ import ListaCondominios from "./pages/super-admin/ListaCondominios";
 import DashboardCondominio from "./pages/admin/DashboardCondominio";
 import ListaUsuarios from "./pages/admin/ListaUsuarios";
 import AdminReservasPage from "./pages/admin/Reservas";
+import AdminMultas from "./pages/admin/Multas/AdminMultas";
 import AdminAnunciosPage from "./pages/admin/Anuncios";
 
 // Residente Pages
@@ -72,6 +73,9 @@ function DevHome() {
               </Link>
               <Link to="/admin/reservas" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><Calendar className="w-4 h-4"/> Gestión Reservas</div>
+              </Link>
+              <Link to="/admin/multas" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
+                <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4"/> Gestión Multas</div>
               </Link>
             </div>
           </div>
@@ -157,6 +161,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardCondominio />} />
         <Route path="/usuarios" element={<ListaUsuarios />} />
         <Route path="/admin/reservas" element={<AdminReservasPage />} />
+        <Route path="/admin/multas" element={<AdminMultas />} />
         <Route path="/admin/anuncios" element={<AdminAnunciosPage />} />
 
         {/* Residente */}
