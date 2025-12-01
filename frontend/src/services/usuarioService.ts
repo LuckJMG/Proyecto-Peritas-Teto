@@ -21,8 +21,9 @@ export interface Usuario {
   fecha_ultimo_pago?: string;
   condominio_id?: number;
   total_deuda?: number;
+  telefono?: string;
+  vivienda?: string;
 }
-
 export interface UsuarioCreate {
   nombre: string;
   apellido: string;
@@ -31,6 +32,11 @@ export interface UsuarioCreate {
   password_hash: string;
   condominio_id?: number;
   activo?: boolean;
+  // Campos extra para residente
+  rut?: string;
+  telefono?: string;
+  vivienda_numero?: string;
+  es_propietario?: boolean;
 }
 
 export type UsuarioUpdate = Partial<{
@@ -39,8 +45,16 @@ export type UsuarioUpdate = Partial<{
   apellido: string;
   rol: RolUsuario;
   activo: boolean;
-  password_hash: string;
+  password_hash: string; // Nota: el backend espera 'password', pero tu servicio mappeaba a password_hash? 
+                         // REVISA: En create usabas 'password_hash' en la interfaz pero enviabas 'password'.
+                         // Para update, asegurate de enviar la key que el backend espera ('password').
   condominio_id: number;
+  
+  // Nuevos campos
+  rut: string;
+  telefono: string;
+  vivienda_numero: string;
+  es_propietario: boolean;
 }>;
 
 class UsuarioService {

@@ -15,9 +15,6 @@ interface UsuarioFiltersProps {
 export function UsuarioFilters({
   searchTerm,
   onSearchChange,
-  condominioFiltro,
-  onCondominioChange,
-  condominios,
   onAddClick,
 }: UsuarioFiltersProps) {
   return (
@@ -37,22 +34,6 @@ export function UsuarioFilters({
           </div>
         </div>
 
-        <select
-          value={condominioFiltro === "all" ? "" : condominioFiltro}
-          onChange={(e) =>
-            onCondominioChange(
-              e.target.value === "" ? "all" : Number.parseInt(e.target.value)
-            )
-          }
-          className="h-10 rounded-full border border-gray-300 bg-white px-3 text-xs text-gray-700"
-        >
-          <option value="">Todos los condominios</option>
-          {condominios.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nombre}
-            </option>
-          ))}
-        </select>
       </div>
 
       <Button

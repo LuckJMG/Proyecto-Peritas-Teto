@@ -1,33 +1,49 @@
 from typing import Optional
-from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from sqlmodel import SQLModel
 from app.models.usuario import RolUsuario
+from datetime import datetime
 
-class UsuarioBase(BaseModel):
-    email: EmailStr
+class UsuarioBase(SQLModel):
+    email: str
     nombre: str
     apellido: str
-    rol: RolUsuario
+    rol: RolUsuario = RolUsuario.RESIDENTE
     condominio_id: Optional[int] = None
     activo: bool = True
 
-class UsuarioCreate(UsuarioBase):
-    password: str 
+class UsuarioRead(UsuarioBase):
+    id: int
+    fecha_creacion: datetime
+    ultimo_acceso: Optional[datetime] = None
+    total_deuda: float = 0.0
+    
+    # Nuevos campos para mostrar en la tabla
+    telefono: Optional[str] = None
+    vivienda: Optional[str] = None
 
-class UsuarioUpdate(BaseModel):
-    email: Optional[EmailStr] = None
+    class Config:
+        orm_mode = True
+
+class UsuarioCreate(UsuarioBase):
+    password: str
+    
+    # Campos opcionales para creación simultánea de Residente
+    rut: Optional[str] = None
+    telefono: Optional[str] = None
+    vivienda_numero: Optional[str] = None
+    es_propietario: bool = False
+
+class UsuarioUpdate(SQLModel):
+    email: Optional[str] = None
     nombre: Optional[str] = None
     apellido: Optional[str] = None
     password: Optional[str] = None
     rol: Optional[RolUsuario] = None
     condominio_id: Optional[int] = None
     activo: Optional[bool] = None
-
-class UsuarioRead(UsuarioBase):
-    id: int
-    fecha_creacion: datetime
-    ultimo_acceso: Optional[datetime] = None
-    total_deuda: float = 0.0  # Nuevo campo calculado
-
-    class Config:
-        from_attributes = True
+    
+    # Nuevos campos para actualizar residente
+    rut: Optional[str] = None
+    telefono: Optional[str] = None
+    vivienda_numero: Optional[str] = None
+    es_propietario: Optional[bool] = None

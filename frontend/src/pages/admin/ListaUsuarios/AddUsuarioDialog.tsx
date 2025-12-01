@@ -1,174 +1,241 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { usuarioService, type RolUsuario, type UsuarioCreate } from "@/services/usuarioService";
-import type { Condominio } from "@/services/condominioService";
-import { useRegistroAutomatico } from "@/services/registroService";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { usuarioService, type UsuarioCreate, type RolUsuario } from "@/services/usuarioService";
+import { type Condominio } from "@/services/condominioService"; // Solo para tipos si es necesario
 
 interface AddUsuarioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  condominios: Condominio[];
+  condominios: Condominio[]; // Ya no lo usamos para seleccionar, pero lo dejamos por compatibilidad si quieres
 }
 
-const ROLES: RolUsuario[] = ["ADMINISTRADOR", "CONSERJE", "DIRECTIVA", "RESIDENTE"];
-
-export function AddUsuarioDialog({
-  open,
-  onOpenChange,
-  onSuccess,
-  condominios,
-}: AddUsuarioDialogProps) {
-  const [submitting, setSubmitting] = useState(false);
+export function AddUsuarioDialog({ open, onOpenChange, onSuccess }: AddUsuarioDialogProps) {
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<UsuarioCreate>({
-    nombre: "",
-    apellido: "",
-    email: "",
-    rol: "RESIDENTE",
-    password_hash: "",
-    condominio_id: undefined,
-    activo: true,
-  });
 
-  const { registrar } = useRegistroAutomatico();
+  // Campos básicos de Usuario
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rol, setRol] = useState<RolUsuario>("RESIDENTE");
+  
+  // Campos específicos de Residente
+  const [rut, setRut] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [viviendaNumero, setViviendaNumero] = useState("");
+  const [esPropietario, setEsPropietario] = useState(false);
 
-  const handleSubmit = async () => {
-    if (
-      !formData.nombre.trim() ||
-      !formData.apellido.trim() ||
-      !formData.email.trim() ||
-      !formData.password_hash.trim()
-    ) {
-      setError("Completa todos los campos obligatorios");
-      return;
+  // Obtener ID del condominio del usuario logueado
+  const [adminCondominioId, setAdminCondominioId] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (open) {
+      // Resetear formulario al abrir
+      setNombre("");
+      setApellido("");
+      setEmail("");
+      setPassword("");
+      setRol("RESIDENTE");
+      setRut("");
+      setTelefono("");
+      setViviendaNumero("");
+      setEsPropietario(false);
+      setError(null);
+
+      // Leer condominio del admin
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setAdminCondominioId(user.condominio_id);
+      }
     }
+  }, [open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      setSubmitting(true);
-      setError(null);
-      await usuarioService.create(formData);
-      
-      setFormData({
-        nombre: "",
-        apellido: "",
-        email: "",
-        rol: "RESIDENTE",
-        password_hash: "",
-        condominio_id: undefined,
+      const payload: UsuarioCreate = {
+        nombre,
+        apellido,
+        email,
+        password_hash: password, // El servicio lo mapea a 'password'
+        rol,
+        condominio_id: adminCondominioId, // Se envía automático
         activo: true,
-      });
+      };
 
-      registrar(
-        "CREACION", 
-        `Nuevo usuario registrado: ${formData.nombre} ${formData.apellido}`,
-        { datos_adicionales: { email: formData.email, rol: formData.rol } }
-      );
+      // Si es residente, adjuntamos los datos extra
+      if (rol === "RESIDENTE") {
+        if (!rut || !viviendaNumero) {
+          throw new Error("Para crear un residente, el RUT y el N° Vivienda son obligatorios.");
+        }
+        payload.rut = rut;
+        payload.vivienda_numero = viviendaNumero;
+        payload.telefono = telefono;
+        payload.es_propietario = esPropietario;
+      }
 
+      await usuarioService.create(payload);
       onSuccess();
       onOpenChange(false);
-    } catch (err) {
-      setError("Error al crear usuario");
-      console.error(err);
+    } catch (err: any) {
+      setError(err.message || "Error al crear usuario");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Añadir Residente</DialogTitle>
-          <DialogDescription>
-            Completa la información del nuevo residente
-          </DialogDescription>
+          <DialogTitle>Crear Nuevo Usuario</DialogTitle>
         </DialogHeader>
 
-        {error && (
-          <div className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          {error && (
+            <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+              {error}
+            </div>
+          )}
 
-        <div className="space-y-3 py-4">
-          <Input
-            placeholder="Nombre"
-            value={formData.nombre}
-            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-          />
-          <Input
-            placeholder="Apellido"
-            value={formData.apellido}
-            onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
-          />
-          <Input
-            placeholder="Email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          />
-          <Input
-            type="password"
-            placeholder="Contraseña"
-            value={formData.password_hash}
-            onChange={(e) => setFormData({ ...formData, password_hash: e.target.value })}
-          />
+          {/* --- DATOS DE CUENTA DE USUARIO --- */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nombre">Nombre</Label>
+              <Input
+                id="nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="apellido">Apellido</Label>
+              <Input
+                id="apellido"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+                required
+              />
+            </div>
+          </div>
 
-          <select
-            value={formData.rol}
-            onChange={(e) => setFormData({ ...formData, rol: e.target.value as RolUsuario })}
-            className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700"
-          >
-            {ROLES.map((rol) => (
-              <option key={rol} value={rol}>
-                {rol}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-          <select
-            value={formData.condominio_id ?? ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                condominio_id: e.target.value ? Number.parseInt(e.target.value) : undefined,
-              })
-            }
-            className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700"
-          >
-            <option value="">Condominio (opcional)</option>
-            {condominios.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
-          >
-            {submitting ? "Creando..." : "Crear Residente"}
-          </Button>
-          <Button
-            onClick={() => onOpenChange(false)}
-            variant="outline"
-            className="w-full"
-            disabled={submitting}
-          >
-            Cancelar
-          </Button>
-        </DialogFooter>
+          <div className="space-y-2">
+            <Label htmlFor="rol">Rol</Label>
+            <Select 
+              value={rol} 
+              onValueChange={(val) => setRol(val as RolUsuario)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccione Rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="RESIDENTE">Residente</SelectItem>
+                <SelectItem value="CONSERJE">Conserje</SelectItem>
+                <SelectItem value="DIRECTIVA">Directiva</SelectItem>
+                <SelectItem value="ADMINISTRADOR">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* --- SECCIÓN EXTRA PARA RESIDENTES --- */}
+          {rol === "RESIDENTE" && (
+            <div className="space-y-4 border-t pt-4 mt-2 bg-gray-50 p-3 rounded-md border border-gray-200">
+              <p className="text-sm font-semibold text-gray-700">Datos del Residente</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rut">RUT (Obligatorio)</Label>
+                  <Input
+                    id="rut"
+                    placeholder="12.345.678-9"
+                    value={rut}
+                    onChange={(e) => setRut(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vivienda">N° Vivienda (Obligatorio)</Label>
+                  <Input
+                    id="vivienda"
+                    placeholder="Ej: A-101"
+                    value={viviendaNumero}
+                    onChange={(e) => setViviendaNumero(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono</Label>
+                <Input
+                  id="telefono"
+                  placeholder="+56 9 ..."
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox 
+                  id="propietario" 
+                  checked={esPropietario}
+                  onCheckedChange={(checked) => setEsPropietario(checked as boolean)}
+                />
+                <Label htmlFor="propietario" className="text-sm font-normal cursor-pointer">
+                  ¿Es propietario de la vivienda?
+                </Label>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" className="bg-[#99D050] hover:bg-[#86b846] text-black" disabled={loading}>
+              {loading ? "Guardando..." : "Crear Usuario"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

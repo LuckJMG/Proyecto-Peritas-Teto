@@ -1,23 +1,22 @@
 import { useState, useEffect } from "react";
 import { ArrowUpDown, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
-// 1. IMPORTAMOS LA SIDEBAR
 import { SidebarAdmin } from "@/components/SidebarAdmin";
 import {
   usuarioService,
   type Usuario,
-  type RolUsuario,
 } from "@/services/usuarioService";
 import {
   condominioService,
   type Condominio,
 } from "@/services/condominioService";
 
-// Importaciones Locales desde la misma carpeta
+// Importaciones Locales
 import { UsuarioFilters } from "./UsuarioFilters";
 import { UsuarioRow } from "./UsuarioRow";
 import { AddUsuarioDialog } from "./AddUsuarioDialog";
 import { DeleteUsuarioDialog } from "./DeleteUsuarioDialog";
+import { EditUsuarioDialog } from "./EditUsuarioDialog"; // Asegúrate de haber creado este archivo
 
 interface SortConfig {
   key: keyof Usuario | null;
@@ -46,20 +45,51 @@ export default function ListaUsuarios() {
   // --- Estado de Diálogos ---
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false); // Estado para editar
+  
+  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null); // Para eliminar
+  const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | null>(null); // Para editar
+  
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // --- Carga Inicial ---
+  // --- Carga Inicial con Filtrado por Rol ---
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [u, c] = await Promise.all([
+
+      // 1. Obtenemos el usuario actual del almacenamiento local
+      const userStr = localStorage.getItem("user");
+      const currentUser = userStr ? JSON.parse(userStr) : null;
+
+      // 2. Obtenemos TODOS los datos del backend
+      const [allUsuarios, allCondominios] = await Promise.all([
         usuarioService.getAll(),
         condominioService.getAll(),
       ]);
-      setUsuarios(u);
-      setCondominios(c);
+
+      // 3. Aplicamos lógica de filtrado según el rol
+      if (currentUser && currentUser.rol !== "SUPER_ADMINISTRADOR") {
+        // Admin normal: solo ve usuarios de su condominio
+        const myUsers = allUsuarios.filter(
+          (u) => u.condominio_id === currentUser.condominio_id
+        );
+        setUsuarios(myUsers);
+
+        // Filtramos condominios para selectores
+        const myCondos = allCondominios.filter(
+          (c) => c.id === currentUser.condominio_id
+        );
+        setCondominios(myCondos);
+        
+        // Forzamos filtro visual
+        setCondominioFiltro(currentUser.condominio_id || "all");
+      } else {
+        // Super Admin: ve todo
+        setUsuarios(allUsuarios);
+        setCondominios(allCondominios);
+      }
+
     } catch (err) {
       setError("Error al cargar datos");
       console.error(err);
@@ -104,6 +134,8 @@ export default function ListaUsuarios() {
   const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // --- Handlers de Acciones ---
+  
+  // Eliminar
   const handleDeleteClick = (u: Usuario) => {
     setSelectedUsuario(u);
     setShowDeleteDialog(true);
@@ -124,38 +156,28 @@ export default function ListaUsuarios() {
     }
   };
 
-  const handleChangeRol = async (u: Usuario, rol: RolUsuario) => {
-    try {
-      setUsuarios((prev) =>
-        prev.map((item) => (item.id === u.id ? { ...item, rol } : item))
-      );
-      await usuarioService.update(u.id, { rol });
-    } catch (err) {
-      setError("Error al actualizar rol");
-      loadData();
-    }
+  // Editar
+  const handleEditClick = (u: Usuario) => {
+    setUsuarioToEdit(u);
+    setShowEditDialog(true);
   };
 
-  // 2. MODIFICAMOS EL LAYOUT PRINCIPAL (Flex Col -> Flex Row)
   return (
     <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
       
-      {/* NAVBAR ARRIBA */}
       <Navbar />
 
-      {/* CONTENEDOR SPLIT: SIDEBAR | CONTENIDO */}
       <div className="flex flex-1 overflow-hidden">
         
-        {/* SIDEBAR A LA IZQUIERDA */}
+        {/* Sidebar */}
         <div className="h-full hidden md:block border-r bg-white">
           <SidebarAdmin className="h-full" />
         </div>
 
-        {/* ÁREA PRINCIPAL CON SCROLL */}
+        {/* Contenido Principal */}
         <main className="flex-1 overflow-y-auto p-8">
           
           {loading ? (
-             // Spinner centrado en el área de contenido
              <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
              </div>
@@ -228,7 +250,7 @@ export default function ListaUsuarios() {
                               setExpandedId(expandedId === u.id ? null : u.id)
                             }
                             onDelete={handleDeleteClick}
-                            onChangeRol={handleChangeRol}
+                            onEdit={handleEditClick}
                           />
                         ))
                       )}
@@ -260,11 +282,20 @@ export default function ListaUsuarios() {
         </main>
       </div>
 
+      {/* --- DIÁLOGOS --- */}
+
       <AddUsuarioDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={loadData}
         condominios={condominios}
+      />
+
+      <EditUsuarioDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        usuario={usuarioToEdit}
+        onSuccess={loadData}
       />
 
       <DeleteUsuarioDialog
