@@ -1,39 +1,118 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
+from datetime import date
+from decimal import Decimal
 
-# Dependencias de tu aplicación (asumimos que existen)
+# Dependencias
 from app.api.deps import get_db
-# from app.api.deps import get_current_user # Descomentar si se necesita autenticación
+# Asumimos que existe para obtener el usuario actual (admin)
+# Si no tienes auth habilitado globalmente, usaremos un ID por defecto o pasaremos el ID en el body
+# from app.api.deps import get_current_user 
 
-# Importa el modelo único de Multa
-from app.models.multa import Multa
+# Modelos
+from app.models.multa import Multa, TipoMulta, EstadoMulta
+from app.models.gasto_comun import GastoComun, EstadoGastoComun
+from app.models.usuario import Usuario
 
 router = APIRouter(prefix="/multas", tags=["Multas"])
 
-# GET /multas - Listar todas
+# GET /multas - Listar todas (con filtro opcional por residente)
 @router.get("", response_model=List[Multa])
-async def listar_multas(db: Session = Depends(get_db)):
+async def listar_multas(
+    residente_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
     """
-    Obtiene una lista de todas las multas.
+    Obtiene una lista de todas las multas. Puede filtrar por residente_id.
     """
-    items = db.exec(select(Multa)).all()
+    query = select(Multa)
+    if residente_id:
+        query = query.where(Multa.residente_id == residente_id)
+    
+    items = db.exec(query).all()
     return items
 
-# POST /multas - Crear
+# POST /multas - Crear Manual
 @router.post("", response_model=Multa, status_code=status.HTTP_201_CREATED)
 async def crear_multa(data: Multa, db: Session = Depends(get_db)):
     """
-    Crea una nueva multa.
+    Crea una nueva multa manual.
     """
-    # Creamos la instancia del modelo de DB directamente desde el body
-    item = Multa.model_validate(data)
+    # Validar que el residente y condominio existan (opcional pero recomendado)
+    # item = Multa.model_validate(data) # Esto falla si data es un dict parcial, mejor usar constructor
     
-    db.add(item)
+    # Aseguramos estado pendiente por defecto si no viene
+    if not data.estado:
+        data.estado = EstadoMulta.PENDIENTE
+        
+    db.add(data)
     db.commit()
-    db.refresh(item)
+    db.refresh(data)
     
-    return item
+    return data
+
+# POST /multas/procesar-atrasos - Automáticas
+@router.post("/procesar-atrasos", status_code=status.HTTP_200_OK)
+async def procesar_atrasos(
+    admin_id: int, # ID del usuario que ejecuta la acción (Admin)
+    db: Session = Depends(get_db)
+):
+    """
+    Busca gastos comunes vencidos y genera multas automáticas.
+    """
+    today = date.today()
+    
+    # 1. Buscar gastos comunes vencidos (PENDIENTE y fecha_vencimiento < hoy)
+    # OJO: Se asume que si ya está VENCIDO o MOROSO ya se procesó o se está procesando, 
+    # pero aquí buscamos especificamente los que siguen en PENDIENTE pero ya vencieron.
+    gastos_vencidos = db.exec(select(GastoComun).where(
+        GastoComun.fecha_vencimiento < today,
+        GastoComun.estado == EstadoGastoComun.PENDIENTE
+    )).all()
+
+    multas_creadas = 0
+
+    for gc in gastos_vencidos:
+        # Cambiar estado del gasto común a VENCIDO
+        gc.estado = EstadoGastoComun.VENCIDO
+        db.add(gc)
+
+        # Verificar si ya existe una multa por retraso para este gasto común (mes/anio/residente)
+        # Usamos la descripción para identificarla en este MVP rápido
+        descripcion_multa = f"Multa automática por atraso Gasto Común {gc.mes}/{gc.anio}"
+        
+        existe_multa = db.exec(select(Multa).where(
+            Multa.residente_id == gc.residente_id,
+            Multa.descripcion == descripcion_multa,
+            Multa.tipo == TipoMulta.RETRASO_PAGO
+        )).first()
+
+        if not existe_multa:
+            # Crear Multa
+            # Monto fijo de multa por ejemplo $5.000 o un % del monto total. Usaremos 5000 para demo.
+            monto_multa = Decimal("5000.00")
+            
+            nueva_multa = Multa(
+                residente_id=gc.residente_id,
+                condominio_id=gc.condominio_id,
+                tipo=TipoMulta.RETRASO_PAGO,
+                descripcion=descripcion_multa,
+                monto=monto_multa,
+                estado=EstadoMulta.PENDIENTE,
+                fecha_emision=today,
+                creado_por=admin_id
+            )
+            db.add(nueva_multa)
+            multas_creadas += 1
+
+    db.commit()
+    
+    return {
+        "message": "Proceso completado", 
+        "gastos_vencidos_detectados": len(gastos_vencidos),
+        "multas_creadas": multas_creadas
+    }
 
 # GET /multas/{item_id} - Obtener una
 @router.get("/{item_id}", response_model=Multa)
@@ -57,7 +136,6 @@ async def actualizar_multa(item_id: int, data: Multa, db: Session = Depends(get_
     if not item:
         raise HTTPException(status_code=404, detail="Multa no encontrada")
     
-    # Obtenemos los datos del body (data) que el usuario realmente envió
     update_data = data.model_dump(exclude_unset=True)
     
     for key, value in update_data.items():
@@ -81,6 +159,4 @@ async def eliminar_multa(item_id: int, db: Session = Depends(get_db)):
     
     db.delete(item)
     db.commit()
-    
-    # No se devuelve contenido, solo el status code 204
     return None
