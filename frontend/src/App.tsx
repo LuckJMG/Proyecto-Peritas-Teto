@@ -86,6 +86,9 @@ function DevHome() {
               <Link to="/admin/anuncios" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><Megaphone className="w-4 h-4"/> Gestión Anuncios</div>
               </Link>
+              <Link to="/admin/alertas" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
+                <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4"/> Alertas</div>
+              </Link>
             </div>
           </div>
 
@@ -155,7 +158,6 @@ function DevHome() {
               User: residente@lospinos.cl<br/>
               Pass: residente123
             </div>
-
           </div>
         </div>
       </div>

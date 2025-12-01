@@ -1,49 +1,97 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Users, FileText, DollarSign, AlertTriangle, Bell } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Users, 
+  CalendarDays, 
+  Megaphone,
+  TriangleAlert, // Para Multas
+  Bell,          // Para Alertas
+  LogOut
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { authService } from "@/services/authService";
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface SidebarAdminProps {
+  className?: string;
+}
 
-export function Sidebar({ className }: SidebarProps) {
+export function SidebarAdmin({ className }: SidebarAdminProps) {
   const location = useLocation();
 
   const menuItems = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: Users, label: "Usuarios", path: "/usuarios" }, // O la ruta que corresponda a Residentes
-    { icon: FileText, label: "Anuncios", path: "/admin/anuncios" },
-    { icon: DollarSign, label: "Reservas", path: "/admin/reservas" }, // Ajustado según rutas conocidas
-    { icon: AlertTriangle, label: "Multas", path: "/admin/multas" },
-    { icon: Bell, label: "Alertas", path: "/admin/alertas" }, // NUEVO
+    {
+      title: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Usuarios",
+      href: "/admin/usuarios",
+      icon: Users,
+    },
+    {
+      title: "Reservas",
+      href: "/admin/reservas",
+      icon: CalendarDays,
+    },
+    {
+      title: "Multas", // Nuevo Item
+      href: "/admin/multas",
+      icon: TriangleAlert,
+    },
+    {
+      title: "Anuncios",
+      href: "/admin/anuncios",
+      icon: Megaphone,
+    },
+    {
+      title: "Alertas", // Nuevo Item
+      href: "/admin/alertas",
+      icon: Bell,
+    },
   ];
 
   return (
-    <div className={cn("pb-12 w-64 min-h-screen bg-white border-r", className)}>
-      <div className="space-y-4 py-4">
-        <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
-            Admin Panel
-          </h2>
-          <div className="space-y-1">
-            {menuItems.map((item, i) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={i}
-                  to={item.path}
-                  className={cn(
-                    "w-full justify-start flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive
-                      ? "bg-slate-900 text-white" 
-                      : "text-slate-700 hover:bg-slate-100"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
+    <div className={cn("flex flex-col h-full bg-white w-64", className)}>
+      <div className="flex-1 py-6 flex flex-col gap-1 px-3">
+        <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Menú Principal
         </div>
+        
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.href;
+          return (
+            <Link key={item.href} to={item.href}>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-3 font-medium transition-all duration-200",
+                  isActive 
+                    ? "bg-[#99D050]/10 text-[#7cb342] hover:bg-[#99D050]/20 hover:text-[#7cb342]" 
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                )}
+              >
+                <item.icon className={cn("h-5 w-5", isActive ? "text-[#99D050]" : "text-gray-400")} />
+                {item.title}
+              </Button>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="p-4 border-t border-gray-100">
+        <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={() => {
+                authService.logout();
+                window.location.href = "/login";
+            }}
+        >
+          <LogOut className="h-5 w-5" />
+          Cerrar Sesión
+        </Button>
       </div>
     </div>
   );

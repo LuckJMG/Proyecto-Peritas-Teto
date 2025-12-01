@@ -1,10 +1,11 @@
 import { useLocation, Link } from "react-router-dom";
 import { 
-  Home, 
   CalendarDays, 
   Users, 
   Megaphone, 
-  FileText 
+  LayoutDashboard,
+  TriangleAlert,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,11 +16,36 @@ export function SidebarAdmin({ className }: SidebarProps) {
   const pathname = location.pathname;
 
   const menuItems = [
-    { href: "/admin/dashboard", label: "Condominio", icon: Home },
-    { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
-    { href: "/admin/usuarios", label: "Usuarios", icon: Users },
-    { href: "/admin/anuncios", label: "Anuncios", icon: Megaphone },
-    { href: "/admin/registros", label: "Registro", icon: FileText },
+    {
+      title: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Usuarios",
+      href: "/admin/usuarios",
+      icon: Users,
+    },
+    {
+      title: "Reservas",
+      href: "/admin/reservas",
+      icon: CalendarDays,
+    },
+    {
+      title: "Multas", // Nuevo Item
+      href: "/admin/multas",
+      icon: TriangleAlert,
+    },
+    {
+      title: "Anuncios",
+      href: "/admin/anuncios",
+      icon: Megaphone,
+    },
+    {
+      title: "Alertas", // Nuevo Item
+      href: "/admin/alertas",
+      icon: Bell,
+    },
   ];
 
   const activeColor = "#99D050";
@@ -61,7 +87,7 @@ export function SidebarAdmin({ className }: SidebarProps) {
                       : "font-normal text-gray-500"
                   )}
                 >
-                  {item.label}
+                  {item.title}
                 </span>
               </Link>
             );

@@ -10,49 +10,86 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { authService } from "@/services/authService";
-
-// Función para generar breadcrumbs basados en la ruta
-const getBreadcrumbs = (pathname: string) => {
-  const paths = pathname.split('/').filter(Boolean);
-  
-  // Mapa de rutas a nombres legibles
-  const routeNames: Record<string, string> = {
-    'dashboard': 'Dashboard',
-    'usuarios': 'Usuarios',
-    'productos': 'Productos',
-    'ventas': 'Ventas',
-    'reportes': 'Reportes',
-    'configuracion': 'Configuración',
-    'perfil': 'Perfil',
-    'condominios': 'Condominios',
-    'estado': 'Estado de Cuenta',
-  };
-
-  // Siempre comenzar con Dashboard
-  const breadcrumbs = [
-    { label: 'Dashboard', path: '/', isLast: paths.length === 0 }
-  ];
-
-  // Agregar el resto de las rutas
-  paths.forEach((path, index) => {
-    breadcrumbs.push({
-      label: routeNames[path] || path.charAt(0).toUpperCase() + path.slice(1),
-      path: '/' + paths.slice(0, index + 1).join('/'),
-      isLast: index === paths.length - 1
-    });
-  });
-
-  return breadcrumbs;
-};
+import { authService, RolUsuario } from "@/services/authService";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const breadcrumbs = getBreadcrumbs(location.pathname);
-  
-  // Obtener información del usuario
   const user = authService.getUser();
+
+  // Determinar la ruta "Home" según el rol
+  const getHomeRoute = () => {
+    if (!user) return "/";
+    // Mapeo manual o usar authService.getRouteByRole
+    switch (user.rol) {
+      case RolUsuario.SUPER_ADMINISTRADOR: return "/super/condominios";
+      case RolUsuario.ADMINISTRADOR:
+      case RolUsuario.CONSERJE: 
+      case RolUsuario.DIRECTIVA: return "/admin/dashboard";
+      case RolUsuario.RESIDENTE: return "/resumen"; // O /estado según tus rutas
+      default: return "/";
+    }
+  };
+
+  const homeRoute = getHomeRoute();
+
+  // Generador de Breadcrumbs Personalizado
+  const getBreadcrumbs = (pathname: string) => {
+    // 1. Definir rutas "Home" que no deben mostrar > Página
+    const homeRoutes = [
+        "/admin/dashboard", 
+        "/super/condominios", 
+        "/resumen"
+    ];
+
+    // Si estamos en una ruta home, solo mostrar "Dashboard" (o nombre equivalente)
+    if (homeRoutes.includes(pathname) || pathname === "/") {
+        return [{ label: "Dashboard", path: homeRoute, isLast: true }];
+    }
+
+    // 2. Para rutas hijas, construir Dashboard > Página
+    const breadcrumbs = [
+        { label: "Dashboard", path: homeRoute, isLast: false }
+    ];
+
+    // Mapa de nombres legibles para segmentos de URL
+    const routeNames: Record<string, string> = {
+        'usuarios': 'Usuarios',
+        'reservas': 'Reservas',
+        'multas': 'Multas',
+        'anuncios': 'Anuncios',
+        'condominios': 'Condominios',
+        'historial': 'Historial de Pagos',
+        'pago': 'Sistema de Pago',
+        'detalle': 'Detalle de Gastos'
+    };
+
+    const segments = pathname.split('/').filter(Boolean);
+    
+    // Filtramos segmentos "técnicos" que no queremos en el breadcrumb visual
+    // Ej: /admin/usuarios -> Ignoramos 'admin', tomamos 'usuarios'
+    const cleanSegments = segments.filter(seg => 
+        !['admin', 'super', 'residente'].includes(seg) && 
+        seg !== 'dashboard' // Ya lo manejamos como root
+    );
+
+    cleanSegments.forEach((segment, index) => {
+        const label = routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+        // Reconstruimos la ruta real para el link (aunque aquí simplificamos a la actual si es el último)
+        const isLast = index === cleanSegments.length - 1;
+        
+        breadcrumbs.push({
+            label: label,
+            path: location.pathname, // Simplificación: si es lineal, lleva a la misma pag
+            isLast: isLast
+        });
+    });
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs(location.pathname);
+
   const userInitials = user 
     ? `${user.nombre.charAt(0)}${user.apellido.charAt(0)}`.toUpperCase()
     : 'U';
@@ -68,7 +105,7 @@ export default function Navbar() {
         {/* Logo y Breadcrumbs */}
         <div className="flex items-center gap-8">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={homeRoute} className="flex items-center gap-2">
             <img 
               src="/peritas-teto-logo.png" 
               alt="Logo" 
@@ -76,10 +113,10 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Breadcrumbs Dinámicos */}
+          {/* Breadcrumbs */}
           <div className="flex items-center gap-2 text-sm">
             {breadcrumbs.map((crumb, index) => (
-              <div key={crumb.path} className="flex items-center gap-2">
+              <div key={index} className="flex items-center gap-2">
                 {index > 0 && (
                   <ChevronRight className="h-4 w-4 text-gray-400" />
                 )}
@@ -102,26 +139,24 @@ export default function Navbar() {
 
         {/* Acciones del usuario */}
         <div className="flex items-center gap-4">
-          {/* Notificaciones */}
           <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
             <Bell className="h-5 w-5" />
           </Button>
 
-          {/* Perfil del usuario */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div className="text-left">
+                <div className="text-left hidden sm:block">
                   <div className="text-sm font-semibold text-gray-900">
                     {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
                   </div>
                   <div className="text-xs text-gray-400">
-                    {user?.rol || 'Usuario'}
+                    {user?.rol || 'Invitado'}
                   </div>
                 </div>
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-10 w-10 border border-gray-200">
                   <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
-                  <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white">
+                  <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -130,19 +165,12 @@ export default function Navbar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link to="/perfil" className="w-full">
-                  Perfil
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link to="/configuracion" className="w-full">
-                  Configuración
-                </Link>
+              <DropdownMenuItem disabled>
+                Perfil (Próximamente)
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                className="text-red-600 cursor-pointer"
+                className="text-red-600 cursor-pointer focus:text-red-700 focus:bg-red-50"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
