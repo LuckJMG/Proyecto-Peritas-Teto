@@ -22,6 +22,7 @@ import SistemaReservasPage from "./pages/residente/SistemaReservas";
 import AdminAlertasPage from "./pages/admin/Alertas";
 import HistorialPagos from "./pages/residente/HistorialPagos/HistorialPagos";
 import SistemaPago from "./pages/residente/SistemaPago";
+import DetalleGastoPage from "./pages/residente/Detalle";
 
 function DevHome() {
   return (
@@ -107,7 +108,7 @@ function DevHome() {
                 <div className="flex items-center gap-2"><CreditCard className="w-4 h-4"/> Sistema Pago</div>
               </Link>
               <Link to="/detalle" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
-                <div className="flex items-center gap-2"><Info className="w-4 h-4"/> Detalle (WIP)</div>
+                <div className="flex items-center gap-2"><Info className="w-4 h-4"/> Detalle</div>
               </Link>
             </div>
           </div>
@@ -188,7 +189,7 @@ function App() {
         <Route path="/reservas" element={<SistemaReservasPage />} />
         <Route path="/historial" element={<HistorialPagos />} />
         <Route path="/pago" element={<SistemaPago />} />
-        <Route path="/detalle" element={<p>Detalle en construcción</p>} />
+        <Route path="/detalle" element={<DetalleGastoPage />} />
       </Routes>
     </BrowserRouter>
   );

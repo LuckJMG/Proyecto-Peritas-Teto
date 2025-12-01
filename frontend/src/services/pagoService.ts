@@ -1,6 +1,6 @@
 import { fetchWithAuth } from './authService';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_URL = '/api/v1';
 
 export type EstadoPago = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'REVERSADO';
 export type MetodoPago = 'TRANSFERENCIA' | 'TARJETA' | 'EFECTIVO' | 'WEBPAY' | 'KHIPU';
@@ -18,7 +18,7 @@ export interface Pago {
   numero_transaccion?: string;
   fecha_pago: string;
   comprobante_url?: string;
-  detalle?: string; // Agregado para compatibilidad con HistorialPagos.tsx
+  detalle?: string;
   registrado_por: number;
 }
 
@@ -30,7 +30,7 @@ export interface CrearPagoDTO {
   monto: number;
   metodo_pago: MetodoPago;
   numero_transaccion?: string;
-  detalle?: string; // Agregado para compatibilidad con IngresarPagoDialog.tsx
+  detalle?: string;
 }
 
 export const pagoService = {
@@ -52,9 +52,13 @@ export const pagoService = {
    * Obtiene pagos de un residente específico
    */
   async getByUsuario(residenteId: number): Promise<Pago[]> {
-    const response = await fetchWithAuth(`${API_URL}/pagos?residente_id=${residenteId}`);
+    // Intentamos filtrar por query param, si el backend lo soporta
+    // Si no, fetchWithAuth maneja la URL y retorna la respuesta
+    const response = await fetchWithAuth(`${API_URL}/pagos`); 
     if (!response.ok) throw new Error('Error al obtener pagos del residente');
-    return response.json();
+    
+    const allPagos: Pago[] = await response.json();
+    return allPagos.filter(p => p.residente_id === residenteId);
   },
 
   /**

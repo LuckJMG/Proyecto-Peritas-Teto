@@ -1,30 +1,40 @@
-// frontend/src/services/gastoComunService.ts
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+import { fetchWithAuth } from "./authService";
+
+const API_BASE_URL = "/api/v1";
 
 export interface GastoComun {
   id: number;
-  monto: number;
-  descripcion: string;
+  residente_id: number;
+  condominio_id: number;
+  mes: number;
+  anio: number;
+  
+  // Montos Desglosados
+  monto_base: number;
+  cuota_mantencion: number;
+  servicios: number;
+  multas: number;
+  monto_total: number;
+  
+  // Estado y Fechas
+  estado: "PENDIENTE" | "PAGADO" | "VENCIDO" | "MOROSO";
   fecha_emision: string;
   fecha_vencimiento: string;
-  estado: 'PAGADO' | 'NO_PAGADO' | 'VENCIDO' | 'PARCIAL';
-  condominio_id: number;
-  usuario_id?: number; // Dependiendo de tu modelo
+  fecha_pago?: string;
+  
+  // Detalle de cobros adicionales (JSON en BD)
+  observaciones: Array<{
+    tipo: string;
+    descripcion: string;
+    monto: number;
+    fecha: string;
+  }>;
 }
 
 class GastoComunService {
-  private getHeaders() {
-    const token = localStorage.getItem("accessToken");
-    return {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    };
-  }
-
   async getAll(): Promise<GastoComun[]> {
-    const response = await fetch(`${API_BASE_URL}/gastos-comunes`, {
+    const response = await fetchWithAuth(`${API_BASE_URL}/gastos-comunes`, {
       method: 'GET',
-      headers: this.getHeaders(),
     });
 
     if (!response.ok) {
@@ -32,6 +42,15 @@ class GastoComunService {
     }
 
     return await response.json();
+  }
+
+  /**
+   * Obtiene los gastos de un residente específico.
+   * Filtra en el cliente si el backend no soporta ?residente_id
+   */
+  async getByResidente(residenteId: number): Promise<GastoComun[]> {
+    const all = await this.getAll();
+    return all.filter(g => g.residente_id === residenteId);
   }
 }
 
