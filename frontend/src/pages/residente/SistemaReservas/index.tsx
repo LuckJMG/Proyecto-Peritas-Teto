@@ -35,7 +35,7 @@ export default function SistemaReservasPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleBackToAccount = () => {
-    navigate("/estado");
+    navigate("/resumen");
   };
 
   const loadData = async () => {

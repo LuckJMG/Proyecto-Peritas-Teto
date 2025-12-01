@@ -65,15 +65,15 @@ export default function ResumenGastoComun() {
   }, []);
 
   const handleVerDetalle = () => {
-    navigate('/historial-pagos');
+    navigate('/detalle');
   };
 
   const handlePagarCuenta = () => {
-    navigate('/sistema-pago');
+    navigate('/pago');
   };
 
   const handleVerHistorial = () => {
-    navigate('/historial-pagos');
+    navigate('/historial');
   };
 
   if (loading) return <div className="p-5 text-gray-500">Cargando estado de cuenta...</div>;

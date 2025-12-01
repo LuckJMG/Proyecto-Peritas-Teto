@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { Shield, Users, Home, Building2, Calendar, FileText, KeyRound, Key, AlertCircle } from "lucide-react";
+import { Shield, Users, Home, Building2, Calendar, FileText, KeyRound, Key, AlertCircle, Megaphone, Receipt, CreditCard, Info } from "lucide-react";
 
 // Auth Pages
 import Login from "./pages/auth/Login";
@@ -18,11 +18,13 @@ import AdminRegistrosPage from "./pages/admin/LibroRegistros";
 // Residente Pages
 import EstadoCuentaPage from "./pages/residente/EstadoCuenta";
 import SistemaReservasPage from "./pages/residente/SistemaReservas";
+import HistorialPagos from "./pages/residente/HistorialPagos/HistorialPagos";
+import SistemaPago from "./pages/residente/SistemaPago";
 
 function DevHome() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="max-w-5xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="max-w-6xl w-full bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="bg-[#333] p-6 text-white flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Casitas Teto - Dev Navigation</h1>
@@ -54,7 +56,7 @@ function DevHome() {
               <Shield className="w-5 h-5 text-purple-500" /> Super Admin
             </h2>
             <div className="flex flex-col gap-2">
-              <Link to="/condominios" className="px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium">
+              <Link to="/super/condominios" className="px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium">
                 Gestión Condominios
               </Link>
             </div>
@@ -66,10 +68,10 @@ function DevHome() {
               <Building2 className="w-5 h-5 text-orange-500" /> Administración
             </h2>
             <div className="flex flex-col gap-2">
-              <Link to="/dashboard" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
+              <Link to="/admin/dashboard" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
                 Dashboard
               </Link>
-              <Link to="/usuarios" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
+              <Link to="/admin/usuarios" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><Users className="w-4 h-4"/> Usuarios</div>
               </Link>
               <Link to="/admin/reservas" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
@@ -77,6 +79,9 @@ function DevHome() {
               </Link>
               <Link to="/admin/multas" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><AlertCircle className="w-4 h-4"/> Gestión Multas</div>
+              </Link>
+              <Link to="/admin/anuncios" className="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition-colors text-sm font-medium">
+                <div className="flex items-center gap-2"><Megaphone className="w-4 h-4"/> Gestión Anuncios</div>
               </Link>
             </div>
           </div>
@@ -87,11 +92,20 @@ function DevHome() {
               <Home className="w-5 h-5 text-[#99D050]" /> Residente
             </h2>
             <div className="flex flex-col gap-2">
-              <Link to="/estado" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
+              <Link to="/resumen" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><FileText className="w-4 h-4"/> Estado de Cuenta</div>
               </Link>
-              <Link to="/sistema-reservas" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
+              <Link to="/reservas" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
                 <div className="flex items-center gap-2"><Calendar className="w-4 h-4"/> Mis Reservas</div>
+              </Link>
+              <Link to="/historial" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
+                <div className="flex items-center gap-2"><Receipt className="w-4 h-4"/> Historial Pagos</div>
+              </Link>
+              <Link to="/pago" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
+                <div className="flex items-center gap-2"><CreditCard className="w-4 h-4"/> Sistema Pago</div>
+              </Link>
+              <Link to="/detalle" className="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium">
+                <div className="flex items-center gap-2"><Info className="w-4 h-4"/> Detalle (WIP)</div>
               </Link>
             </div>
           </div>
@@ -151,24 +165,27 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<DevHome />} />
-        
+
         {/* Auth */}
         <Route path="/login" element={<Login />} />
 
         {/* Super Admin */}
-        <Route path="/condominios" element={<ListaCondominios />} />
+        <Route path="/super/condominios" element={<ListaCondominios />} />
 
         {/* Admin */}
-        <Route path="/dashboard" element={<DashboardCondominio />} />
-        <Route path="/usuarios" element={<ListaUsuarios />} />
+        <Route path="/admin/dashboard" element={<DashboardCondominio />} />
+        <Route path="/admin/usuarios" element={<ListaUsuarios />} />
         <Route path="/admin/reservas" element={<AdminReservasPage />} />
         <Route path="/admin/multas" element={<AdminMultas />} />
         <Route path="/admin/anuncios" element={<AdminAnunciosPage />} />
         <Route path="/admin/registros" element={<AdminRegistrosPage />} />
 
         {/* Residente */}
-        <Route path="/estado" element={<EstadoCuentaPage />} />
-        <Route path="/sistema-reservas" element={<SistemaReservasPage />} />
+        <Route path="/resumen" element={<EstadoCuentaPage />} />
+        <Route path="/reservas" element={<SistemaReservasPage />} />
+        <Route path="/historial" element={<HistorialPagos />} />
+        <Route path="/pago" element={<SistemaPago />} />
+        <Route path="/detalle" element={<p>Detalle en construcción</p>} />
       </Routes>
     </BrowserRouter>
   );

@@ -36,9 +36,9 @@ export default function NavbarResidente() {
   };
 
   const menuItems = [
-    { path: '/estado', label: 'Estado de Cuenta', icon: Home },
-    { path: '/sistema-reservas', label: 'Reservas', icon: Calendar },
-    { path: '/historial-pagos', label: 'Historial de Pagos', icon: FileText },
+    { path: '/resumen', label: 'Estado de Cuenta', icon: Home },
+    { path: '/reservas', label: 'Reservas', icon: Calendar },
+    { path: '/historial', label: 'Historial de Pagos', icon: FileText },
     { path: '/anuncios', label: 'Anuncios', icon: Megaphone },
     { path: '/multas', label: 'Multas', icon: AlertTriangle },
   ];
@@ -47,7 +47,7 @@ export default function NavbarResidente() {
     <nav className="bg-white border-b border-gray-200 px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Logo */}
-        <Link to="/estado" className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
           <img 
             src="/peritas-teto-logo.png" 
             alt="Logo" 
@@ -95,7 +95,7 @@ export default function NavbarResidente() {
                 </div>
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
-                  <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white">
+                  <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white">
                     {iniciales}
                   </AvatarFallback>
                 </Avatar>

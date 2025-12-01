@@ -18,12 +18,11 @@ export function SidebarSuperAdmin({ className }: SidebarProps) {
   const pathname = location.pathname;
 
   const menuItems = [
-    { href: "/condominios", label: "Condominios", icon: Building2 },
-    { href: "/superadmin/reservas", label: "Reservas", icon: CalendarDays },
-    { href: "/superadmin/usuarios", label: "Usuarios", icon: Users },
-    { href: "/superadmin/anuncios", label: "Anuncios", icon: Megaphone },
-    // Actualizado a plural por consistencia
-    { href: "/superadmin/registros", label: "Registro", icon: FileText },
+    { href: "/super/condominios", label: "Condominios", icon: Building2 },
+    { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
+    { href: "/admin/usuarios", label: "Usuarios", icon: Users },
+    { href: "/admin/anuncios", label: "Anuncios", icon: Megaphone },
+    { href: "/admin/registros", label: "Registro", icon: FileText },
   ];
 
   const activeColor = "#99D050";

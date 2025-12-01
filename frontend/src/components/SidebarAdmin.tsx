@@ -15,11 +15,10 @@ export function SidebarAdmin({ className }: SidebarProps) {
   const pathname = location.pathname;
 
   const menuItems = [
-    { href: "/dashboard", label: "Condominio", icon: Home },
+    { href: "/admin/dashboard", label: "Condominio", icon: Home },
     { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
-    { href: "/usuarios", label: "Usuarios", icon: Users },
+    { href: "/admin/usuarios", label: "Usuarios", icon: Users },
     { href: "/admin/anuncios", label: "Anuncios", icon: Megaphone },
-    // AQUI EL CAMBIO: Ruta actualizada a /admin/registros
     { href: "/admin/registros", label: "Registro", icon: FileText },
   ];
 
