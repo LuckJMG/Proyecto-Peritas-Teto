@@ -83,11 +83,11 @@ export const authService = {
   // Lógica de redirección solicitada
   getRouteByRole(rol: RolUsuario): string {
     const routes: Record<RolUsuario, string> = {
-      [RolUsuario.SUPER_ADMINISTRADOR]: '/condominios',
-      [RolUsuario.ADMINISTRADOR]: '/dashboard',
-      [RolUsuario.CONSERJE]: '/dashboard',
-      [RolUsuario.DIRECTIVA]: '/estado', // <-- Cambio: Directiva va a estado de cuenta
-      [RolUsuario.RESIDENTE]: '/estado'
+      [RolUsuario.SUPER_ADMINISTRADOR]: '/super/condominios',
+      [RolUsuario.ADMINISTRADOR]: '/admin/dashboard',
+      [RolUsuario.CONSERJE]: '/admin/dashboard',
+      [RolUsuario.DIRECTIVA]: '/resumen', // <-- Cambio: Directiva va a estado de cuenta
+      [RolUsuario.RESIDENTE]: '/resumen'
     };
     
     // Fallback seguro
