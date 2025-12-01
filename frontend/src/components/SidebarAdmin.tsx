@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { 
-  Home, // Ícono de casa para Admin
+  Home, 
   CalendarDays, 
   Users, 
   Megaphone, 
@@ -14,14 +14,13 @@ export function SidebarAdmin({ className }: SidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
 
-  // Rutas basadas en tu App.tsx para el flujo de Admin
   const menuItems = [
     { href: "/dashboard", label: "Condominio", icon: Home },
     { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
     { href: "/usuarios", label: "Usuarios", icon: Users },
     { href: "/admin/anuncios", label: "Anuncios", icon: Megaphone },
-    // Placeholder para registro
-    { href: "/admin/registro", label: "Registro", icon: FileText },
+    // AQUI EL CAMBIO: Ruta actualizada a /admin/registros
+    { href: "/admin/registros", label: "Registro", icon: FileText },
   ];
 
   const activeColor = "#99D050";
@@ -29,9 +28,9 @@ export function SidebarAdmin({ className }: SidebarProps) {
 
   return (
     <div className={cn("pb-12 w-64 min-h-screen bg-white flex flex-col", className)}>
-      {/* Lista de Navegación (Sin botones superiores) */}
       <div className="flex-1 py-8">
-        <div className="space-y-6">
+        {/* Espaciado ajustado para items más grandes */}
+        <div className="space-y-3"> 
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
 
@@ -39,7 +38,8 @@ export function SidebarAdmin({ className }: SidebarProps) {
               <Link
                 key={item.href}
                 to={item.href}
-                className="group relative w-full flex items-center gap-4 px-6 py-1 transition-all hover:bg-slate-50 focus:outline-none"
+                // Padding vertical py-3 para mayor tamaño
+                className="group relative w-full flex items-center gap-4 px-6 py-3 transition-all hover:bg-slate-50 focus:outline-none"
               >
                 {isActive && (
                   <div 

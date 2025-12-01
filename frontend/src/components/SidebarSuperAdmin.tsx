@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { 
-  Building2, // Ícono de edificio para Superadmin
+  Building2, 
   CalendarDays, 
   Users, 
   Megaphone, 
@@ -17,31 +17,26 @@ export function SidebarSuperAdmin({ className }: SidebarProps) {
   const location = useLocation();
   const pathname = location.pathname;
 
-  // Rutas para Super Admin
   const menuItems = [
-    // Apunta a la lista principal de condominios
     { href: "/condominios", label: "Condominios", icon: Building2 },
-    // El resto pueden ser vistas globales o placeholders por ahora
     { href: "/superadmin/reservas", label: "Reservas", icon: CalendarDays },
     { href: "/superadmin/usuarios", label: "Usuarios", icon: Users },
     { href: "/superadmin/anuncios", label: "Anuncios", icon: Megaphone },
-    { href: "/superadmin/registro", label: "Registro", icon: FileText },
+    // Actualizado a plural por consistencia
+    { href: "/superadmin/registros", label: "Registro", icon: FileText },
   ];
 
   const activeColor = "#99D050";
   const inactiveColor = "#CCE8A8";
   
-  // Estilo base para los botones superiores
   const topButtonStyle = "w-full bg-[#99D050] hover:bg-[#8bc345] text-white rounded-xl py-3 px-4 shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-3 group";
 
   return (
     <div className={cn("pb-12 w-64 min-h-screen bg-white flex flex-col", className)}>
       
-      {/* === SECCIÓN DE BOTONES SUPERIORES === */}
+      {/* Botones Superiores */}
       <div className="px-6 pt-8 pb-6 space-y-4">
-        
-        {/* Botón 1: Agregar Condominio */}
-        <Link to="/condominios/crear"> {/* Link placeholder */}
+        <Link to="/condominios/crear">
             <button className={topButtonStyle}>
             <div className="relative">
                 <Home className="w-7 h-7" />
@@ -54,7 +49,6 @@ export function SidebarSuperAdmin({ className }: SidebarProps) {
             </button>
         </Link>
         
-        {/* Botón 2: Lista Condominios */}
         <Link to="/condominios">
             <button className={topButtonStyle}>
             <List className="w-7 h-7" />
@@ -66,18 +60,17 @@ export function SidebarSuperAdmin({ className }: SidebarProps) {
         </Link>
       </div>
 
-      {/* === LISTA DE NAVEGACIÓN === */}
+      {/* Lista de Navegación */}
       <div className="flex-1 py-2">
-        <div className="space-y-6">
+        <div className="space-y-3">
           {menuItems.map((item) => {
-            // Lógica para marcar activo: si estamos en /condominios o rutas hijas
             const isActive = pathname.startsWith(item.href);
 
             return (
               <Link
                 key={item.href}
                 to={item.href}
-                className="group relative w-full flex items-center gap-4 px-6 py-1 transition-all hover:bg-slate-50 focus:outline-none"
+                className="group relative w-full flex items-center gap-4 px-6 py-3 transition-all hover:bg-slate-50 focus:outline-none"
               >
                 {isActive && (
                   <div 

@@ -5,7 +5,7 @@ import { CreateAnuncioForm } from "./components/CreateAnuncioForm";
 import { AnuncioList } from "./components/AnuncioList";
 import { EditViewAnuncio } from "./components/EditViewAnuncio";
 import { DeleteAnuncioDialog } from "./components/DeleteAnuncioDialog";
-import { ErrorDialog } from "./components/ErrorDialog"; // Nuevo import
+import { ErrorDialog } from "./components/ErrorDialog"; 
 import type { Anuncio } from "@/types/anuncio.types";
 import { anuncioService } from "@/services/anuncioService";
 
@@ -32,7 +32,6 @@ export default function AnunciosPage() {
       setAnuncios(data);
     } catch (error) {
       console.error("Error al cargar:", error);
-      // Opcional: showError("No se pudieron cargar los anuncios.");
     } finally {
       setLoading(false);
     }
@@ -82,12 +81,21 @@ export default function AnunciosPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#99D050]/10 font-sans">
-      <SidebarAdmin className="w-64 flex-shrink-0 border-r bg-white z-20 shadow-xl shadow-[#99D050]/10" />
+    // CAMBIO 1: flex-col para apilar Navbar arriba del resto
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#99D050]/10 font-sans">
+      
+      {/* NAVBAR: Ahora está arriba ocupando todo el ancho */}
+      <Navbar />
 
-      <div className="flex flex-1 flex-col h-full overflow-hidden relative">
-        <Navbar />
+      {/* CAMBIO 2: Nuevo contenedor FLEX ROW para dividir Sidebar y Main */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* SIDEBAR: A la izquierda, debajo de la navbar */}
+        <div className="h-full border-r bg-white">
+            <SidebarAdmin className="w-64 h-full flex-shrink-0" />
+        </div>
 
+        {/* MAIN: A la derecha */}
         <main className="flex-1 p-6 h-full w-full overflow-hidden flex flex-col min-h-0">
           <div className="grid grid-rows-[55%_42%] gap-6 h-full w-full min-h-0">
             
@@ -126,21 +134,21 @@ export default function AnunciosPage() {
             </div>
           </div>
         </main>
-
-        {/* MODALES */}
-        <DeleteAnuncioDialog 
-          open={!!deleteId} 
-          onOpenChange={(open) => !open && setDeleteId(null)}
-          onConfirm={confirmDelete}
-          loading={isDeleting}
-        />
-
-        <ErrorDialog 
-          isOpen={!!errorMsg} 
-          onClose={() => setErrorMsg(null)} 
-          message={errorMsg || ""} 
-        />
       </div>
+
+      {/* MODALES (Fuera del layout visual pero dentro del root) */}
+      <DeleteAnuncioDialog 
+        open={!!deleteId} 
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+      />
+
+      <ErrorDialog 
+        isOpen={!!errorMsg} 
+        onClose={() => setErrorMsg(null)} 
+        message={errorMsg || ""} 
+      />
     </div>
   );
 }

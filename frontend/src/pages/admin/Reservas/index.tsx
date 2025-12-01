@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
+// 1. IMPORTAMOS LA SIDEBAR
+import { SidebarAdmin } from "@/components/SidebarAdmin";
 import { Loader2, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReservasAdmin } from "./hooks/useReservasAdmin";
@@ -66,68 +68,84 @@ export default function ReservasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    // CAMBIO 1: Layout flex vertical completo
+    <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
+      
+      {/* NAVBAR: Fija arriba */}
       <Navbar />
 
-      <main className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-              Gestión de Reservas
-            </h1>
-            <p className="text-gray-500 mt-1">
-              Administra las solicitudes y el historial de espacios comunes.
-            </p>
-          </div>
-          
-          <Button 
-            onClick={() => setShowAdminDialog(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-all active:scale-[0.98]"
-          >
-            <CalendarPlus className="mr-2 h-4 w-4" />
-            Nuevo Evento Comunidad
-          </Button>
+      {/* CAMBIO 2: Contenedor dividido (Sidebar | Main) */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* SIDEBAR: Fija a la izquierda */}
+        <div className="h-full hidden md:block border-r bg-white">
+          <SidebarAdmin className="h-full" />
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex h-96 items-center justify-center">
-            <Loader2 className="h-10 w-10 animate-spin text-[#99D050]" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-8 space-y-6">
-              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <h2 className="text-lg font-bold text-gray-900 mb-6">Historial de Reservas</h2>
-                <ReservasFilters
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  statusFilter={statusFilter}
-                  onStatusFilterChange={setStatusFilter}
-                />
-                <ReservasTable
-                  reservas={filteredTableData}
-                  onUpdateStatus={handleAction}
-                />
+        {/* MAIN: Contenido con Scroll propio */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+          
+          <div className="max-w-[1400px] mx-auto">
+            <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                  Gestión de Reservas
+                </h1>
+                <p className="text-gray-500 mt-1">
+                  Administra las solicitudes y el historial de espacios comunes.
+                </p>
               </div>
+              
+              <Button 
+                onClick={() => setShowAdminDialog(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-all active:scale-[0.98]"
+              >
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                Nuevo Evento Comunidad
+              </Button>
             </div>
 
-            <div className="lg:col-span-4">
-              <div className="sticky top-6">
-                <PendingRequests 
-                  reservas={data} 
-                  onAction={(id, action) => handleAction(id, action)} 
-                />
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+                {error}
               </div>
-            </div>
+            )}
+
+            {loading ? (
+              <div className="flex h-96 items-center justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-[#99D050]" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-8 space-y-6">
+                  <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h2 className="text-lg font-bold text-gray-900 mb-6">Historial de Reservas</h2>
+                    <ReservasFilters
+                      searchTerm={searchTerm}
+                      onSearchChange={setSearchTerm}
+                      statusFilter={statusFilter}
+                      onStatusFilterChange={setStatusFilter}
+                    />
+                    <ReservasTable
+                      reservas={filteredTableData}
+                      onUpdateStatus={handleAction}
+                    />
+                  </div>
+                </div>
+
+                <div className="lg:col-span-4">
+                  <div className="sticky top-6">
+                    <PendingRequests 
+                      reservas={data} 
+                      onAction={(id, action) => handleAction(id, action)} 
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </main>
+        </main>
+      </div>
 
       <AdminReservationDialog 
         open={showAdminDialog}

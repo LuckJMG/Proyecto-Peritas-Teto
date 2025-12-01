@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { ArrowUpDown, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
+// 1. IMPORTAMOS LA SIDEBAR
+import { SidebarAdmin } from "@/components/SidebarAdmin";
 import {
   usuarioService,
   type Usuario,
@@ -134,118 +136,128 @@ export default function ListaUsuarios() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
-        </div>
-      </div>
-    );
-  }
-
+  // 2. MODIFICAMOS EL LAYOUT PRINCIPAL (Flex Col -> Flex Row)
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
+      
+      {/* NAVBAR ARRIBA */}
       <Navbar />
 
-      <div className="p-8">
-        <div className="mx-auto max-w-7xl">
-          {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4" />
-              <span>{error}</span>
-              <button
-                className="ml-auto text-xs font-semibold"
-                onClick={() => setError(null)}
-              >
-                Cerrar
-              </button>
-            </div>
-          )}
-
-          <UsuarioFilters
-            searchTerm={searchTerm}
-            onSearchChange={(t) => {
-              setSearchTerm(t);
-              setPage(1);
-            }}
-            condominioFiltro={condominioFiltro}
-            onCondominioChange={setCondominioFiltro}
-            condominios={condominios}
-            onAddClick={() => setShowAddDialog(true)}
-          />
-
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-            <table className="w-full">
-              <thead className="border-b border-gray-300 bg-[#e5e5e5]">
-                <tr>
-                  <th className="px-4 py-2 text-center">
-                    <button
-                      onClick={() => handleSort("nombre")}
-                      className="mx-auto flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
-                    >
-                      Nombre
-                      <ArrowUpDown className="h-3 w-3" />
-                    </button>
-                  </th>
-                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
-                    Estado de cuenta
-                  </th>
-                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
-                    Último pago
-                  </th>
-                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                      No se encontraron usuarios
-                    </td>
-                  </tr>
-                ) : (
-                  visible.map((u, index) => (
-                    <UsuarioRow
-                      key={u.id}
-                      usuario={u}
-                      index={index}
-                      isExpanded={expandedId === u.id}
-                      onToggleExpand={() =>
-                        setExpandedId(expandedId === u.id ? null : u.id)
-                      }
-                      onDelete={handleDeleteClick}
-                      onChangeRol={handleChangeRol}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-600">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="disabled:text-gray-300"
-            >
-              ‹ Anterior
-            </button>
-            <span>
-              Página {page} de {totalPages}
-            </span>
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="disabled:text-gray-300"
-            >
-              Siguiente ›
-            </button>
-          </div>
+      {/* CONTENEDOR SPLIT: SIDEBAR | CONTENIDO */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* SIDEBAR A LA IZQUIERDA */}
+        <div className="h-full hidden md:block border-r bg-white">
+          <SidebarAdmin className="h-full" />
         </div>
+
+        {/* ÁREA PRINCIPAL CON SCROLL */}
+        <main className="flex-1 overflow-y-auto p-8">
+          
+          {loading ? (
+             // Spinner centrado en el área de contenido
+             <div className="flex h-full items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
+             </div>
+          ) : (
+             <div className="mx-auto max-w-7xl">
+                {error && (
+                  <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    <AlertCircle className="mt-0.5 h-4 w-4" />
+                    <span>{error}</span>
+                    <button
+                      className="ml-auto text-xs font-semibold"
+                      onClick={() => setError(null)}
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                )}
+
+                <UsuarioFilters
+                  searchTerm={searchTerm}
+                  onSearchChange={(t) => {
+                    setSearchTerm(t);
+                    setPage(1);
+                  }}
+                  condominioFiltro={condominioFiltro}
+                  onCondominioChange={setCondominioFiltro}
+                  condominios={condominios}
+                  onAddClick={() => setShowAddDialog(true)}
+                />
+
+                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+                  <table className="w-full">
+                    <thead className="border-b border-gray-300 bg-[#e5e5e5]">
+                      <tr>
+                        <th className="px-4 py-2 text-center">
+                          <button
+                            onClick={() => handleSort("nombre")}
+                            className="mx-auto flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
+                          >
+                            Nombre
+                            <ArrowUpDown className="h-3 w-3" />
+                          </button>
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
+                          Estado de cuenta
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
+                          Último pago
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visible.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                            No se encontraron usuarios
+                          </td>
+                        </tr>
+                      ) : (
+                        visible.map((u, index) => (
+                          <UsuarioRow
+                            key={u.id}
+                            usuario={u}
+                            index={index}
+                            isExpanded={expandedId === u.id}
+                            onToggleExpand={() =>
+                              setExpandedId(expandedId === u.id ? null : u.id)
+                            }
+                            onDelete={handleDeleteClick}
+                            onChangeRol={handleChangeRol}
+                          />
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-600">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="disabled:text-gray-300"
+                  >
+                    ‹ Anterior
+                  </button>
+                  <span>
+                    Página {page} de {totalPages}
+                  </span>
+                  <button
+                    disabled={page === totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className="disabled:text-gray-300"
+                  >
+                    Siguiente ›
+                  </button>
+                </div>
+             </div>
+          )}
+        </main>
       </div>
 
       <AddUsuarioDialog

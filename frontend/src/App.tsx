@@ -13,6 +13,7 @@ import ListaUsuarios from "./pages/admin/ListaUsuarios";
 import AdminReservasPage from "./pages/admin/Reservas";
 import AdminMultas from "./pages/admin/Multas/AdminMultas";
 import AdminAnunciosPage from "./pages/admin/Anuncios";
+import AdminRegistrosPage from "./pages/admin/LibroRegistros";
 
 // Residente Pages
 import EstadoCuentaPage from "./pages/residente/EstadoCuenta";
@@ -163,6 +164,7 @@ function App() {
         <Route path="/admin/reservas" element={<AdminReservasPage />} />
         <Route path="/admin/multas" element={<AdminMultas />} />
         <Route path="/admin/anuncios" element={<AdminAnunciosPage />} />
+        <Route path="/admin/registros" element={<AdminRegistrosPage />} />
 
         {/* Residente */}
         <Route path="/estado" element={<EstadoCuentaPage />} />

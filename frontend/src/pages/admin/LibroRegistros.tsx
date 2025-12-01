@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+// 1. IMPORTAMOS LA SIDEBAR
+import { SidebarAdmin } from "@/components/SidebarAdmin";
 import { registroService, type Registro, type TipoEvento } from "@/services/registroService";
 import { ErrorAlert } from "@/components/registros/ErrorAlert";
 import { RegistrosHeader } from "@/components/registros/RegistrosHeader";
@@ -53,40 +55,50 @@ export default function LibroRegistros() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    // CAMBIO 1: Layout Flex Vertical (Navbar arriba, resto abajo)
+    <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
+      
+      {/* NAVBAR: Fija arriba */}
       <Navbar />
 
-      <div className="p-8">
-        <div className="mx-auto max-w-7xl">
-          <ErrorAlert error={error} onClose={() => setError(null)} />
-
-          <RegistrosHeader
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            tipoFiltro={tipoFiltro}
-            setTipoFiltro={setTipoFiltro}
-            onAddClick={() => setShowAddDialog(true)}
-            setPage={setPage}
-          />
-
-          <RegistrosTable
-            registros={visible}
-          />
-
-          <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+      {/* CAMBIO 2: Contenedor dividido (Sidebar | Contenido) */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* SIDEBAR: Fija a la izquierda */}
+        <div className="h-full hidden md:block border-r bg-white">
+          <SidebarAdmin className="h-full" />
         </div>
+
+        {/* MAIN: Contenido principal con scroll propio */}
+        <main className="flex-1 overflow-y-auto p-8">
+          
+          {/* Lógica de carga DENTRO del main para no ocultar la sidebar */}
+          {loading ? (
+             <div className="flex h-full items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
+             </div>
+          ) : (
+            <div className="mx-auto max-w-7xl">
+              <ErrorAlert error={error} onClose={() => setError(null)} />
+
+              <RegistrosHeader
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                tipoFiltro={tipoFiltro}
+                setTipoFiltro={setTipoFiltro}
+                onAddClick={() => setShowAddDialog(true)}
+                setPage={setPage}
+              />
+
+              <RegistrosTable
+                registros={visible}
+              />
+
+              <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+            </div>
+          )}
+        </main>
       </div>
 
       <AddRegistroDialog
