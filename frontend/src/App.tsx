@@ -18,6 +18,8 @@ import AdminRegistrosPage from "./pages/admin/LibroRegistros";
 // Residente Pages
 import EstadoCuentaPage from "./pages/residente/EstadoCuenta";
 import SistemaReservasPage from "./pages/residente/SistemaReservas";
+
+import AdminAlertasPage from "./pages/admin/Alertas";
 import HistorialPagos from "./pages/residente/HistorialPagos/HistorialPagos";
 import SistemaPago from "./pages/residente/SistemaPago";
 
@@ -178,6 +180,7 @@ function App() {
         <Route path="/admin/reservas" element={<AdminReservasPage />} />
         <Route path="/admin/multas" element={<AdminMultas />} />
         <Route path="/admin/anuncios" element={<AdminAnunciosPage />} />
+        <Route path="/admin/alertas" element={<AdminAlertasPage />} />
         <Route path="/admin/registros" element={<AdminRegistrosPage />} />
 
         {/* Residente */}

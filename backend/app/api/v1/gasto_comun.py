@@ -5,6 +5,7 @@ from typing import List
 from app.api.deps import get_db
 from app.models.gasto_comun import GastoComun
 from app.schemas.gasto_comun import GastoComunInput
+from app.models.alerta import Alerta, TipoAlerta
 
 router = APIRouter(prefix="/gastos-comunes", tags=["Gastos Comunes"])
 
@@ -45,6 +46,17 @@ async def actualizar(gasto_id: int, data: GastoComunInput, db: Session = Depends
         setattr(gasto, key, value)
     
     db.add(gasto)
+    
+    # --- TRIGGER ALERTA: EDICIÓN DE GASTO ---
+    alerta_edicion = Alerta(
+        titulo="Edición de Gasto Común",
+        descripcion=f"El Gasto Común ID {gasto_id} ({gasto.mes}/{gasto.anio}) ha sido modificado.",
+        tipo=TipoAlerta.EDICION_GASTO,
+        condominio_id=gasto.condominio_id
+    )
+    db.add(alerta_edicion)
+    # ----------------------------------------
+
     db.commit()
     db.refresh(gasto)
     return gasto

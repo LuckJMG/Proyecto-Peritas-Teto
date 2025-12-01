@@ -8,6 +8,7 @@ from .reserva import Reserva, EstadoReserva
 from .pago import Pago, TipoPago, MetodoPago, EstadoPago
 from .anuncio import Anuncio
 from .registro import RegistroModel, TipoEvento
+from .alerta import Alerta, TipoAlerta, EstadoAlerta
 
 __all__ = [
     "Usuario", "RolUsuario",
@@ -19,5 +20,6 @@ __all__ = [
     "Reserva", "EstadoReserva",
     "Pago", "TipoPago", "MetodoPago", "EstadoPago",
     "Anuncio",
-    "RegistroModel", "TipoEvento"
+    "RegistroModel", "TipoEvento",
+    "Alerta", "TipoAlerta", "EstadoAlerta"
 ]

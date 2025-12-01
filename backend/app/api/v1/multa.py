@@ -14,6 +14,7 @@ from app.api.deps import get_db
 from app.models.multa import Multa, TipoMulta, EstadoMulta
 from app.models.gasto_comun import GastoComun, EstadoGastoComun
 from app.models.usuario import Usuario
+from app.models.alerta import Alerta, TipoAlerta, EstadoAlerta
 
 router = APIRouter(prefix="/multas", tags=["Multas"])
 
@@ -39,14 +40,22 @@ async def crear_multa(data: Multa, db: Session = Depends(get_db)):
     """
     Crea una nueva multa manual.
     """
-    # Validar que el residente y condominio existan (opcional pero recomendado)
-    # item = Multa.model_validate(data) # Esto falla si data es un dict parcial, mejor usar constructor
-    
     # Aseguramos estado pendiente por defecto si no viene
     if not data.estado:
         data.estado = EstadoMulta.PENDIENTE
         
     db.add(data)
+    
+    # --- TRIGGER ALERTA: NUEVA MULTA MANUAL ---
+    nueva_alerta = Alerta(
+        titulo="Nueva Multa Cursada (Manual)",
+        descripcion=f"Se ha cursado una multa manual de ${data.monto} al residente ID {data.residente_id}. Motivo: {data.descripcion}",
+        tipo=TipoAlerta.MULTA,
+        condominio_id=data.condominio_id
+    )
+    db.add(nueva_alerta)
+    # ------------------------------------------
+
     db.commit()
     db.refresh(data)
     
@@ -63,9 +72,6 @@ async def procesar_atrasos(
     """
     today = date.today()
     
-    # 1. Buscar gastos comunes vencidos (PENDIENTE y fecha_vencimiento < hoy)
-    # OJO: Se asume que si ya está VENCIDO o MOROSO ya se procesó o se está procesando, 
-    # pero aquí buscamos especificamente los que siguen en PENDIENTE pero ya vencieron.
     gastos_vencidos = db.exec(select(GastoComun).where(
         GastoComun.fecha_vencimiento < today,
         GastoComun.estado == EstadoGastoComun.PENDIENTE
@@ -78,8 +84,7 @@ async def procesar_atrasos(
         gc.estado = EstadoGastoComun.VENCIDO
         db.add(gc)
 
-        # Verificar si ya existe una multa por retraso para este gasto común (mes/anio/residente)
-        # Usamos la descripción para identificarla en este MVP rápido
+        # Verificar si ya existe una multa por retraso para este gasto común
         descripcion_multa = f"Multa automática por atraso Gasto Común {gc.mes}/{gc.anio}"
         
         existe_multa = db.exec(select(Multa).where(
@@ -90,7 +95,6 @@ async def procesar_atrasos(
 
         if not existe_multa:
             # Crear Multa
-            # Monto fijo de multa por ejemplo $5.000 o un % del monto total. Usaremos 5000 para demo.
             monto_multa = Decimal("5000.00")
             
             nueva_multa = Multa(
@@ -104,6 +108,17 @@ async def procesar_atrasos(
                 creado_por=admin_id
             )
             db.add(nueva_multa)
+            
+            # --- TRIGGER ALERTA: MOROSIDAD DETECTADA ---
+            alerta_morosidad = Alerta(
+                titulo="Morosidad Detectada",
+                descripcion=f"El residente ID {gc.residente_id} ha pasado a morosidad por Gasto Común {gc.mes}/{gc.anio}. Se generó multa automática.",
+                tipo=TipoAlerta.MOROSIDAD,
+                condominio_id=gc.condominio_id
+            )
+            db.add(alerta_morosidad)
+            # -------------------------------------------
+
             multas_creadas += 1
 
     db.commit()
