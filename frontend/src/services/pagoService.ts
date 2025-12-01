@@ -33,29 +33,15 @@ export interface CrearPagoDTO {
   detalle?: string;
 }
 
-export interface PagoFilters {
-  condominio_id?: number;
-  estado_pago?: EstadoPago | 'TODOS';
-  fecha_inicio?: string;
-  fecha_fin?: string;
-}
-
 export const pagoService = {
   /**
    * Obtiene todos los pagos (Para el Dashboard de Admin)
    * Soporta filtros opcionales
    */
-  async getAll(filters?: PagoFilters): Promise<Pago[]> {
+  async getAll(filters?: { condominio_id?: number; estado_pago?: EstadoPago }): Promise<Pago[]> {
     const params = new URLSearchParams();
     if (filters?.condominio_id) params.append('condominio_id', filters.condominio_id.toString());
-    
-    // Solo enviamos si no es TODOS
-    if (filters?.estado_pago && filters.estado_pago !== 'TODOS') {
-        params.append('estado_pago', filters.estado_pago);
-    }
-    
-    if (filters?.fecha_inicio) params.append('fecha_inicio', filters.fecha_inicio);
-    if (filters?.fecha_fin) params.append('fecha_fin', filters.fecha_fin);
+    if (filters?.estado_pago) params.append('estado_pago', filters.estado_pago);
 
     const response = await fetchWithAuth(`${API_URL}/pagos?${params.toString()}`);
     if (!response.ok) throw new Error('Error al obtener el listado de pagos');

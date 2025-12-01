@@ -1,169 +1,59 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { Link } from "react-router-dom";
 import { Overview } from "@/components/dashboard/Overview";
 import { HogaresMorosos } from "@/components/dashboard/HogaresMorosos";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
-import { useDashboardData } from "@/hooks/useDashboardData";
-import type { DateRange } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableFooter
-} from "@/components/ui/table";
 import { 
   DollarSign, 
-  FileDown,
-  Filter
+  MoreHorizontal, 
+  ChevronLeft,
+  ChevronRight,
+  Wallet
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 export default function DashboardCondominio() {
-  // --- ESTADO DE FILTROS ---
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    to: new Date()
-  });
-  const [estadoFilter, setEstadoFilter] = useState<string>("TODOS");
+  const [currentChart, setCurrentChart] = useState(0);
+  const totalCharts = 3; 
 
-  // --- HOOK DE DATOS ---
-  const { 
-    ingresoTotal, 
-    totalFacturado, 
-    cantidadMultas, 
-    indiceMorosidad, 
-    transacciones,
-    loading 
-  } = useDashboardData({
-    dateRange,
-    estadoPago: estadoFilter as any
-  });
+  const handleNext = () => setCurrentChart((prev) => (prev + 1) % totalCharts);
+  const handlePrev = () => setCurrentChart((prev) => (prev - 1 + totalCharts) % totalCharts);
 
   const greenColor = "#99D050"; 
+  
+  // Estilo Sólido (Shadow Compacta)
   const cardStyle = `border border-gray-100 bg-white rounded-[20px] shadow-[0px_4px_10px_rgba(153,208,80,0.25)] transition-none`;
 
-  // --- EXPORTAR A CSV ---
-  const handleExport = () => {
-    const headers = ["ID", "Fecha", "Residente", "Concepto", "Monto", "Estado"];
-    const rows = transacciones.map(t => [
-        t.id,
-        format(new Date(t.fecha), 'yyyy-MM-dd HH:mm'),
-        t.residente,
-        t.concepto,
-        t.monto,
-        t.estado
-    ]);
-    
-    const csvContent = "data:text/csv;charset=utf-8," 
-        + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-        
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `reporte_financiero_${format(new Date(), 'yyyyMMdd')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Helper para Badge de estado
-  const getStatusBadge = (status: string) => {
-      switch(status) {
-          case 'APROBADO': return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Pagado</Badge>;
-          case 'PENDIENTE': return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pendiente</Badge>;
-          case 'RECHAZADO': return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Rechazado</Badge>;
-          default: return <Badge variant="outline">{status}</Badge>;
-      }
-  };
-
   return (
+    // CAMBIO 1: flex-col en lugar de flex (por defecto row) para apilar Navbar sobre el resto
     <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
+      
+      {/* NAVBAR: Ahora está arriba de todo, ocupando todo el ancho */}
       <Navbar />
 
+      {/* CONTENEDOR INFERIOR: Este divide el espacio restante entre Sidebar y Main */}
       <div className="flex flex-1 overflow-hidden">
-        <div className="h-full hidden md:block border-r border-gray-200/50">
+        
+        {/* SIDEBAR: Ahora vive dentro de este contenedor inferior */}
+        <div className="h-full hidden md:block border-r border-gray-200/50"> {/* Opcional: border-r para separar visualmente */}
           <SidebarAdmin className="h-full" />
         </div>
 
-        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
+        {/* CONTENIDO PRINCIPAL */}
+        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden"> 
+          {/* Nota: agregué overflow-y-auto aquí para que el scroll sea solo en el contenido */}
           
-          {/* --- BARRA DE FILTROS SUPERIOR (HU16) --- */}
-          <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-            <h1 className="text-2xl font-bold text-gray-800">Reporte Financiero</h1>
+          <div className="flex h-full gap-6">
             
-            <div className="flex items-center gap-3">
-              {/* Selector de Fecha */}
-              <div className="bg-white rounded-md shadow-sm">
-                 <div className="flex items-center border rounded-md px-3 py-2 bg-white gap-2">
-                    <span className="text-sm text-gray-500">Desde:</span>
-                    <input 
-                        type="date" 
-                        className="text-sm outline-none"
-                        value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                        onChange={(e) => setDateRange((prev) => ({
-                             from: e.target.value ? new Date(e.target.value) : prev?.from,
-                             to: prev?.to 
-                        }))}
-                    />
-                    <span className="text-sm text-gray-500">Hasta:</span>
-                    <input 
-                        type="date" 
-                        className="text-sm outline-none"
-                        value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                        onChange={(e) => setDateRange((prev) => ({
-                             from: prev?.from,
-                             to: e.target.value ? new Date(e.target.value) : prev?.to
-                        }))}
-                    />
-                 </div>
-              </div>
-
-              {/* Selector de Estado */}
-              <Select value={estadoFilter} onValueChange={setEstadoFilter}>
-                <SelectTrigger className="w-[180px] bg-white">
-                  <Filter className="w-4 h-4 mr-2 text-gray-500" />
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODOS">Todos los estados</SelectItem>
-                  <SelectItem value="APROBADO">Pagado</SelectItem>
-                  <SelectItem value="PENDIENTE">Pendiente</SelectItem>
-                  <SelectItem value="RECHAZADO">Rechazado</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Botón Exportar */}
-              <Button 
-                onClick={handleExport}
-                className="bg-[#99D050] hover:bg-[#88c040] text-white font-bold shadow-md"
-              >
-                <FileDown className="w-4 h-4 mr-2" />
-                Exportar CSV
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex h-full gap-6 flex-col xl:flex-row">
             {/* === COLUMNA IZQUIERDA === */}
             <div className="flex-[3] flex flex-col gap-6 h-full min-w-0">
               
-              {/* FILA 1: KPIs SUPERIORES (CONECTADOS) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
-                <Card className={`${cardStyle} flex flex-col justify-center relative overflow-hidden h-[150px]`}>
+              {/* FILA 1: KPIs SUPERIORES */}
+              <div className="grid grid-cols-3 gap-6 h-[150px] shrink-0">
+                <Card className={`${cardStyle} flex flex-col justify-center relative overflow-hidden`}>
                   <CardContent className="p-0 flex items-center gap-4 px-6 relative z-10">
                     <div className="h-20 w-20 rounded-full flex items-center justify-center shrink-0 bg-[#E4F4C8]">
                        <div className="bg-white p-3 rounded-full shadow-sm">
@@ -171,115 +61,168 @@ export default function DashboardCondominio() {
                        </div>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-500 mb-1">Recaudado (Pagos)</p>
-                      <div className="text-3xl font-extrabold text-gray-800 tracking-tight">
-                        ${ingresoTotal.toLocaleString('es-CL')}
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1">
-                        vs Facturado: ${totalFacturado.toLocaleString('es-CL')}
-                      </p>
+                      <p className="text-sm font-bold text-gray-500 mb-1">Ingreso por renta</p>
+                      <div className="text-5xl font-extrabold text-gray-800 tracking-tight">$800M</div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center h-[150px]`}>
+                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center`}>
                   <CardContent className="p-0">
                       <p className="text-sm font-bold text-gray-500 mb-2">Índice de Morosidad</p>
-                      <div className="text-5xl font-extrabold text-gray-900 tracking-tight">
-                        {indiceMorosidad}%
-                      </div>
+                      <div className="text-6xl font-extrabold text-gray-900 tracking-tight">30%</div>
                   </CardContent>
                 </Card>
 
-                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center h-[150px]`}>
+                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center`}>
                   <CardContent className="p-0">
-                      <p className="text-sm font-bold text-gray-500 mb-2">Multas del Periodo</p>
-                      <div className="text-5xl font-extrabold text-gray-900 tracking-tight">
-                        {cantidadMultas}
-                      </div>
+                      <p className="text-sm font-bold text-gray-500 mb-2">Multas Registradas</p>
+                      <div className="text-6xl font-extrabold text-gray-900 tracking-tight">30</div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* TABLA DE TRANSACCIONES (HU16 - Requisito Principal) */}
-              <Card className="border border-gray-100 bg-white rounded-[20px] shadow-sm overflow-hidden flex-1">
-                <CardHeader>
-                    <CardTitle>Detalle de Transacciones</CardTitle>
+              {/* FILA 2: GRÁFICO */}
+              <div className="flex items-center gap-4 flex-1 min-h-0">
+                
+                <Button onClick={handlePrev} variant="ghost" size="icon" className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform">
+                  <ChevronLeft className="h-7 w-7" />
+                </Button>
+
+                <Card className={`${cardStyle} w-full h-full flex flex-col relative overflow-hidden`}>
+                  {currentChart === 0 ? (
+                    <>
+                      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-8 shrink-0 z-10 bg-white">
+                          <div className="flex items-center gap-4">
+                            <span className="text-2xl font-bold" style={{ color: greenColor }}>Ingresos</span>
+                            <span className="text-sm text-gray-400 font-medium hidden xl:block">Gasto común + Renta + Servicios</span>
+                          </div>
+                          <div className="flex gap-6 text-xs font-bold uppercase tracking-wide">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: greenColor }}></div> 
+                              <span className="text-gray-600">Dinero Ingresado</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-[#E4F4C8]"></div> 
+                              <span className="text-gray-400">Dinero estimado</span>
+                            </div>
+                          </div>
+                      </CardHeader>
+                      
+                      <CardContent className="flex-1 w-full min-h-0 relative">
+                        <div className="absolute inset-0 pb-2 pr-4 pl-0">
+                            <Overview /> 
+                        </div>
+                      </CardContent>
+
+                      <div className="flex justify-center items-center h-8 shrink-0 pb-2 z-10 bg-white">
+                          {[0, 1, 2].map((idx) => (
+                            <button 
+                              key={idx}
+                              onClick={() => setCurrentChart(idx)}
+                              className={`rounded-full transition-all duration-300 mx-1.5 ${currentChart === idx ? 'w-8 h-2.5' : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'}`}
+                              style={{ backgroundColor: currentChart === idx ? greenColor : undefined }}
+                            />
+                          ))}
+                      </div>
+                    </>
+                  ) : (
+                    <CardContent className="flex flex-col items-center justify-center flex-1 w-full animate-in zoom-in-95 duration-300">
+                        <div className="h-20 w-20 rounded-full bg-[#E4F4C8] flex items-center justify-center mb-4">
+                            <Wallet className="h-10 w-10 text-[#99D050]" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-400">Gráfico {currentChart + 1}</h3>
+                        <p className="text-gray-400 mt-2">Próximamente</p>
+                        <div className="flex justify-center mt-8">
+                           {[0, 1, 2].map((idx) => (
+                             <button 
+                               key={idx}
+                               onClick={() => setCurrentChart(idx)}
+                               className={`rounded-full transition-all duration-300 mx-1.5 ${currentChart === idx ? 'w-8 h-2.5' : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'}`}
+                               style={{ backgroundColor: currentChart === idx ? greenColor : undefined }}
+                             />
+                           ))}
+                        </div>
+                    </CardContent>
+                  )}
+                </Card>
+
+                <Button onClick={handleNext} variant="ghost" size="icon" className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform">
+                  <ChevronRight className="h-7 w-7" />
+                </Button>
+              </div>
+
+              {/* FILA 3: KPIs INFERIORES */}
+              <div className="grid grid-cols-3 gap-6 h-[140px] shrink-0">
+                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
+                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Ingresos Reservas</p>
+                   <div className="text-4xl font-extrabold mt-2 text-gray-900">$341.820</div>
+                </Card>
+                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
+                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Residentes</p>
+                   <div className="text-4xl font-extrabold mt-2 text-gray-900">300.000</div>
+                </Card>
+                <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
+                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Reservas por confirmar</p>
+                   <div className="text-5xl font-extrabold mt-2 text-gray-900">20</div>
+                </Card>
+              </div>
+            </div>
+
+            {/* === COLUMNA DERECHA === */}
+            <div className="flex-1 flex flex-col gap-6 min-w-[340px] max-w-[420px]">
+              <Card className={`${cardStyle} flex-none`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-4 pt-6 px-6">
+                  <CardTitle className="text-lg font-bold text-gray-900">Avisos Comunidad</CardTitle>
+                  <Link to="/admin/anuncios">
+                    <Button size="sm" className="text-white font-bold h-7 rounded-md px-3 text-xs shadow-none active:scale-95 transition-transform" style={{ backgroundColor: greenColor }}>
+                      Ver más
+                    </Button>
+                  </Link>
                 </CardHeader>
-                <CardContent className="p-0">
-                    <div className="max-h-[400px] overflow-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Fecha</TableHead>
-                                    <TableHead>Residente</TableHead>
-                                    <TableHead>Concepto</TableHead>
-                                    <TableHead className="text-right">Monto</TableHead>
-                                    <TableHead className="text-center">Estado</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8">Cargando datos...</TableCell>
-                                    </TableRow>
-                                ) : transacciones.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">No se encontraron transacciones en este periodo.</TableCell>
-                                    </TableRow>
-                                ) : (
-                                    transacciones.map((t: any) => (
-                                        <TableRow key={t.id}>
-                                            <TableCell>{format(new Date(t.fecha), 'dd/MM/yyyy')}</TableCell>
-                                            <TableCell className="font-medium">{t.residente}</TableCell>
-                                            <TableCell>{t.concepto}</TableCell>
-                                            <TableCell className="text-right font-bold text-gray-700">
-                                                ${Number(t.monto).toLocaleString('es-CL')}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {getStatusBadge(t.estado)}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                            {/* TOTALES CALCULADOS (Requisito HU) */}
-                            <TableFooter className="bg-gray-50">
-                                <TableRow>
-                                    <TableCell colSpan={3} className="font-bold text-right">Totales del Periodo:</TableCell>
-                                    <TableCell className="text-right font-bold text-green-600 text-lg">
-                                        ${ingresoTotal.toLocaleString('es-CL')} (Recaudado)
-                                    </TableCell>
-                                    <TableCell className="text-center text-xs text-gray-500">
-                                        / ${totalFacturado.toLocaleString('es-CL')} (Facturado)
-                                    </TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                    </div>
+                <CardContent className="px-6 pb-6 space-y-5">
+                   <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-lg border border-blue-100">🎉</div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">Fiestas Patrias</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Mañana 14:00 hrs</p>
+                        </div>
+                      </div>
+                      <MoreHorizontal className="h-5 w-5 text-gray-300" />
+                   </div>
+                   <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center text-lg border border-red-100">
+                             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" className="h-8 w-8" alt="icon" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">Lavadora 2 no funciona</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Por favor arreglar.</p>
+                        </div>
+                      </div>
+                      <MoreHorizontal className="h-5 w-5 text-gray-300" />
+                   </div>
+                   <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-lg border border-orange-100">😎</div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">Piscina disponible</p>
+                          <p className="text-xs text-gray-400 mt-0.5">¡Llegó el verano!</p>
+                        </div>
+                      </div>
+                      <MoreHorizontal className="h-5 w-5 text-gray-300" />
+                   </div>
                 </CardContent>
               </Card>
 
-              {/* GRAFICO (Reutilizado pero conectado) */}
-              <div className="h-[300px] w-full">
-                  <Card className={`${cardStyle} h-full p-4`}>
-                      <Overview /> 
-                  </Card>
-              </div>
-
-            </div>
-
-            {/* === COLUMNA DERECHA (Mantenemos widgets existentes) === */}
-            <div className="flex-1 flex flex-col gap-6 min-w-[300px] max-w-[400px]">
               <div className="flex-1 min-h-0">
                 <HogaresMorosos customStyle={cardStyle} greenColor={greenColor} />
               </div>
 
               <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-6 h-[140px] shrink-0 border-2 border-[#E4F4C8]`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Deuda Total de Impago</p>
-                   <div className="text-4xl font-extrabold mt-2 text-gray-900 tracking-tight">
-                       ${useDashboardData({ dateRange: undefined, estadoPago: 'TODOS' }).deudaTotal.toLocaleString('es-CL')}
-                   </div>
+                   <div className="text-4xl font-extrabold mt-2 text-gray-900 tracking-tight">$237.821.234</div>
               </Card>
             </div>
           </div>

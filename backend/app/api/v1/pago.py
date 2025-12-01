@@ -1,4 +1,4 @@
-# backend/app/api/v1/pago.py
+# backend/app/api/v1/pagos.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import Optional, List
@@ -21,8 +21,6 @@ async def listar_pagos(
     residente_id: Optional[int] = None,
     tipo: Optional[str] = None,
     estado_pago: Optional[str] = None,
-    fecha_inicio: Optional[datetime] = None,
-    fecha_fin: Optional[datetime] = None,
     db: Session = Depends(get_db)
 ):
     query = select(Pago)
@@ -35,12 +33,6 @@ async def listar_pagos(
         query = query.where(Pago.tipo == tipo)
     if estado_pago:
         query = query.where(Pago.estado_pago == estado_pago)
-    
-    # Filtros de fecha
-    if fecha_inicio:
-        query = query.where(Pago.fecha_pago >= fecha_inicio)
-    if fecha_fin:
-        query = query.where(Pago.fecha_pago <= fecha_fin)
     
     items = db.exec(query).all()
     return items
