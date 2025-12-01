@@ -1,0 +1,74 @@
+import { useLocation, Link } from "react-router-dom";
+import { 
+  Home, // Ícono de casa para Admin
+  CalendarDays, 
+  Users, 
+  Megaphone, 
+  FileText 
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function SidebarAdmin({ className }: SidebarProps) {
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  // Rutas basadas en tu App.tsx para el flujo de Admin
+  const menuItems = [
+    { href: "/dashboard", label: "Condominio", icon: Home },
+    { href: "/admin/reservas", label: "Reservas", icon: CalendarDays },
+    { href: "/usuarios", label: "Usuarios", icon: Users },
+    { href: "/admin/anuncios", label: "Anuncios", icon: Megaphone },
+    // Placeholder para registro
+    { href: "/admin/registro", label: "Registro", icon: FileText },
+  ];
+
+  const activeColor = "#99D050";
+  const inactiveColor = "#CCE8A8";
+
+  return (
+    <div className={cn("pb-12 w-64 min-h-screen bg-white flex flex-col", className)}>
+      {/* Lista de Navegación (Sin botones superiores) */}
+      <div className="flex-1 py-8">
+        <div className="space-y-6">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="group relative w-full flex items-center gap-4 px-6 py-1 transition-all hover:bg-slate-50 focus:outline-none"
+              >
+                {isActive && (
+                  <div 
+                    className="absolute left-0 top-0 bottom-0 w-[5px] rounded-r-sm"
+                    style={{ backgroundColor: activeColor }}
+                  />
+                )}
+
+                <item.icon 
+                  className="h-6 w-6 transition-colors duration-200"
+                  style={{ color: isActive ? activeColor : inactiveColor }}
+                  strokeWidth={isActive ? 2.5 : 2}
+                />
+
+                <span 
+                  className={cn(
+                    "text-base transition-colors duration-200",
+                    isActive 
+                      ? "font-bold text-slate-800" 
+                      : "font-normal text-gray-500"
+                  )}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

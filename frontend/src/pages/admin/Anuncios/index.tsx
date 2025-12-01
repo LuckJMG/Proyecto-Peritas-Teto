@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import { Sidebar } from "@/components/Sidebar";
+import { SidebarAdmin } from "@/components/SidebarAdmin";
 import { CreateAnuncioForm } from "./components/CreateAnuncioForm";
 import { AnuncioList } from "./components/AnuncioList";
 import { EditViewAnuncio } from "./components/EditViewAnuncio";
@@ -83,7 +83,7 @@ export default function AnunciosPage() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#99D050]/10 font-sans">
-      <Sidebar className="w-64 flex-shrink-0 border-r bg-white z-20 shadow-xl shadow-[#99D050]/10" />
+      <SidebarAdmin className="w-64 flex-shrink-0 border-r bg-white z-20 shadow-xl shadow-[#99D050]/10" />
 
       <div className="flex flex-1 flex-col h-full overflow-hidden relative">
         <Navbar />
