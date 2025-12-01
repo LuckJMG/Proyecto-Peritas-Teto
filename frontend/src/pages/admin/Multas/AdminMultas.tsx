@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { multaService, type Multa } from "@/services/multaService"; // CORREGIDO AQUÍ
+import { multaService, type Multa } from "@/services/multaService";
+import { residenteService, type Residente } from "@/services/residenteService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,12 +14,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// NOTA: Para este MVP asumimos Admin ID = 1 y Condominio ID = 1.
+// Constantes para MVP
 const CURRENT_ADMIN_ID = 1;
 const CURRENT_CONDOMINIO_ID = 1;
 
 export default function AdminMultas() {
   const [multas, setMultas] = useState<Multa[]>([]);
+  const [residentes, setResidentes] = useState<Residente[]>([]); // Lista para cruzar datos
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -32,28 +34,42 @@ export default function AdminMultas() {
   });
 
   useEffect(() => {
-    loadMultas();
+    loadData();
   }, []);
 
-  const loadMultas = async () => {
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const data = await multaService.getAll();
-      setMultas(data);
+      // Cargamos multas y residentes en paralelo
+      const [multasData, residentesData] = await Promise.all([
+        multaService.getAll(),
+        residenteService.getAll()
+      ]);
+      setMultas(multasData);
+      setResidentes(residentesData);
     } catch (error) {
-      console.error(error);
+      console.error("Error cargando datos", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Helper para obtener nombre del residente
+  const getNombreResidente = (id: number) => {
+    const res = residentes.find(r => r.id === id);
+    return res ? `${res.nombre} ${res.apellido} (Casa ${res.vivienda_numero})` : `ID: ${id}`;
+  };
+
   const handleProcesarAutomaticas = async () => {
-    if (!confirm("¿Está seguro de generar multas automáticas para los gastos comunes vencidos?")) return;
+    if (!confirm("¿Generar multas automáticas para gastos vencidos?")) return;
     
     setProcessing(true);
     try {
       const res = await multaService.procesarAtrasos(CURRENT_ADMIN_ID);
-      alert(`Proceso completado. Se crearon ${res.multas_creadas} multas.`);
-      loadMultas();
+      alert(`Proceso completado. Se crearon ${res.multas_creadas} multas nuevas.`);
+      // Recargar solo multas
+      const multasUpdated = await multaService.getAll();
+      setMultas(multasUpdated);
     } catch (error) {
       alert("Error al procesar multas automáticas");
     } finally {
@@ -70,13 +86,16 @@ export default function AdminMultas() {
       
       await multaService.create(newMulta as Multa);
       setIsCreateOpen(false);
+      // Reset form
       setNewMulta({
         tipo: "OTRO",
         condominio_id: CURRENT_CONDOMINIO_ID,
         creado_por: CURRENT_ADMIN_ID,
         estado: "PENDIENTE"
       });
-      loadMultas();
+      // Recargar
+      const multasUpdated = await multaService.getAll();
+      setMultas(multasUpdated);
     } catch (error) {
       console.error(error);
       alert("Error al crear multa");
@@ -103,20 +122,33 @@ export default function AdminMultas() {
             <DialogTrigger asChild>
               <Button className="bg-[#8BC34A] hover:bg-[#7CB342]">Nueva Multa Manual</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Aplicar Multa Manual</DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                
+                {/* Selector de Residente Mejorado */}
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">ID Residente</Label>
-                  <Input 
-                    type="number"
-                    className="col-span-3" 
-                    placeholder="Ej: 1"
-                    onChange={(e) => setNewMulta({...newMulta, residente_id: parseInt(e.target.value)})}
-                  />
+                  <Label className="text-right">Residente</Label>
+                  <div className="col-span-3">
+                    <Select 
+                      onValueChange={(val) => setNewMulta({...newMulta, residente_id: parseInt(val)})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione residente..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {residentes.map((r) => (
+                          <SelectItem key={r.id} value={r.id.toString()}>
+                            {r.nombre} {r.apellido} - {r.vivienda_numero}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Tipo</Label>
                   <div className="col-span-3">
@@ -137,6 +169,7 @@ export default function AdminMultas() {
                     </Select>
                   </div>
                 </div>
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Monto ($)</Label>
                   <Input 
@@ -146,6 +179,7 @@ export default function AdminMultas() {
                     onChange={(e) => setNewMulta({...newMulta, monto: parseFloat(e.target.value)})}
                   />
                 </div>
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Descripción</Label>
                   <Input 
@@ -163,31 +197,45 @@ export default function AdminMultas() {
         </div>
       </div>
 
-      <div className="rounded-md border bg-white">
+      <div className="rounded-md border bg-white overflow-hidden shadow-sm">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 border-b">
+          <thead className="bg-gray-50 border-b text-gray-700">
             <tr>
-              <th className="px-4 py-3 font-medium">ID</th>
-              <th className="px-4 py-3 font-medium">Residente ID</th>
-              <th className="px-4 py-3 font-medium">Tipo</th>
-              <th className="px-4 py-3 font-medium">Descripción</th>
-              <th className="px-4 py-3 font-medium">Monto</th>
-              <th className="px-4 py-3 font-medium">Estado</th>
+              <th className="px-6 py-3 font-semibold">ID</th>
+              <th className="px-6 py-3 font-semibold">Residente</th>
+              <th className="px-6 py-3 font-semibold">Tipo</th>
+              <th className="px-6 py-3 font-semibold">Descripción</th>
+              <th className="px-6 py-3 font-semibold">Monto</th>
+              <th className="px-6 py-3 font-semibold">Estado</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="p-4 text-center">Cargando...</td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-gray-500">Cargando datos...</td></tr>
+            ) : multas.length === 0 ? (
+              <tr><td colSpan={6} className="p-8 text-center text-gray-500">No hay multas registradas</td></tr>
             ) : multas.map((m) => (
-              <tr key={m.id} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-4 py-3">{m.id}</td>
-                <td className="px-4 py-3">{m.residente_id}</td>
-                <td className="px-4 py-3">{m.tipo}</td>
-                <td className="px-4 py-3">{m.descripcion}</td>
-                <td className="px-4 py-3 font-bold text-red-600">${m.monto}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    m.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+              <tr key={m.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 text-gray-500">#{m.id}</td>
+                <td className="px-6 py-4 font-medium text-gray-900">
+                  {getNombreResidente(m.residente_id)}
+                </td>
+                <td className="px-6 py-4">
+                  <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-600">
+                    {m.tipo}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-gray-600 truncate max-w-[200px]" title={m.descripcion}>
+                  {m.descripcion}
+                </td>
+                <td className="px-6 py-4 font-bold text-red-600">
+                  ${m.monto.toLocaleString('es-CL')}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                    m.estado === 'PENDIENTE' 
+                      ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+                      : 'bg-green-50 text-green-700 border-green-200'
                   }`}>
                     {m.estado}
                   </span>
