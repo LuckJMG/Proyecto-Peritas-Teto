@@ -5,7 +5,8 @@ import {
   Megaphone, 
   LayoutDashboard,
   TriangleAlert,
-  Bell
+  Bell,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,11 @@ export function SidebarAdmin({ className }: SidebarProps) {
       title: "Alertas", // Nuevo Item
       href: "/admin/alertas",
       icon: Bell,
+    },
+    {
+      title: "Libro de registros",
+      href: "/admin/registros",
+      icon: BookOpen,
     },
   ];
 

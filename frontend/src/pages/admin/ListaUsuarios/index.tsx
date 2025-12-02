@@ -11,12 +11,14 @@ import {
   type Condominio,
 } from "@/services/condominioService";
 
-// Importaciones Locales
+// 1. IMPORTAR EL HOOK
+import { useRegistroAutomatico } from "@/services/registroService";
+
 import { UsuarioFilters } from "./UsuarioFilters";
 import { UsuarioRow } from "./UsuarioRow";
 import { AddUsuarioDialog } from "./AddUsuarioDialog";
 import { DeleteUsuarioDialog } from "./DeleteUsuarioDialog";
-import { EditUsuarioDialog } from "./EditUsuarioDialog"; // Asegúrate de haber creado este archivo
+import { EditUsuarioDialog } from "./EditUsuarioDialog";
 
 interface SortConfig {
   key: keyof Usuario | null;
@@ -26,13 +28,11 @@ interface SortConfig {
 const PAGE_SIZE = 10;
 
 export default function ListaUsuarios() {
-  // --- Estado de Datos ---
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [condominios, setCondominios] = useState<Condominio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Estado de Filtros y UI ---
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [condominioFiltro, setCondominioFiltro] = useState<number | "all">("all");
@@ -42,50 +42,43 @@ export default function ListaUsuarios() {
     direction: "asc",
   });
 
-  // --- Estado de Diálogos ---
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false); // Estado para editar
+  const [showEditDialog, setShowEditDialog] = useState(false);
   
-  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null); // Para eliminar
-  const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | null>(null); // Para editar
-  
+  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
+  const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // --- Carga Inicial con Filtrado por Rol ---
+  // 2. INICIALIZAR EL HOOK
+  const { registrar } = useRegistroAutomatico();
+
   const loadData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // 1. Obtenemos el usuario actual del almacenamiento local
       const userStr = localStorage.getItem("user");
       const currentUser = userStr ? JSON.parse(userStr) : null;
 
-      // 2. Obtenemos TODOS los datos del backend
       const [allUsuarios, allCondominios] = await Promise.all([
         usuarioService.getAll(),
         condominioService.getAll(),
       ]);
 
-      // 3. Aplicamos lógica de filtrado según el rol
       if (currentUser && currentUser.rol !== "SUPER_ADMINISTRADOR") {
-        // Admin normal: solo ve usuarios de su condominio
         const myUsers = allUsuarios.filter(
           (u) => u.condominio_id === currentUser.condominio_id
         );
         setUsuarios(myUsers);
 
-        // Filtramos condominios para selectores
         const myCondos = allCondominios.filter(
           (c) => c.id === currentUser.condominio_id
         );
         setCondominios(myCondos);
         
-        // Forzamos filtro visual
         setCondominioFiltro(currentUser.condominio_id || "all");
       } else {
-        // Super Admin: ve todo
         setUsuarios(allUsuarios);
         setCondominios(allCondominios);
       }
@@ -102,7 +95,6 @@ export default function ListaUsuarios() {
     loadData();
   }, []);
 
-  // --- Lógica de Ordenamiento y Filtrado ---
   const handleSort = (key: keyof Usuario) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -133,9 +125,6 @@ export default function ListaUsuarios() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // --- Handlers de Acciones ---
-  
-  // Eliminar
   const handleDeleteClick = (u: Usuario) => {
     setSelectedUsuario(u);
     setShowDeleteDialog(true);
@@ -146,6 +135,20 @@ export default function ListaUsuarios() {
     try {
       setIsDeleting(true);
       await usuarioService.delete(selectedUsuario.id);
+
+      // 3. REGISTRO AUTOMÁTICO (Eliminación)
+      // Obtenemos admin para condominio_id
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : {};
+
+      await registrar(
+        "ELIMINACION",
+        `Admin eliminó al usuario ${selectedUsuario.nombre} ${selectedUsuario.apellido} (ID: ${selectedUsuario.id})`,
+        {
+            condominio_id: user.condominio_id
+        }
+      );
+
       await loadData();
       setShowDeleteDialog(false);
       setSelectedUsuario(null);
@@ -156,7 +159,6 @@ export default function ListaUsuarios() {
     }
   };
 
-  // Editar
   const handleEditClick = (u: Usuario) => {
     setUsuarioToEdit(u);
     setShowEditDialog(true);
@@ -164,19 +166,13 @@ export default function ListaUsuarios() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
-      
       <Navbar />
-
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* Sidebar */}
         <div className="h-full hidden md:block border-r bg-white">
           <SidebarAdmin className="h-full" />
         </div>
 
-        {/* Contenido Principal */}
         <main className="flex-1 overflow-y-auto p-8">
-          
           {loading ? (
              <div className="flex h-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
@@ -187,10 +183,7 @@ export default function ListaUsuarios() {
                   <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                     <AlertCircle className="mt-0.5 h-4 w-4" />
                     <span>{error}</span>
-                    <button
-                      className="ml-auto text-xs font-semibold"
-                      onClick={() => setError(null)}
-                    >
+                    <button className="ml-auto text-xs font-semibold" onClick={() => setError(null)}>
                       Cerrar
                     </button>
                   </div>
@@ -198,10 +191,7 @@ export default function ListaUsuarios() {
 
                 <UsuarioFilters
                   searchTerm={searchTerm}
-                  onSearchChange={(t) => {
-                    setSearchTerm(t);
-                    setPage(1);
-                  }}
+                  onSearchChange={(t) => { setSearchTerm(t); setPage(1); }}
                   condominioFiltro={condominioFiltro}
                   onCondominioChange={setCondominioFiltro}
                   condominios={condominios}
@@ -213,31 +203,19 @@ export default function ListaUsuarios() {
                     <thead className="border-b border-gray-300 bg-[#e5e5e5]">
                       <tr>
                         <th className="px-4 py-2 text-center">
-                          <button
-                            onClick={() => handleSort("nombre")}
-                            className="mx-auto flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900"
-                          >
-                            Nombre
-                            <ArrowUpDown className="h-3 w-3" />
+                          <button onClick={() => handleSort("nombre")} className="mx-auto flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900">
+                            Nombre <ArrowUpDown className="h-3 w-3" />
                           </button>
                         </th>
-                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
-                          Estado de cuenta
-                        </th>
-                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
-                          Último pago
-                        </th>
-                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">
-                          Acciones
-                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">Estado de cuenta</th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">Último pago</th>
+                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visible.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                            No se encontraron usuarios
-                          </td>
+                          <td colSpan={4} className="px-4 py-8 text-center text-gray-500">No se encontraron usuarios</td>
                         </tr>
                       ) : (
                         visible.map((u, index) => (
@@ -246,9 +224,7 @@ export default function ListaUsuarios() {
                             usuario={u}
                             index={index}
                             isExpanded={expandedId === u.id}
-                            onToggleExpand={() =>
-                              setExpandedId(expandedId === u.id ? null : u.id)
-                            }
+                            onToggleExpand={() => setExpandedId(expandedId === u.id ? null : u.id)}
                             onDelete={handleDeleteClick}
                             onEdit={handleEditClick}
                           />
@@ -259,21 +235,11 @@ export default function ListaUsuarios() {
                 </div>
 
                 <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-600">
-                  <button
-                    disabled={page === 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="disabled:text-gray-300"
-                  >
+                  <button disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="disabled:text-gray-300">
                     ‹ Anterior
                   </button>
-                  <span>
-                    Página {page} de {totalPages}
-                  </span>
-                  <button
-                    disabled={page === totalPages}
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className="disabled:text-gray-300"
-                  >
+                  <span>Página {page} de {totalPages}</span>
+                  <button disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="disabled:text-gray-300">
                     Siguiente ›
                   </button>
                 </div>
@@ -281,8 +247,6 @@ export default function ListaUsuarios() {
           )}
         </main>
       </div>
-
-      {/* --- DIÁLOGOS --- */}
 
       <AddUsuarioDialog
         open={showAddDialog}

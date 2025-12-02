@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usuarioService, type Usuario, type UsuarioUpdate, type RolUsuario } from "@/services/usuarioService";
-import { residenteService } from "@/services/residenteService"; // Necesitarás importar esto o buscar al residente de otra forma
+import { residenteService } from "@/services/residenteService";
+// 1. IMPORTAR EL HOOK
+import { useRegistroAutomatico } from "@/services/registroService";
 
 interface EditUsuarioDialogProps {
   open: boolean;
@@ -19,12 +21,15 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 2. INICIALIZAR EL HOOK
+  const { registrar } = useRegistroAutomatico();
+
   // Campos de Usuario
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
   const [rol, setRol] = useState<RolUsuario>("RESIDENTE");
-  const [password, setPassword] = useState(""); // Opcional para cambiar pass
+  const [password, setPassword] = useState(""); 
 
   // Campos de Residente
   const [rut, setRut] = useState("");
@@ -32,25 +37,16 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
   const [viviendaNumero, setViviendaNumero] = useState("");
   const [esPropietario, setEsPropietario] = useState(false);
   
-  // Para saber si cargamos datos de residente
   const [tienePerfilResidente, setTienePerfilResidente] = useState(false);
 
   useEffect(() => {
     if (open && usuario) {
-      // 1. Cargar datos básicos
       setNombre(usuario.nombre);
       setApellido(usuario.apellido);
       setEmail(usuario.email);
       setRol(usuario.rol);
-      setPassword(""); // Limpiar password
+      setPassword(""); 
       setError(null);
-      
-      // 2. Intentar cargar datos extra del residente
-      // Como el objeto 'usuario' de la lista quizás no tiene todos los campos del residente (rut, telefono)
-      // a veces vienen anidados o hay que hacer un fetch extra. 
-      // PERO, tu endpoint GET /usuarios ya hace join con residentes.
-      // Vamos a asumir que 'usuario' NO tiene los campos planos, sino dentro de una lista 'residentes' si el backend los manda así.
-      // O haremos un fetch rápido para asegurar datos frescos.
       
       fetchResidenteData(usuario.id);
     }
@@ -58,15 +54,7 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
 
   const fetchResidenteData = async (userId: number) => {
     try {
-      // OPCION A: Si tu backend GET /usuarios/{id} devuelve la estructura anidada
-      // Podemos re-consultar el usuario para tener el detalle completo
-      // O usar un servicio de busqueda de residentes.
-      // Por simplicidad, asumiremos que si es residente, buscamos su info.
-      
-      // NOTA: Para que esto funcione fluido, el endpoint GET /usuarios debería devolver 
-      // la data del residente aplanada o accesible. 
-      // Como parche rápido: Buscamos en todos los residentes del condominio el que coincida con este usuario_id
-      const residentes = await residenteService.getAll(); // Esto podría ser pesado si son muchos
+      const residentes = await residenteService.getAll();
       const residenteEncontrado = residentes.find(r => r.usuario_id === userId);
 
       if (residenteEncontrado) {
@@ -77,7 +65,6 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
         setEsPropietario(residenteEncontrado.es_propietario);
       } else {
         setTienePerfilResidente(false);
-        // Limpiar campos
         setRut("");
         setTelefono("");
         setViviendaNumero("");
@@ -103,7 +90,7 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
       };
 
       if (password.trim()) {
-        // @ts-ignore: Ajuste por discrepancia de nombres en interfaz vs backend
+        // @ts-ignore
         payload.password = password; 
       }
 
@@ -115,6 +102,19 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
       }
 
       await usuarioService.update(usuario.id, payload);
+
+      // 3. REGISTRO AUTOMÁTICO (Edición)
+      const userStr = localStorage.getItem("user");
+      const user = userStr ? JSON.parse(userStr) : {};
+
+      await registrar(
+        "EDICION",
+        `Admin actualizó el perfil de ${nombre} ${apellido} (Rol: ${rol}, Vivienda: ${viviendaNumero || "N/A"})`,
+        {
+            condominio_id: user.condominio_id
+        }
+      );
+
       onSuccess();
       onOpenChange(false);
     } catch (err: any) {
