@@ -20,7 +20,7 @@ import EstadoCuentaPage from "./pages/residente/EstadoCuenta";
 import SistemaReservasPage from "./pages/residente/SistemaReservas";
 
 import AdminAlertasPage from "./pages/admin/Alertas";
-import HistorialPagos from "./pages/residente/HistorialPagos/HistorialPagos";
+import HistorialPagos from "./pages/residente/HistorialPagos";
 import SistemaPago from "./pages/residente/SistemaPago";
 import DetalleGastoPage from "./pages/residente/Detalle";
 

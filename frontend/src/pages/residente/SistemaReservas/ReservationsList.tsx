@@ -1,5 +1,5 @@
 import { ReservationCard } from "./ReservationCard";
-import type { DateGroup } from "./types";
+import type { DateGroup } from "@/types/reserva.types";
 
 interface ReservationsListProps {
   groups: DateGroup[];

@@ -9,11 +9,10 @@ import {
   type EspacioComun,
 } from "@/services/espaciosComunesService";
 
-// Local Imports
 import { NewReservationDialog } from "./NewReservationDialog";
 import { DeleteReservationDialog } from "./DeleteReservationDialog";
 import { ReservationsList } from "./ReservationsList";
-import type { DateGroup, ReservationView } from "./types";
+import type { DateGroup, ReservationView } from "@/types/reserva.types";
 
 export default function SistemaReservasPage() {
   const navigate = useNavigate();
