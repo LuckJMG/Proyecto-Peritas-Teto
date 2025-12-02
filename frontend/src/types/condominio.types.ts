@@ -1,4 +1,3 @@
-// types.ts
 import type { Condominio } from "@/services/condominioService";
 
 export interface SortConfig {

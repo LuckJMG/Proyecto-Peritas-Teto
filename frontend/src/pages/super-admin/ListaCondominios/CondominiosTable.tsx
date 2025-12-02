@@ -1,7 +1,6 @@
-// CondominiosTable.tsx
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import TableRow from "./TableRow";
-import type { Condominio, SortConfig } from "./types";
+import type { Condominio, SortConfig } from "@/types/condominio.types";
 
 interface CondominiosTableProps {
   condominios: Condominio[];

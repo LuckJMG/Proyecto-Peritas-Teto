@@ -1,5 +1,3 @@
-// frontend/src/services/espaciosComunesService.ts
-
 export interface EspacioComun {
   id: number;
   condominio_id: number;

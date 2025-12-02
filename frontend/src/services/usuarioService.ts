@@ -1,5 +1,3 @@
-// src/services/usuarioService.ts
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 export type RolUsuario =
@@ -45,12 +43,8 @@ export type UsuarioUpdate = Partial<{
   apellido: string;
   rol: RolUsuario;
   activo: boolean;
-  password_hash: string; // Nota: el backend espera 'password', pero tu servicio mappeaba a password_hash? 
-                         // REVISA: En create usabas 'password_hash' en la interfaz pero enviabas 'password'.
-                         // Para update, asegurate de enviar la key que el backend espera ('password').
+  password_hash: string;
   condominio_id: number;
-  
-  // Nuevos campos
   rut: string;
   telefono: string;
   vivienda_numero: string;

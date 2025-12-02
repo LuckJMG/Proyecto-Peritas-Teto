@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Ajusta esta URL base según tu configuración, por defecto suele ser localhost:8000/api/v1
 const API_URL = "http://localhost:8000/api/v1/alertas"; 
 
 export interface Alerta {

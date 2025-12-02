@@ -27,7 +27,7 @@ export const anuncioService = {
 
     const payload = {
       titulo: data.titulo,
-      contenido: data.contenido, // CORREGIDO: usar 'contenido'
+      contenido: data.contenido,
       condominio_id: user.condominioId || 1,
       creado_por: user.id,
       activo: true
@@ -51,7 +51,7 @@ export const anuncioService = {
     
     const payload = {
       titulo: data.titulo,
-      contenido: data.contenido, // CORREGIDO: usar 'contenido'
+      contenido: data.contenido,
       condominio_id: user?.condominioId || 1,
       creado_por: user?.id,
       activo: true

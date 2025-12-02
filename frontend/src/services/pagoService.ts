@@ -1,4 +1,3 @@
-// frontend/src/services/pagoService.ts
 import { fetchWithAuth } from "./authService";
 
 const API_URL = "http://localhost:8000/api/v1";
@@ -25,7 +24,7 @@ export interface Pago {
 
 export interface PagoCreate {
   condominio_id: number;
-  residente_id?: number; // Opcional porque el backend puede inferirlo del token
+  residente_id?: number;
   tipo: TipoPago;
   referencia_id: number;
   monto: number;

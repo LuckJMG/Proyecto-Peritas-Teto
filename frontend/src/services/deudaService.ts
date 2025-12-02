@@ -1,4 +1,3 @@
-// frontend/src/services/deudaService.ts
 import { fetchWithAuth } from "./authService";
 
 const API_URL = "http://localhost:8000/api/v1";

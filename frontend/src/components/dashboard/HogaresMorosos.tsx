@@ -42,11 +42,10 @@ export function HogaresMorosos({ customStyle, greenColor = "#99D050" }: { custom
       </CardHeader>
 
       <CardContent className="px-6 pb-6 pt-2 flex-1 overflow-hidden">
-        {/* Scroll interno si la lista es muy larga, pero ocultamos la barra visualmente si prefieres */}
         <div className="space-y-5 h-full overflow-y-auto pr-2 custom-scrollbar">
           {morosos.map((item, index) => (
             <div key={index} className="flex items-start space-x-4">
-              
+
               <Avatar className="h-12 w-12 border-2 border-white shadow-sm mt-1">
                 <AvatarImage src={item.avatar} alt={item.nombre} />
                 <AvatarFallback>User</AvatarFallback>

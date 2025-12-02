@@ -5,7 +5,6 @@ import {
 } from "@/components/ui/avatar"
 
 export function RecentSales() {
-  // Datos estáticos para replicar el diseño exacto
   const salesData = [
     { name: "Olivia Martin", email: "olivia.martin@email.com", amount: "+$1,999.00", avatar: "/avatars/01.png", fallback: "OM" },
     { name: "Jackson Lee", email: "jackson.lee@email.com", amount: "+$39.00", avatar: "/avatars/02.png", fallback: "JL" },

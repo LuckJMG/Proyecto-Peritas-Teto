@@ -4,8 +4,8 @@ import {
   Users, 
   CalendarDays, 
   Megaphone,
-  TriangleAlert, // Para Multas
-  Bell,          // Para Alertas
+  TriangleAlert,
+  Bell,
   LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,7 @@ export function SidebarAdmin({ className }: SidebarAdminProps) {
       icon: CalendarDays,
     },
     {
-      title: "Multas", // Nuevo Item
+      title: "Multas",
       href: "/admin/multas",
       icon: TriangleAlert,
     },
@@ -46,7 +46,7 @@ export function SidebarAdmin({ className }: SidebarAdminProps) {
       icon: Megaphone,
     },
     {
-      title: "Alertas", // Nuevo Item
+      title: "Alertas",
       href: "/admin/alertas",
       icon: Bell,
     },
@@ -58,7 +58,7 @@ export function SidebarAdmin({ className }: SidebarAdminProps) {
         <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
           Menú Principal
         </div>
-        
+
         {menuItems.map((item) => {
           const isActive = location.pathname === item.href;
           return (

@@ -26,7 +26,7 @@ export const useDashboardData = () => {
         const listaPagos = Array.isArray(pagos) ? pagos : [];
         const listaGastos = Array.isArray(gastos) ? gastos : [];
         const listaUsuarios = Array.isArray(usuarios) ? usuarios : [];
-        
+
         // 1. Calcular Ingreso Total
         const ingresoTotal = listaPagos
           .filter((p: Pago) => p.estado_pago === 'APROBADO')

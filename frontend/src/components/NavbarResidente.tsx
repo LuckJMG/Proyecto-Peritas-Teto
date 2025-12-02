@@ -1,4 +1,3 @@
-// frontend/src/components/NavbarResidente.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -63,7 +62,7 @@ export default function NavbarResidente() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-            
+
             return (
               <button
                 key={item.path}
@@ -104,7 +103,7 @@ export default function NavbarResidente() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              
+
               {/* Menu items visible en mobile */}
               <div className="md:hidden">
                 {menuItems.map((item) => {

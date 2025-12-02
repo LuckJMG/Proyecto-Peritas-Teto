@@ -75,9 +75,7 @@ export default function ReservasPage() {
           <SidebarAdmin className="h-full" />
         </div>
 
-        {/* MAIN: Contenido con Scroll propio */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-
           <div className="max-w-[1400px] mx-auto">
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>

@@ -8,21 +8,21 @@ export interface GastoComun {
   condominio_id: number;
   mes: number;
   anio: number;
-  
+
   // Montos Desglosados
   monto_base: number;
   cuota_mantencion: number;
   servicios: number;
   multas: number;
   monto_total: number;
-  
+
   // Estado y Fechas
   estado: "PENDIENTE" | "PAGADO" | "VENCIDO" | "MOROSO";
   fecha_emision: string;
   fecha_vencimiento: string;
   fecha_pago?: string;
-  
-  // Detalle de cobros adicionales (JSON en BD)
+
+  // Detalle de cobros adicionales
   observaciones: Array<{
     tipo: string;
     descripcion: string;

@@ -1,4 +1,3 @@
-// frontend/src/services/authService.ts
 const API_URL = 'http://localhost:8000/api/v1';
 
 import type { RegisterCredentials } from '@/types/auth.types';
@@ -86,10 +85,10 @@ export const authService = {
       [RolUsuario.SUPER_ADMINISTRADOR]: '/super/condominios',
       [RolUsuario.ADMINISTRADOR]: '/admin/dashboard',
       [RolUsuario.CONSERJE]: '/admin/dashboard',
-      [RolUsuario.DIRECTIVA]: '/resumen', // <-- Cambio: Directiva va a estado de cuenta
+      [RolUsuario.DIRECTIVA]: '/resumen',
       [RolUsuario.RESIDENTE]: '/resumen'
     };
-    
+
     // Fallback seguro
     return routes[rol] || '/estado';
   },

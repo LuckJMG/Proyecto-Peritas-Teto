@@ -1,4 +1,3 @@
-// TableRow.tsx
 import { Eye, Trash2, Edit, ChevronDown, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Condominio } from "./types";
+import type { Condominio } from "@/types/condominio.types";
 
 interface TableRowProps {
   condominio: Condominio;

@@ -21,7 +21,7 @@ export interface ReservaCreate {
   fecha_inicio: string;
   fecha_fin: string;
   cantidad_personas: number;
-  es_evento_comunidad?: boolean; // Nuevo campo opcional
+  es_evento_comunidad?: boolean;
   observaciones?: string;
 }
 

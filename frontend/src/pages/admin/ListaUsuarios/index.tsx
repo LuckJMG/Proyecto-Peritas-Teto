@@ -11,9 +11,7 @@ import {
   type Condominio,
 } from "@/services/condominioService";
 
-// 1. IMPORTAR EL HOOK
 import { useRegistroAutomatico } from "@/services/registroService";
-
 import { UsuarioFilters } from "./UsuarioFilters";
 import { UsuarioRow } from "./UsuarioRow";
 import { AddUsuarioDialog } from "./AddUsuarioDialog";
@@ -125,6 +123,8 @@ export default function ListaUsuarios() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  // --- Handlers de Acciones ---
+  // Eliminar
   const handleDeleteClick = (u: Usuario) => {
     setSelectedUsuario(u);
     setShowDeleteDialog(true);
@@ -248,11 +248,11 @@ export default function ListaUsuarios() {
         </main>
       </div>
 
+      {/* --- DIÁLOGOS --- */}
       <AddUsuarioDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={loadData}
-        condominios={condominios}
       />
 
       <EditUsuarioDialog

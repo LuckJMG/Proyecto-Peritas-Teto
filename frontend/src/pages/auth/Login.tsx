@@ -17,12 +17,11 @@ export default function Login() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authService.login(credentials.email, credentials.password);
-      
+
       const redirectPath = authService.getRouteByRole(response.usuario.rol);
       navigate(redirectPath);
-      
     } catch (err: any) {
       setError(err.message || "Credenciales inválidas");
     } finally {
@@ -32,7 +31,6 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen w-full bg-white">
-      {/* Left Panel - Form */}
       <div className="flex w-full flex-col justify-between p-8 lg:w-1/2 lg:p-12 xl:p-16">
         <CompanyBrand />
         
@@ -46,7 +44,6 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Renderizado de error en el padre ya que LoginForm no acepta prop 'error' */}
           {error && (
             <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-600">
               <AlertCircle className="h-4 w-4" />
@@ -56,14 +53,13 @@ export default function Login() {
 
           <LoginForm 
             onSubmit={handleLogin} 
-            loading={loading} // Corregido: prop es 'loading', no 'isLoading'
+            loading={loading}
           />
         </div>
 
         <LoginFooter />
       </div>
 
-      {/* Right Panel - Image */}
       <ImagePanel />
     </div>
   );

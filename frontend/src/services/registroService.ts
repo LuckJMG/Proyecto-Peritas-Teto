@@ -21,7 +21,7 @@ export interface Registro {
   monto?: number;
   condominio_id?: number;
   datos_adicionales?: string;
-  fecha_creacion: string; // ISO Date string
+  fecha_creacion: string;
   usuario_nombre?: string;
   usuario_apellido?: string;
 }
@@ -103,7 +103,6 @@ export const useRegistroAutomatico = () => {
       });
     } catch (error) {
       console.error('Error al registrar acción:', error);
-      // No lanzar error para no interrumpir el flujo principal
     }
   };
 

@@ -1,4 +1,3 @@
-// ... imports iguales ...
 import { useState, useMemo } from "react";
 import { Loader2, Calendar as CalendarIcon, Clock, Check, PartyPopper } from "lucide-react";
 import { format } from "date-fns";
@@ -36,7 +35,6 @@ interface AdminReservationDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   espacios: EspacioComun[];
-  // adminResidenteId YA NO ES NECESARIO AQUÍ
 }
 
 export function AdminReservationDialog({
@@ -67,7 +65,6 @@ export function AdminReservationDialog({
   }, []);
 
   const handleSubmit = async () => {
-    // Ya no validamos residenteId aquí
     if (!espacioId || !date || !horaInicio || !horaFin) {
       setError("Por favor completa los campos obligatorios.");
       return;
@@ -85,9 +82,8 @@ export function AdminReservationDialog({
       const fechaInicioNaive = `${dateStr}T${horaInicio}:00`;
       const fechaFinNaive = `${dateStr}T${horaFin}:00`;
 
-      // Enviamos SIN residente_id, el backend lo resolverá
       await reservaService.create({
-        residente_id: 0, // 0 o null para indicar "Backend, haz tu magia"
+        residente_id: 0,
         espacio_comun_id: Number(espacioId),
         fecha_inicio: fechaInicioNaive,
         fecha_fin: fechaFinNaive,
@@ -115,7 +111,6 @@ export function AdminReservationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] bg-white rounded-xl shadow-2xl border-0 p-0 overflow-hidden">
-        {/* ... (Renderizado igual que antes) ... */}
         <div className="bg-blue-50 border-b border-blue-100 px-6 py-5">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">

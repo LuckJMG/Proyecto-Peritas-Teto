@@ -1,4 +1,3 @@
-// src/components/registros/RegistrosTable.tsx
 import type { Registro } from "@/services/registroService";
 
 interface RegistrosTableProps {

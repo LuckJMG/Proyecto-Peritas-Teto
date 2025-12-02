@@ -6,13 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usuarioService, type UsuarioCreate, type RolUsuario } from "@/services/usuarioService";
-import { type Condominio } from "@/services/condominioService"; // Solo para tipos si es necesario
 
 interface AddUsuarioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  condominios: Condominio[]; // Ya no lo usamos para seleccionar, pero lo dejamos por compatibilidad si quieres
 }
 
 export function AddUsuarioDialog({ open, onOpenChange, onSuccess }: AddUsuarioDialogProps) {
@@ -68,9 +66,9 @@ export function AddUsuarioDialog({ open, onOpenChange, onSuccess }: AddUsuarioDi
         nombre,
         apellido,
         email,
-        password_hash: password, // El servicio lo mapea a 'password'
+        password_hash: password,
         rol,
-        condominio_id: adminCondominioId, // Se envía automático
+        condominio_id: adminCondominioId,
         activo: true,
       };
 
@@ -175,7 +173,7 @@ export function AddUsuarioDialog({ open, onOpenChange, onSuccess }: AddUsuarioDi
           {rol === "RESIDENTE" && (
             <div className="space-y-4 border-t pt-4 mt-2 bg-gray-50 p-3 rounded-md border border-gray-200">
               <p className="text-sm font-semibold text-gray-700">Datos del Residente</p>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rut">RUT (Obligatorio)</Label>

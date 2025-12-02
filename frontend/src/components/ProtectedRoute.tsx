@@ -1,4 +1,3 @@
-// frontend/src/components/ProtectedRoute.tsx
 import React, { useEffect } from 'react';
 import { authService, RolUsuario } from '@/services/authService';
 
@@ -21,7 +20,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // Verificar roles si se especificaron
     if (allowedRoles && allowedRoles.length > 0) {
       const user = authService.getUser();
-      
+
       if (!user || !allowedRoles.includes(user.rol)) {
         // Redirigir a la página correspondiente según su rol
         const correctRoute = authService.getRouteByRole(user.rol);

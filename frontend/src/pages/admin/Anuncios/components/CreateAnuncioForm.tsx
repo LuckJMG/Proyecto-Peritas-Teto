@@ -12,7 +12,7 @@ interface CreateAnuncioFormProps {
 
 export function CreateAnuncioForm({ onSuccess, onError }: CreateAnuncioFormProps) {
   const [titulo, setTitulo] = useState("");
-  const [contenido, setContenido] = useState(""); // CAMBIO: descripcion -> contenido
+  const [contenido, setContenido] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,7 +25,6 @@ export function CreateAnuncioForm({ onSuccess, onError }: CreateAnuncioFormProps
 
     setLoading(true);
     try {
-      // Enviamos 'contenido'
       await anuncioService.create({ titulo, contenido });
       setTitulo("");
       setContenido("");

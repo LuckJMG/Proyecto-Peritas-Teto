@@ -3,7 +3,6 @@ import { reservaService, type Reserva } from "@/services/reservaService";
 import { espaciosComunesService } from "@/services/espaciosComunesService";
 import { authService, fetchWithAuth } from "@/services/authService";
 
-// Interfaz extendida para la tabla
 export interface ReservaAdminView extends Reserva {
   nombreResidente: string;
   nombreEspacio: string;
@@ -18,9 +17,8 @@ export function useReservasAdmin() {
     try {
       setLoading(true);
       const user = authService.getUser();
-      
+
       // Validar que el usuario tenga un condominio asociado
-      // Nota: El backend envía 'condominio_id' (snake_case), aunque la interfaz TS diga camelCase
       const condominioId = user?.condominio_id || user?.condominioId;
 
       if (!condominioId) {
@@ -33,12 +31,11 @@ export function useReservasAdmin() {
         espaciosComunesService.getByCondominio(condominioId),
       ]);
 
-      // 2. Fetch de Residentes (Usamos fetch directo ya que residentesService no tenía getAll filtrado)
-      // Idealmente el backend debería soportar ?condominio_id=X aquí también
+      // 2. Fetch de Residentes
       const resResidentes = await fetchWithAuth("http://localhost:8000/api/v1/residentes");
       const residentes = await resResidentes.json();
 
-      // 3. Unificar datos (Join)
+      // 3. Unificar datos
       const joinedData: ReservaAdminView[] = reservas
         // Filtrar reservas que pertenezcan a los espacios de este condominio
         .filter(r => espacios.some(e => e.id === r.espacio_comun_id))

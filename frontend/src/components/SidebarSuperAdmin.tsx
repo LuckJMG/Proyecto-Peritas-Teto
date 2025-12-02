@@ -32,14 +32,13 @@ export function SidebarSuperAdmin({ className }: SidebarProps) {
 
   return (
     <div className={cn("pb-12 w-64 min-h-screen bg-white flex flex-col", className)}>
-      
       {/* Botones Superiores */}
       <div className="px-6 pt-8 pb-6 space-y-4">
         <Link to="/condominios/crear">
             <button className={topButtonStyle}>
             <div className="relative">
                 <Home className="w-7 h-7" />
-                <Plus className="w-3.5 h-3.5 absolute -top-1 -right-1 stroke-[3]" />
+                <Plus className="w-3.5 h-3.5 absolute -top-1 -right-1 stroke-3" />
             </div>
             <div className="flex flex-col items-start leading-tight">
                 <span className="text-sm font-medium">Agregar</span>
@@ -47,7 +46,7 @@ export function SidebarSuperAdmin({ className }: SidebarProps) {
             </div>
             </button>
         </Link>
-        
+
         <Link to="/condominios">
             <button className={topButtonStyle}>
             <List className="w-7 h-7" />

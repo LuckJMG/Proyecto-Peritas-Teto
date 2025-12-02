@@ -20,19 +20,17 @@ export default function Navbar() {
   // Determinar la ruta "Home" según el rol
   const getHomeRoute = () => {
     if (!user) return "/";
-    // Mapeo manual o usar authService.getRouteByRole
     switch (user.rol) {
       case RolUsuario.SUPER_ADMINISTRADOR: return "/super/condominios";
       case RolUsuario.ADMINISTRADOR:
       case RolUsuario.CONSERJE: 
       case RolUsuario.DIRECTIVA: return "/admin/dashboard";
-      case RolUsuario.RESIDENTE: return "/resumen"; // O /estado según tus rutas
+      case RolUsuario.RESIDENTE: return "/resumen";
       default: return "/";
     }
   };
 
   const homeRoute = getHomeRoute();
-
   // Generador de Breadcrumbs Personalizado
   const getBreadcrumbs = (pathname: string) => {
     // 1. Definir rutas "Home" que no deben mostrar > Página
@@ -42,7 +40,7 @@ export default function Navbar() {
         "/resumen"
     ];
 
-    // Si estamos en una ruta home, solo mostrar "Dashboard" (o nombre equivalente)
+    // Si estamos en una ruta home, solo mostrar "Dashboard"
     if (homeRoutes.includes(pathname) || pathname === "/") {
         return [{ label: "Dashboard", path: homeRoute, isLast: true }];
     }
@@ -65,22 +63,20 @@ export default function Navbar() {
     };
 
     const segments = pathname.split('/').filter(Boolean);
-    
     // Filtramos segmentos "técnicos" que no queremos en el breadcrumb visual
-    // Ej: /admin/usuarios -> Ignoramos 'admin', tomamos 'usuarios'
     const cleanSegments = segments.filter(seg => 
         !['admin', 'super', 'residente'].includes(seg) && 
-        seg !== 'dashboard' // Ya lo manejamos como root
+        seg !== 'dashboard'
     );
 
     cleanSegments.forEach((segment, index) => {
         const label = routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
-        // Reconstruimos la ruta real para el link (aunque aquí simplificamos a la actual si es el último)
+        // Reconstruimos la ruta real para el link
         const isLast = index === cleanSegments.length - 1;
-        
+
         breadcrumbs.push({
             label: label,
-            path: location.pathname, // Simplificación: si es lineal, lleva a la misma pag
+            path: location.pathname,
             isLast: isLast
         });
     });

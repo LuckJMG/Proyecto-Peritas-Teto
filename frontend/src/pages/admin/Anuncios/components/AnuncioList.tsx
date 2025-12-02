@@ -19,7 +19,7 @@ export function AnuncioList({ anuncios, onEdit, onView, onDelete, loading, onRef
 
   const filteredAnuncios = anuncios.filter((anuncio) => 
     anuncio.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    anuncio.contenido.toLowerCase().includes(searchTerm.toLowerCase()) // Ahora TypeScript no se quejará
+    anuncio.contenido.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

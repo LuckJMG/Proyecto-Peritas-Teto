@@ -33,7 +33,7 @@ export function SidebarAdmin({ className }: SidebarProps) {
       icon: CalendarDays,
     },
     {
-      title: "Multas", // Nuevo Item
+      title: "Multas",
       href: "/admin/multas",
       icon: TriangleAlert,
     },
@@ -43,7 +43,7 @@ export function SidebarAdmin({ className }: SidebarProps) {
       icon: Megaphone,
     },
     {
-      title: "Alertas", // Nuevo Item
+      title: "Alertas",
       href: "/admin/alertas",
       icon: Bell,
     },
@@ -60,7 +60,6 @@ export function SidebarAdmin({ className }: SidebarProps) {
   return (
     <div className={cn("pb-12 w-64 min-h-screen bg-white flex flex-col", className)}>
       <div className="flex-1 py-8">
-        {/* Espaciado ajustado para items más grandes */}
         <div className="space-y-3"> 
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
@@ -69,7 +68,6 @@ export function SidebarAdmin({ className }: SidebarProps) {
               <Link
                 key={item.href}
                 to={item.href}
-                // Padding vertical py-3 para mayor tamaño
                 className="group relative w-full flex items-center gap-4 px-6 py-3 transition-all hover:bg-slate-50 focus:outline-none"
               >
                 {isActive && (

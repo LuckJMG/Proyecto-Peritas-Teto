@@ -14,15 +14,9 @@ export default function AnunciosPage() {
   const [selectedAnuncio, setSelectedAnuncio] = useState<Anuncio | null>(null);
   const [mode, setMode] = useState<"edit" | "view" | null>(null);
   const [loading, setLoading] = useState(false);
-  
-  // Estado para Errores
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
-  // Estados para eliminar
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Helper para mostrar errores desde cualquier hijo
   const showError = (msg: string) => setErrorMsg(msg);
 
   const fetchAnuncios = async () => {
@@ -81,25 +75,16 @@ export default function AnunciosPage() {
   };
 
   return (
-    // CAMBIO 1: flex-col para apilar Navbar arriba del resto
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#99D050]/10 font-sans">
-      
-      {/* NAVBAR: Ahora está arriba ocupando todo el ancho */}
       <Navbar />
 
-      {/* CAMBIO 2: Nuevo contenedor FLEX ROW para dividir Sidebar y Main */}
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* SIDEBAR: A la izquierda, debajo de la navbar */}
         <div className="h-full border-r bg-white">
-            <SidebarAdmin className="w-64 h-full flex-shrink-0" />
+            <SidebarAdmin className="w-64 h-full shrink-0" />
         </div>
 
-        {/* MAIN: A la derecha */}
         <main className="flex-1 p-6 h-full w-full overflow-hidden flex flex-col min-h-0">
           <div className="grid grid-rows-[55%_42%] gap-6 h-full w-full min-h-0">
-            
-            {/* FILA 1 */}
             <div className="grid grid-cols-12 gap-6 h-full min-h-0">
               <div className="col-span-5 h-full min-h-0">
                 <CreateAnuncioForm 
@@ -119,7 +104,6 @@ export default function AnunciosPage() {
               </div>
             </div>
 
-            {/* FILA 2 */}
             <div className="h-full w-full min-h-0">
               <EditViewAnuncio 
                 anuncio={selectedAnuncio}
@@ -136,7 +120,6 @@ export default function AnunciosPage() {
         </main>
       </div>
 
-      {/* MODALES (Fuera del layout visual pero dentro del root) */}
       <DeleteAnuncioDialog 
         open={!!deleteId} 
         onOpenChange={(open) => !open && setDeleteId(null)}

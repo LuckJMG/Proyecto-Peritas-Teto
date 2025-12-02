@@ -1,4 +1,3 @@
-// EspaciosComunesDialog.tsx
 import { useState, useEffect } from "react";
 import { Loader2, AlertCircle, Building2, Users, DollarSign, Plus, Edit, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { espaciosComunesService } from "@/services/espaciosComunesService";
 import type { EspacioComun, EspacioComunInput } from "@/services/espaciosComunesService";
-import type { Condominio } from "./types";
+import type { Condominio } from "@/types/condominio.types";
 
 interface EspaciosComunesDialogProps {
   open: boolean;
@@ -63,7 +62,7 @@ export default function EspaciosComunesDialog({
   const [mode, setMode] = useState<DialogMode>('list');
   const [selectedEspacio, setSelectedEspacio] = useState<EspacioComun | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  
+
   // Form states
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [cantidad, setCantidad] = useState(1);
@@ -84,7 +83,7 @@ export default function EspaciosComunesDialog({
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('Cargando espacios para condominio:', condominio.id);
       const data = await espaciosComunesService.getByCondominio(condominio.id);
       console.log('Espacios cargados:', data);

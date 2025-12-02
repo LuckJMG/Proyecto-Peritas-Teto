@@ -1,4 +1,3 @@
-// DeleteDialog.tsx
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Condominio } from "./types";
+import type { Condominio } from "@/types/condominio.types";
 
 interface DeleteDialogProps {
   open: boolean;

@@ -1,4 +1,3 @@
-// frontend/src/services/multaService.ts
 import { fetchWithAuth } from "./authService";
 
 const API_URL = "http://localhost:8000/api/v1";
@@ -37,7 +36,7 @@ export const multaService = {
       }
 
       const multas = await response.json();
-      
+
       // Ordenar por fecha de emisión descendente (más recientes primero)
       return multas.sort((a: Multa, b: Multa) => 
         new Date(b.fecha_emision).getTime() - new Date(a.fecha_emision).getTime()
@@ -125,11 +124,11 @@ export const multaService = {
         },
         body: JSON.stringify(multa),
       });
-      
+
       if (!response.ok) {
         throw new Error("Error al actualizar multa");
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error("Error en update:", error);

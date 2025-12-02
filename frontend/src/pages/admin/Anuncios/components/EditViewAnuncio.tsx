@@ -16,13 +16,13 @@ interface EditViewAnuncioProps {
 
 export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: EditViewAnuncioProps) {
   const [titulo, setTitulo] = useState("");
-  const [contenido, setContenido] = useState(""); // CAMBIO
+  const [contenido, setContenido] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (anuncio) {
       setTitulo(anuncio.titulo);
-      setContenido(anuncio.contenido); // CAMBIO: Leemos contenido
+      setContenido(anuncio.contenido);
     } else {
       setTitulo("");
       setContenido("");
@@ -36,7 +36,6 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
     if (!anuncio) return;
     setLoading(true);
     try {
-      // Enviamos contenido
       await anuncioService.update(anuncio.id, { titulo, contenido });
       onUpdate();
     } catch (error) {
@@ -103,14 +102,12 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
                </div>
                <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Fecha</span>
-                  {/* CAMBIO: fecha_publicacion */}
                   <p className="text-sm font-medium text-slate-700">{new Date(anuncio.fecha_publicacion).toLocaleDateString()}</p>
                </div>
                <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Autor</span>
                   <div className="flex items-center gap-2">
                      <div className="h-5 w-5 rounded-full bg-slate-200 overflow-hidden">
-                        {/* CAMBIO: creado_por */}
                         <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${anuncio.creado_por}`} alt="Avatar" />
                      </div>
                      <p className="text-xs font-medium text-slate-700">Usuario {anuncio.creado_por}</p>

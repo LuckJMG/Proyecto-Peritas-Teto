@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from '@/assets/casitasteto.png'; // Cambiar aqui la foto, muy facil
+import Image from '@/assets/casitasteto.png';
 
 
 export const ImagePanel: React.FC = () => {

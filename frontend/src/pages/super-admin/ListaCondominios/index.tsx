@@ -1,4 +1,3 @@
-// index.tsx
 import { useState, useEffect } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -8,7 +7,7 @@ import CondominiosTable from "./CondominiosTable";
 import DeleteDialog from "./DeleteDialog";
 import CondominioFormDialog from "./CondominioFormDialog";
 import EspaciosComunesDialog from "./EspaciosComunesDialog";
-import type { Condominio, SortConfig, ValidationErrors, CondominioFormData } from "./types";
+import type { Condominio, SortConfig, ValidationErrors, CondominioFormData } from "@/types/condominio.types";
 
 export default function ListaCondominios() {
   const [condominios, setCondominios] = useState<Condominio[]>([]);

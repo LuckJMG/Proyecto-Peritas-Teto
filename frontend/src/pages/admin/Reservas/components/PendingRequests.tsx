@@ -2,9 +2,8 @@ import { Check, X, Calendar, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { ReservaAdminView } from "../hooks/useReservasAdmin";
-// 1. IMPORTAR EL HOOK
 import { useRegistroAutomatico } from "@/services/registroService";
+import type { ReservaAdminView } from "@/hooks/useReservasAdmin";
 
 interface PendingRequestsProps {
   reservas: ReservaAdminView[];
@@ -57,7 +56,6 @@ export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
             <Card key={reserva.id} className="relative shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
               {/* Barra lateral amarilla contenida */}
               <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-yellow-400 z-10" />
-              
               <CardContent className="p-4 pl-5">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-2 pl-2">
@@ -91,7 +89,6 @@ export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
                   </div>
                 </div>
 
-                {/* Acciones MODIFICADAS para usar handleDecision */}
                 <div className="flex gap-2 pl-2">
                   <Button
                     onClick={() => handleDecision(reserva, "CONFIRMADA")}

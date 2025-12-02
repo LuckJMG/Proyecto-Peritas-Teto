@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { ReservaAdminView } from "../hooks/useReservasAdmin";
+import type { ReservaAdminView } from "@/hooks/useReservasAdmin";
 
 interface ReservasTableProps {
   reservas: ReservaAdminView[];
@@ -40,8 +40,7 @@ export function ReservasTable({ reservas, onUpdateStatus }: ReservasTableProps) 
             Pendiente
           </Badge>
         );
-      case "RECHAZADA": // Mantener por compatibilidad visual antigua
-      case "CANCELADA": // Estado correcto backend
+      case "CANCELADA":
         return (
           <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-0 font-medium px-3 py-1">
             Rechazada

@@ -33,7 +33,6 @@ export function UsuarioFilters({
             <Search className="h-5 w-5 text-gray-600" />
           </div>
         </div>
-
       </div>
 
       <Button

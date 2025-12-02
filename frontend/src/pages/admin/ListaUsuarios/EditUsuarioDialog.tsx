@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { usuarioService, type Usuario, type UsuarioUpdate, type RolUsuario } from "@/services/usuarioService";
 import { residenteService } from "@/services/residenteService";
-// 1. IMPORTAR EL HOOK
 import { useRegistroAutomatico } from "@/services/registroService";
 
 interface EditUsuarioDialogProps {
@@ -29,7 +28,7 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
   const [rol, setRol] = useState<RolUsuario>("RESIDENTE");
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
 
   // Campos de Residente
   const [rut, setRut] = useState("");
@@ -45,9 +44,10 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
       setApellido(usuario.apellido);
       setEmail(usuario.email);
       setRol(usuario.rol);
-      setPassword(""); 
+      setPassword("");
       setError(null);
-      
+
+      // 2. Intentar cargar datos extra del residente
       fetchResidenteData(usuario.id);
     }
   }, [open, usuario]);

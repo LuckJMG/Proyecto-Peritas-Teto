@@ -18,14 +18,13 @@ export function Overview() {
       <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
         {/* Grid punteada suave */}
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-        
         <XAxis
           dataKey="name"
           stroke="#888888"
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          dy={10} // Espacio para que no choque con el gráfico
+          dy={10}
         />
         <YAxis
           stroke="#888888"
@@ -34,21 +33,21 @@ export function Overview() {
           axisLine={false}
           tickFormatter={(value) => `$${value}`}
         />
-        
+
         <Tooltip 
             contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
         />
 
         {/* Línea Sólida (Dinero Ingresado) */}
         <Line
-          type="monotone" // Esto hace la curva suave (Spline)
+          type="monotone"
           dataKey="total"
           stroke="#99D050" // Verde Fuerte
           strokeWidth={4}
           dot={false}
           activeDot={{ r: 6, fill: "#99D050", strokeWidth: 0 }}
         />
-        
+
         {/* Línea Punteada (Dinero Estimado) */}
         <Line
           type="monotone"
