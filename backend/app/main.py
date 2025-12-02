@@ -11,9 +11,17 @@ app = FastAPI(
 )
 
 # CORS
+# Se incluyen todas las variaciones comunes de desarrollo para evitar bloqueos
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173", # Puerto default de Vite
+    "http://127.0.0.1:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Cambiar a dominios específicos en produccion, NO OLVIDAR POR FAVOR
+    allow_origins=origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

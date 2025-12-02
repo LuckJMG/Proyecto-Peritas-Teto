@@ -12,20 +12,19 @@ from datetime import datetime
 from pydantic import BaseModel
 from decimal import Decimal
 
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db
 from app.models.pago import Pago, EstadoPago, MetodoPago, TipoPago
 from app.models.residente import Residente
 from app.models.gasto_comun import GastoComun
-from app.models.multa import Multa
+from app.models.multa import Multa, EstadoMulta
+from app.models.reserva import Reserva, EstadoReserva
 
 router = APIRouter(prefix="/transbank", tags=["Transbank"])
 
 # Configuración Transbank - Ambiente de Integración (Sandbox)
-# Estas credenciales son públicas para testing
 TRANSBANK_COMMERCE_CODE = "597055555532"
 TRANSBANK_API_KEY = "579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C"
 
-# Configurar Transbank en modo integración (sandbox)
 webpay_options = WebpayOptions(
     TRANSBANK_COMMERCE_CODE, 
     TRANSBANK_API_KEY, 
@@ -88,8 +87,8 @@ async def obtener_pagos_pendientes(
     db: Session = Depends(get_db)
 ):
     """
-    Obtiene todos los pagos pendientes de un residente para mostrar en la 
-    interfaz de pago con Transbank
+    Obtiene todos los pagos pendientes de un residente.
+    Sincroniza Multas y Reservas pendientes generando sus registros de Pago si no existen.
     """
     # Verificar que el residente existe
     residente = db.get(Residente, residente_id)
@@ -99,7 +98,95 @@ async def obtener_pagos_pendientes(
             detail="Residente no encontrado"
         )
     
-    # Obtener pagos pendientes
+    # Determinar quién registra el pago automático (el usuario del residente o un fallback)
+    # Si el residente no tiene usuario_id (raro), usamos 1 (admin por defecto) para evitar crash
+    id_registrador = residente.usuario_id if residente.usuario_id else 1
+
+    # -------------------------------------------------------------------------
+    # 1. SINCRONIZACIÓN: Generar Pagos para Multas Pendientes
+    # -------------------------------------------------------------------------
+    try:
+        multas_pendientes = db.exec(
+            select(Multa).where(
+                and_(
+                    Multa.residente_id == residente_id,
+                    Multa.estado == EstadoMulta.PENDIENTE
+                )
+            )
+        ).all()
+
+        for multa in multas_pendientes:
+            # Verificar si ya existe el registro en la tabla pagos
+            existe_pago = db.exec(
+                select(Pago).where(
+                    and_(
+                        Pago.tipo == TipoPago.MULTA,
+                        Pago.referencia_id == multa.id
+                    )
+                )
+            ).first()
+
+            if not existe_pago:
+                nuevo_pago = Pago(
+                    residente_id=residente_id,
+                    condominio_id=multa.condominio_id,
+                    tipo=TipoPago.MULTA,
+                    referencia_id=multa.id,
+                    monto=multa.monto,
+                    metodo_pago=MetodoPago.WEBPAY, 
+                    estado_pago=EstadoPago.PENDIENTE,
+                    registrado_por=id_registrador # <--- FIX: Campo obligatorio añadido
+                )
+                db.add(nuevo_pago)
+
+        # -------------------------------------------------------------------------
+        # 2. SINCRONIZACIÓN: Generar Pagos para Reservas Pendientes
+        # -------------------------------------------------------------------------
+        reservas_pendientes = db.exec(
+            select(Reserva).where(
+                and_(
+                    Reserva.residente_id == residente_id,
+                    Reserva.estado == EstadoReserva.PENDIENTE_PAGO
+                )
+            )
+        ).all()
+
+        for reserva in reservas_pendientes:
+            if reserva.monto_pago and reserva.monto_pago > 0:
+                existe_pago = db.exec(
+                    select(Pago).where(
+                        and_(
+                            Pago.tipo == TipoPago.RESERVA,
+                            Pago.referencia_id == reserva.id
+                        )
+                    )
+                ).first()
+
+                if not existe_pago:
+                    nuevo_pago = Pago(
+                        residente_id=residente_id,
+                        condominio_id=residente.condominio_id,
+                        tipo=TipoPago.RESERVA,
+                        referencia_id=reserva.id,
+                        monto=reserva.monto_pago,
+                        metodo_pago=MetodoPago.WEBPAY,
+                        estado_pago=EstadoPago.PENDIENTE,
+                        registrado_por=id_registrador # <--- FIX: Campo obligatorio añadido
+                    )
+                    db.add(nuevo_pago)
+
+        # Guardar cambios de sincronización
+        db.commit()
+        
+    except Exception as e:
+        print(f"Error en sincronización automática de pagos: {e}")
+        db.rollback()
+        # No lanzamos error para permitir que se muestren los pagos que ya existían
+        # aunque falle la sincronización de nuevos.
+
+    # -------------------------------------------------------------------------
+    # 3. OBTENCIÓN: Recuperar lista completa de pagos pendientes
+    # -------------------------------------------------------------------------
     query = select(Pago).where(
         and_(
             Pago.residente_id == residente_id,
@@ -141,10 +228,6 @@ async def iniciar_pago_transbank(
     datos: IniciarPagoRequest,
     db: Session = Depends(get_db)
 ):
-    """
-    Inicia una transacción con Transbank Webpay Plus.
-    Retorna el token y URL para redireccionar al usuario al formulario de pago.
-    """
     try:
         # Verificar que existan los pagos y estén pendientes
         query = select(Pago).where(
@@ -175,7 +258,7 @@ async def iniciar_pago_transbank(
         response = tx.create(
             buy_order=buy_order,
             session_id=session_id,
-            amount=int(monto_total),  # Transbank requiere monto en pesos (sin decimales)
+            amount=int(monto_total),
             return_url=datos.return_url
         )
         
@@ -209,13 +292,6 @@ async def confirmar_pago_transbank(
     token_ws: str,
     db: Session = Depends(get_db)
 ):
-    """
-    Confirma una transacción con Transbank después de que el usuario
-    complete el pago en el formulario de Webpay.
-    
-    Este endpoint es llamado cuando el usuario es redirigido de vuelta
-    desde Transbank a tu aplicación.
-    """
     try:
         # Confirmar transacción con Transbank
         tx = Transaction(webpay_options)
@@ -236,10 +312,24 @@ async def confirmar_pago_transbank(
                     detail="No se encontraron pagos asociados a esta transacción"
                 )
             
-            # Actualizar estado de los pagos
+            # Actualizar estado de los pagos y sus referencias
             for pago in pagos:
                 pago.estado_pago = EstadoPago.APROBADO
                 pago.fecha_pago = datetime.now()
+                
+                # --- ACTUALIZAR ESTADO DE LA ENTIDAD RELACIONADA ---
+                if pago.tipo == TipoPago.MULTA:
+                    multa = db.get(Multa, pago.referencia_id)
+                    if multa:
+                        multa.estado = EstadoMulta.PAGADA
+                        multa.fecha_pago = datetime.now()
+                        db.add(multa)
+                
+                elif pago.tipo == TipoPago.RESERVA:
+                    reserva = db.get(Reserva, pago.referencia_id)
+                    if reserva:
+                        reserva.estado = EstadoReserva.CONFIRMADA
+                        db.add(reserva)
             
             db.commit()
             
@@ -292,9 +382,6 @@ async def obtener_estado_transaccion(
     numero_transaccion: str,
     db: Session = Depends(get_db)
 ):
-    """
-    Obtiene el estado de una transacción por su número de orden
-    """
     query = select(Pago).where(Pago.numero_transaccion == numero_transaccion)
     pagos = db.exec(query).all()
     
@@ -329,9 +416,6 @@ async def obtener_historial_transbank(
     skip: int = 0,
     limit: int = 50
 ):
-    """
-    Obtiene el historial de pagos realizados con Transbank por un residente
-    """
     query = select(Pago).where(
         and_(
             Pago.residente_id == residente_id,
@@ -358,14 +442,7 @@ async def obtener_historial_transbank(
     }
 
 
-# ============================================================================
-# FUNCIONES AUXILIARES
-# ============================================================================
-
 def _obtener_concepto_pago(pago: Pago, db: Session) -> str:
-    """
-    Obtiene el concepto/descripción de un pago según su tipo
-    """
     concepto = ""
     
     if pago.tipo == TipoPago.GASTO_COMUN:
@@ -384,7 +461,15 @@ def _obtener_concepto_pago(pago: Pago, db: Session) -> str:
             concepto = "Multa"
     
     elif pago.tipo == TipoPago.RESERVA:
-        concepto = "Reserva de espacio común"
+        reserva = db.get(Reserva, pago.referencia_id)
+        if reserva:
+            from app.models.espacio_comun import EspacioComun
+            espacio = db.get(EspacioComun, reserva.espacio_comun_id)
+            nombre_espacio = espacio.nombre if espacio else "Espacio Común"
+            fecha = reserva.fecha_reserva.strftime("%d/%m")
+            concepto = f"Reserva {nombre_espacio} ({fecha})"
+        else:
+            concepto = "Reserva de espacio común"
     
     else:
         concepto = pago.tipo.value

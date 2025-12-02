@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, CreditCard, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import NavbarResidente from '@/components/NavbarResidente';
 import { Link } from 'react-router-dom';
-// 1. IMPORTACIONES NUEVAS PARA REGISTRO
 import { useRegistroAutomatico } from "@/services/registroService";
 import { authService } from "@/services/authService";
+import { residenteService } from "@/services/residenteService"; // Importamos servicio
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -51,25 +51,52 @@ const SistemaPago = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estado para guardar el ID real del residente logueado
+  const [residenteId, setResidenteId] = useState<number | null>(null);
 
-  // 2. INICIALIZAR EL HOOK DE REGISTRO
   const { registrar } = useRegistroAutomatico();
   const user = authService.getUser();
-
-  // Simular ID de residente (en producción vendría de autenticación)
-  const RESIDENTE_ID = 1;
   const API_URL = 'http://localhost:8000/api/v1';
 
-  // Cargar pagos pendientes al montar el componente
+  // Cargar datos al montar
   useEffect(() => {
-    cargarPagosPendientes();
-    verificarRetornoTransbank();
+    const initData = async () => {
+      // 1. Verificar retorno de Transbank (prioridad por si viene de un pago)
+      verificarRetornoTransbank();
+
+      // 2. Obtener el ID del residente asociado al usuario actual
+      if (user?.id) {
+        try {
+          const residentes = await residenteService.getAll();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const miResidente = residentes.find((r: any) => r.usuario_id === user.id);
+
+          if (miResidente) {
+            setResidenteId(miResidente.id);
+            // 3. Cargar pagos usando el ID correcto
+            await cargarPagosPendientes(miResidente.id);
+          } else {
+            setError('No se encontró un perfil de residente asociado a tu usuario.');
+            setLoading(false);
+          }
+        } catch (err) {
+          console.error("Error al identificar residente:", err);
+          setError('Error al identificar tu perfil de residente.');
+          setLoading(false);
+        }
+      }
+    };
+
+    initData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const cargarPagosPendientes = async (): Promise<void> => {
+  const cargarPagosPendientes = async (id: number): Promise<void> => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/transbank/pagos-pendientes/${RESIDENTE_ID}`);
+      // Usamos el ID dinámico, no una constante
+      const response = await fetch(`${API_URL}/transbank/pagos-pendientes/${id}`);
       
       if (!response.ok) throw new Error('Error al cargar pagos');
       
@@ -88,7 +115,6 @@ const SistemaPago = () => {
   };
 
   const verificarRetornoTransbank = (): void => {
-    // Verificar si venimos de vuelta de Transbank
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token_ws');
     
@@ -106,8 +132,6 @@ const SistemaPago = () => {
       });
       
       const data = await response.json();
-      
-      // Obtenemos el ID del condominio del usuario actual para el log
       const condominioId = user?.condominio_id || user?.condominioId;
       
       if (data.success) {
@@ -119,17 +143,13 @@ const SistemaPago = () => {
           autorizacion: data.codigo_autorizacion
         });
 
-        // 3. REGISTRAR ÉXITO AUTOMÁTICAMENTE
         await registrar(
           'PAGO',
-          `Pago Online Aprobado (Transbank). Monto: $${data.monto?.toLocaleString('es-CL')} - Transacción: ${data.numero_transaccion}`,
+          `Pago Online Aprobado. Monto: $${data.monto?.toLocaleString('es-CL')} - Transacción: ${data.numero_transaccion}`,
           {
             monto: data.monto,
             condominio_id: condominioId,
-            datos_adicionales: { 
-              metodo: 'WEBPAY', 
-              autorizacion: data.codigo_autorizacion 
-            }
+            datos_adicionales: { metodo: 'WEBPAY', autorizacion: data.codigo_autorizacion }
           }
         );
 
@@ -140,10 +160,9 @@ const SistemaPago = () => {
           transaccion: data.numero_transaccion
         });
 
-        // 3. REGISTRAR RECHAZO AUTOMÁTICAMENTE
         await registrar(
           'PAGO',
-          `Pago Online Rechazado/Anulado (Transbank). Transacción: ${data.numero_transaccion || 'N/A'}`,
+          `Pago Online Rechazado. Transacción: ${data.numero_transaccion || 'N/A'}`,
           {
             condominio_id: condominioId,
             datos_adicionales: { metodo: 'WEBPAY', estado: 'RECHAZADO' }
@@ -158,7 +177,6 @@ const SistemaPago = () => {
       console.error(err);
     } finally {
       setIsProcessing(false);
-      // Limpiar URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   };
@@ -182,18 +200,21 @@ const SistemaPago = () => {
       alert('Debes seleccionar al menos un pago');
       return;
     }
+    
+    if (!residenteId) {
+      alert('Error: No se ha identificado el residente para el pago.');
+      return;
+    }
 
     try {
       setIsProcessing(true);
-      
-      // Obtener la URL actual para el return
       const returnUrl = `${window.location.origin}${window.location.pathname}`;
       
       const response = await fetch(`${API_URL}/transbank/iniciar-pago`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          residente_id: RESIDENTE_ID,
+          residente_id: residenteId, // Usamos el ID dinámico
           pagos_ids: selectedPagos,
           email: residente?.email || 'ejemplo@email.com',
           return_url: returnUrl
@@ -204,7 +225,6 @@ const SistemaPago = () => {
 
       const data = await response.json();
       
-      // Crear formulario para redireccionar a Transbank
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = data.url;
@@ -225,7 +245,7 @@ const SistemaPago = () => {
     }
   };
 
-  // Pantalla de confirmación de pago
+  // Pantalla de confirmación
   if (paymentStatus) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -270,7 +290,7 @@ const SistemaPago = () => {
             <button
               onClick={() => {
                 setPaymentStatus(null);
-                cargarPagosPendientes();
+                if (residenteId) cargarPagosPendientes(residenteId);
               }}
               className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
@@ -296,12 +316,9 @@ const SistemaPago = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <NavbarResidente />
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
         <Link 
           to="/resumen" 
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6 font-medium"
@@ -309,7 +326,6 @@ const SistemaPago = () => {
           <ArrowLeft className="w-5 h-5 mr-2" /> Estado de cuenta
         </Link>
 
-        {/* Page Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Pago de cuenta</h1>
           <p className="text-gray-500 mt-1">Selecciona los pagos que deseas realizar</p>
@@ -329,7 +345,7 @@ const SistemaPago = () => {
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column - Payment Summary */}
+            {/* Resumen de Costos */}
             <div className="bg-white rounded-lg shadow p-8">
               <h2 className="text-2xl font-bold text-center mb-8">Costo total</h2>
               <div className="text-center mb-8">
@@ -352,14 +368,14 @@ const SistemaPago = () => {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    <span className="font-medium">{pago.concepto}</span>
-                    <span className="font-bold">$ {pago.monto.toLocaleString('es-CL')}</span>
+                    <span className="font-medium text-left">{pago.concepto}</span>
+                    <span className="font-bold ml-2 whitespace-nowrap">$ {pago.monto.toLocaleString('es-CL')}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Right Column - Transbank Info */}
+            {/* Información Transbank */}
             <div className="bg-white rounded-lg shadow p-8">
               <div className="text-center mb-8">
                 <CreditCard className="w-16 h-16 text-blue-600 mx-auto mb-4" />
@@ -371,7 +387,6 @@ const SistemaPago = () => {
                 </p>
               </div>
 
-              {/* Info sobre ambiente de prueba */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <h3 className="font-semibold text-blue-900 mb-2">
                   🧪 Ambiente de Prueba
@@ -384,43 +399,9 @@ const SistemaPago = () => {
                     <div className="font-semibold">VISA (Aprobada):</div>
                     <div className="font-mono">4051 8856 0044 6623</div>
                   </div>
-                  <div>
-                    <div className="font-semibold">Mastercard (Rechazada):</div>
-                    <div className="font-mono">5186 0595 5959 0568</div>
+                  <div className="text-gray-600 text-xs mt-1">
+                    CVV: cualquiera | Fecha: futura
                   </div>
-                  <div className="text-gray-600">
-                    CVV: cualquiera | Fecha: cualquier fecha futura
-                  </div>
-                  <div className="text-gray-600">
-                    Cuando aparece un formulario de autenticación con RUT y clave, se debe usar el RUT 11.111.111-1 y la clave 123.
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Conexión segura encriptada SSL
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Tus datos bancarios no son almacenados
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Confirmación instantánea por email
-                  </p>
                 </div>
               </div>
 
@@ -442,17 +423,11 @@ const SistemaPago = () => {
                 )}
               </button>
 
-              {/* Transbank Logo */}
               <div className="text-center mt-6 pt-6 border-t">
                 <p className="text-sm text-gray-600 mb-3">Powered by</p>
-                <svg className="h-8 mx-auto" viewBox="0 0 200 50" fill="none">
-                  <text x="10" y="30" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="bold" fill="#E63946">
-                    transbank
-                  </text>
-                  <text x="10" y="42" fontFamily="Arial, sans-serif" fontSize="7" fill="#666">
-                    APOYANDO NEGOCIOS
-                  </text>
-                </svg>
+                <div className="flex justify-center items-center gap-2">
+                   <span className="font-bold text-xl text-red-600 tracking-tighter">transbank</span>
+                </div>
               </div>
             </div>
           </div>
