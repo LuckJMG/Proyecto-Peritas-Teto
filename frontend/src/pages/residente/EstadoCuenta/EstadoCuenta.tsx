@@ -3,9 +3,7 @@ import ResumenGastoComun from "./ResumenGastoComun";
 import ResumenMultas from "./ResumenMultas";
 import TablonAnuncios from "./TablonAnuncios";
 
-
 export default function EstadoCuentaPage() {
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavbarResidente />

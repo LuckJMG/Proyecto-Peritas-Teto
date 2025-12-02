@@ -1,7 +1,6 @@
-// frontend/src/components/auth/FormPanel.tsx
 import React from 'react';
 import { CompanyBrand } from './CompanyBrand';
-import { LoginForm } from '../auth/LoginForm';
+import { LoginForm } from './LoginForm';
 import { Footer } from './LoginFooter';
 import type { FormPanelProps } from '@/types/auth.types';
 

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
-import { CreateAnuncioForm } from "./components/CreateAnuncioForm";
-import { AnuncioList } from "./components/AnuncioList";
-import { EditViewAnuncio } from "./components/EditViewAnuncio";
-import { DeleteAnuncioDialog } from "./components/DeleteAnuncioDialog";
-import { ErrorDialog } from "./components/ErrorDialog"; 
+import { CreateAnuncioForm } from "./CreateAnuncioForm";
+import { AnuncioList } from "./AnuncioList";
+import { EditViewAnuncio } from "./EditViewAnuncio";
+import { DeleteAnuncioDialog } from "./DeleteAnuncioDialog";
+import { ErrorDialog } from "./ErrorDialog"; 
 import type { Anuncio } from "@/types/anuncio.types";
 import { anuncioService } from "@/services/anuncioService";
 

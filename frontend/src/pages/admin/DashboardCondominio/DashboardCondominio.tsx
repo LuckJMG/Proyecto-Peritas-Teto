@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Overview } from "@/components/dashboard/Overview";
-import { HogaresMorosos } from "@/components/dashboard/HogaresMorosos";
+import { Overview } from "./Overview";
+import { HogaresMorosos } from "./HogaresMorosos";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
 
