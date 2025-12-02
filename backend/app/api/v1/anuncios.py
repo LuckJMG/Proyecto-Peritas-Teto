@@ -1,3 +1,4 @@
+﻿from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import List
@@ -5,6 +6,8 @@ from typing import List
 from app.api.deps import get_db
 from app.models.anuncio import Anuncio
 from app.schemas.anuncio import AnuncioInput
+from app.models.residente import Residente
+from app.utils.email_service import send_email
 
 router = APIRouter(prefix="/anuncios", tags=["Anuncios"])
 
@@ -32,6 +35,38 @@ async def crear(data: AnuncioInput, db: Session = Depends(get_db)):
     db.add(anuncio)
     db.commit()
     db.refresh(anuncio)
+
+    # Notificar por correo a residentes suscritos del condominio
+    residentes = db.exec(
+        select(Residente).where(
+            Residente.condominio_id == anuncio.condominio_id,
+            Residente.suscrito_notificaciones == True,
+            Residente.activo == True
+        )
+    ).all()
+
+    if residentes:
+        destinatarios = [res.email for res in residentes if res.email]
+        if destinatarios:
+            enviado = send_email(
+                destinatarios,
+                f"[Casitas Teto] Nuevo anuncio: {anuncio.titulo}",
+                (
+                    "Hola,\n\n"
+                    "Se ha publicado un nuevo anuncio en tu condominio:\n\n"
+                    f"Titulo: {anuncio.titulo}\n\n"
+                    f"{anuncio.contenido}\n\n"
+                    f"Publicado: {anuncio.fecha_publicacion}\n\n"
+                    "Si no deseas recibir estas notificaciones, desactiva las notificaciones de correo en tu perfil.\n"
+                )
+            )
+            if enviado:
+                ahora = datetime.utcnow()
+                for residente in residentes:
+                    residente.ultimo_correo_enviado = ahora
+                    db.add(residente)
+                db.commit()
+
     return anuncio
 
 

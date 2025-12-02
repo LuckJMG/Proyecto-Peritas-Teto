@@ -1,5 +1,5 @@
-from sqlmodel import SQLModel, Field, Relationship
-from datetime import date
+﻿from sqlmodel import SQLModel, Field, Relationship
+from datetime import date, datetime
 from typing import Optional, List
 
 class Residente(SQLModel, table=True):
@@ -14,6 +14,8 @@ class Residente(SQLModel, table=True):
     rut: str = Field(unique=True, index=True)
     telefono: Optional[str] = None
     email: str = Field(index=True)
+    suscrito_notificaciones: bool = Field(default=True)
+    ultimo_correo_enviado: Optional[datetime] = None
     es_propietario: bool
     fecha_ingreso: date = Field(default_factory=date.today)
     activo: bool = Field(default=True)

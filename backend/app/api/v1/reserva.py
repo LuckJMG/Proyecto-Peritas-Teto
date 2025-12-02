@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+﻿from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select, text
 from sqlalchemy.exc import IntegrityError
 from typing import List
@@ -13,6 +13,7 @@ from app.models.usuario import Usuario, RolUsuario
 from app.models.residente import Residente
 from app.schemas.reserva import ReservaCreate
 from app.core.security import get_current_user
+from app.utils.email_service import send_email
 
 router = APIRouter(prefix="/reservas", tags=["Reservas"])
 
@@ -25,14 +26,12 @@ def get_or_create_admin_residente(db: Session, user: Usuario) -> Residente:
     if not user.condominio_id:
         raise HTTPException(status_code=400, detail="El administrador no tiene condominio asignado")
 
-    # 1. Buscar existente por Usuario ID
     query = select(Residente).where(Residente.usuario_id == user.id)
     residente = db.exec(query).first()
     
     if residente:
         return residente
 
-    # 2. Crear perfil administrativo
     rut_ficticio = f"ADMIN-{user.id}"
     
     nuevo_residente = Residente(
@@ -55,31 +54,20 @@ def get_or_create_admin_residente(db: Session, user: Usuario) -> Residente:
         return nuevo_residente
     except IntegrityError as e:
         db.rollback()
-        
-        # Detección de Colisión de PK (Secuencia desincronizada)
         if "residentes_pkey" in str(e):
             try:
-                # Auto-fix: Sincronizar la secuencia al MAX(id) + 1
-                # 'false' indica que el próximo valor será el que seteamos
-                print("Detectada desincronización de secuencia. Reparando...")
                 sync_sql = text("SELECT setval(pg_get_serial_sequence('residentes', 'id'), coalesce(max(id), 0) + 1, false) FROM residentes")
                 db.exec(sync_sql)
                 db.commit()
-                
-                # Reintento de creación
                 db.add(nuevo_residente)
                 db.commit()
                 db.refresh(nuevo_residente)
                 return nuevo_residente
             except Exception as retry_error:
                 print(f"Fallo en auto-reparación: {retry_error}")
-                # Si falla el arreglo, continuamos al check de RUT por si acaso
-        
-        # Check fallback por RUT (Idempotencia)
         existing = db.exec(select(Residente).where(Residente.rut == rut_ficticio)).first()
         if existing:
             return existing
-            
         raise HTTPException(status_code=500, detail=f"Error de integridad al crear perfil admin: {str(e)}")
     except Exception as e:
         db.rollback()
@@ -146,18 +134,15 @@ async def crear_reserva(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    # 1. Validar Espacio
     espacio = db.get(EspacioComun, data.espacio_comun_id)
     if not espacio:
         raise HTTPException(status_code=404, detail="Espacio común no encontrado")
 
-    # 2. Determinar Residente ID
     residente_id = data.residente_id
     es_admin = current_user.rol in [RolUsuario.ADMINISTRADOR, RolUsuario.SUPER_ADMINISTRADOR]
 
     if not residente_id:
         if es_admin:
-            # Crea o recupera el perfil, reparando la secuencia si es necesario
             residente_admin = get_or_create_admin_residente(db, current_user)
             residente_id = residente_admin.id
         else:
@@ -167,7 +152,6 @@ async def crear_reserva(
     hora_inicio = data.fecha_inicio.time()
     hora_fin = data.fecha_fin.time()
 
-    # 3. Lógica de Costo
     costo_total = Decimal(0)
     estado_inicial = EstadoReserva.PENDIENTE_PAGO
     
@@ -181,14 +165,12 @@ async def crear_reserva(
             espacio.costo_por_hora or Decimal(0)
         )
 
-    # 4. Preparar Observaciones
     obs_texto = f"Asistentes: {data.cantidad_personas}"
     if data.es_evento_comunidad:
         obs_texto += " | EVENTO COMUNIDAD (Sin Costo)"
     if data.observaciones:
         obs_texto += f" | {data.observaciones}"
 
-    # 5. Crear Reserva
     nueva_reserva = Reserva(
         residente_id=residente_id,
         espacio_comun_id=data.espacio_comun_id,
@@ -204,7 +186,29 @@ async def crear_reserva(
     db.commit()
     db.refresh(nueva_reserva)
 
-    # 6. Gasto Común (Solo si NO es evento comunidad y hay costo)
+    # Notificar al residente si está suscrito y activo
+    residente = db.get(Residente, residente_id)
+    if residente and residente.suscrito_notificaciones and residente.activo and residente.email:
+        enviado = send_email(
+            [residente.email],
+            f"[Casitas Teto] Reserva {'confirmada' if estado_inicial == EstadoReserva.CONFIRMADA else 'creada'}: {espacio.nombre}",
+            (
+                f"Hola {residente.nombre},\n\n"
+                f"Tu reserva de {espacio.nombre} ha sido {'confirmada' if estado_inicial == EstadoReserva.CONFIRMADA else 'creada'}.\n"
+                f"Fecha: {fecha_reserva}\n"
+                f"Horario: {hora_inicio} a {hora_fin}\n"
+                f"Estado: {estado_inicial}\n"
+                f"Monto a pagar: {costo_total}\n\n"
+                "Si no deseas recibir estas notificaciones, desactiva las notificaciones de correo en tu perfil.\n"
+            )
+        )
+        if enviado:
+            residente.ultimo_correo_enviado = datetime.utcnow()
+            db.add(residente)
+            db.commit()
+            db.refresh(residente)
+
+    # Gasto Común (Solo si NO es evento comunidad y hay costo)
     if costo_total > 0 and not (data.es_evento_comunidad and es_admin):
         gasto = get_or_create_gasto_comun(
             db, 

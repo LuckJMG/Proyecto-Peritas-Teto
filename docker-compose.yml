@@ -33,6 +33,12 @@ services:
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
       AUTO_INIT_DB: "true"
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: no-reply@casitasteto.test
+      SMTP_STARTTLS: "false"
     ports:
       - "8000:8000"
     volumes:
@@ -68,6 +74,14 @@ services:
       - backend
     ports:
       - "3000:80"
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    restart: always
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
 
 volumes:
   postgres_data:
