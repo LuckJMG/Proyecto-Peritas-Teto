@@ -11,7 +11,7 @@ import ListaCondominios from "./pages/super-admin/ListaCondominios";
 import DashboardCondominio from "./pages/admin/DashboardCondominio";
 import ListaUsuarios from "./pages/admin/ListaUsuarios";
 import AdminReservasPage from "./pages/admin/Reservas";
-import AdminMultas from "./pages/admin/Multas/AdminMultas";
+import AdminMultas from "./pages/admin/Multas";
 import AdminAnunciosPage from "./pages/admin/Anuncios";
 import AdminRegistrosPage from "./pages/admin/LibroRegistros";
 

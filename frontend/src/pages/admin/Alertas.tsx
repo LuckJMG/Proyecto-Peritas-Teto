@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import { SidebarAdmin } from "@/components/SidebarAdmin"; // Usamos SidebarAdmin
+import { SidebarAdmin } from "@/components/SidebarAdmin";
 import { alertaService, type Alerta } from "@/services/alertaService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,13 +59,13 @@ export default function AdminAlertasPage() {
   return (
     // Layout Principal: Flex Columna
     <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
-      
+
       {/* 1. Navbar Superior */}
       <Navbar />
 
       {/* 2. Contenedor Inferior */}
       <div className="flex flex-1 overflow-hidden">
-        
+
         {/* Sidebar Izquierda */}
         <div className="h-full hidden md:block border-r border-gray-200/50">
           <SidebarAdmin className="h-full" />
@@ -73,7 +73,7 @@ export default function AdminAlertasPage() {
 
         {/* Contenido Principal con Scroll */}
         <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
-          
+
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Centro de Alertas</h1>
             <Button onClick={fetchAlertas} variant="outline" size="sm">Actualizar</Button>

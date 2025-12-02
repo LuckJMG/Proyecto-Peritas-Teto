@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { multaService, type Multa } from "@/services/multaService";
 import { authService } from "@/services/authService";
-import { residenteService } from "@/services/residenteService"; // Importamos el servicio de residentes
+import { residenteService } from "@/services/residenteService";
 
 export default function ResumenMultas() {
   const [multas, setMultas] = useState<Multa[]>([]);
@@ -17,11 +17,7 @@ export default function ResumenMultas() {
         
         if (user?.id) {
             // 2. Buscar el perfil de residente asociado a este usuario
-            // Nota: Hacemos esto porque 'user' es la cuenta de acceso, pero las multas están ligadas al 'residente'
             const allResidentes = await residenteService.getAll();
-            
-            // Buscamos el residente que tenga el mismo usuario_id
-            // Usamos (r: any) por seguridad si tu interfaz Residente no tiene tipado 'usuario_id' aún
             const miResidente = allResidentes.find((r: any) => r.usuario_id === user.id);
 
             if (miResidente) {

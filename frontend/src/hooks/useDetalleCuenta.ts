@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { authService, fetchWithAuth } from "@/services/authService";
 import { gastoComunService } from "@/services/gastoComunService";
 import { pagoService } from "@/services/pagoService";
-import type { Movimiento } from "../types";
+import type { Movimiento } from "@/types/movimiento.types";
 
 export function useDetalleCuenta() {
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
@@ -26,12 +26,12 @@ export function useDetalleCuenta() {
       // 2. Fetch Paralelo usando tus servicios existentes
       const [gastos, pagos] = await Promise.all([
         gastoComunService.getByResidente(miResidente.id),
-        pagoService.getByUsuario(miResidente.id) // Usamos getByUsuario que es el método de tu servicio
+        pagoService.getByUsuario(miResidente.id)
       ]);
 
       const listaMovimientos: Movimiento[] = [];
 
-      // 3. Procesar GASTOS (Desglosando items)
+      // 3. Procesar GASTOS
       gastos.forEach(gasto => {
         // A. Cargo Base (Monto Base + Cuota Mantención)
         const montoFijo = Number(gasto.monto_base || 0) + Number(gasto.cuota_mantencion || 0);
@@ -53,10 +53,10 @@ export function useDetalleCuenta() {
                 let cat: Movimiento["categoria"] = "OTRO";
                 if (obs.tipo === "RESERVA") cat = "RESERVA";
                 if (obs.tipo?.includes("MULTA") || obs.tipo?.includes("RUIDO")) cat = "MULTA";
-                
+
                 // Si es negativo es una anulación/reverso -> ABONO
                 const esAbono = Number(obs.monto) < 0;
-                
+
                 listaMovimientos.push({
                     id: `GC-${gasto.id}-OBS-${idx}`,
                     fecha: new Date(obs.fecha || gasto.fecha_emision),

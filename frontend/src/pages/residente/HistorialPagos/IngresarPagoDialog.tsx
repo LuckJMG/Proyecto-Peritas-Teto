@@ -72,7 +72,7 @@ export function IngresarPagoDialog({ open, onOpenChange, onSuccess }: IngresarPa
 
       await pagoService.create({
         condominio_id: user.condominio_id || 1,
-        residente_id: undefined, // El backend lo inferirá del token
+        residente_id: undefined,
         tipo: deuda.tipo,
         referencia_id: deuda.id,
         monto: deuda.monto,

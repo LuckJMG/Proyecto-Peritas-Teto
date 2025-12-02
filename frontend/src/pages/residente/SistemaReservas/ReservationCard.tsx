@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ReservationView } from "./types";
+import type { ReservationView } from "@/types/reserva.types";
 
 interface ReservationCardProps {
   item: ReservationView;
@@ -29,10 +29,10 @@ export function ReservationCard({ item, onDelete }: ReservationCardProps) {
   const statusStyle = getStatusStyles(item.status);
 
   return (
-    <div className="flex flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden h-[80px] transition-all hover:shadow-md group">
+    <div className="flex flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden h-20 transition-all hover:shadow-md group">
       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#99D050]" />
       
-      <div className="ml-3 flex flex-col justify-center flex-grow gap-1">
+      <div className="ml-3 flex flex-col justify-center grow gap-1">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-medium text-gray-900 leading-none">{item.type}</h3>
           <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${statusStyle.bg} ${statusStyle.text}`}>
@@ -48,7 +48,7 @@ export function ReservationCard({ item, onDelete }: ReservationCardProps) {
         <div className="text-lg font-semibold text-gray-900">
           ${item.price.toLocaleString("es-CL")}
         </div>
-        
+
         {/* Delete Action - Solo si se provee handler y NO está cancelada/rechazada */}
         {onDelete && item.status !== 'CANCELADA' && item.status !== 'RECHAZADA' && (
           <Button

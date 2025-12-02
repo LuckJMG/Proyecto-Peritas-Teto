@@ -129,18 +129,13 @@ export default function AdminMultas() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
-      {/* NAVBAR */}
       <Navbar />
 
-      {/* CONTENEDOR INFERIOR */}
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* SIDEBAR */}
         <div className="h-full hidden md:block border-r border-gray-200/50">
           <SidebarAdmin className="h-full" />
         </div>
 
-        {/* CONTENIDO PRINCIPAL */}
         <main className="flex-1 p-8 overflow-y-auto overflow-x-hidden">
           <div className="space-y-6">
             <div className="flex justify-between items-center">

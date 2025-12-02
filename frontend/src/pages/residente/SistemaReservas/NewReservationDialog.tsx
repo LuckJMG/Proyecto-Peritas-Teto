@@ -78,7 +78,6 @@ export function NewReservationDialog({
         setIsLoadingReservations(true);
         try {
             const all = await reservaService.getAll();
-            
             const selectedDateStr = format(date, "yyyy-MM-dd");
             const filtered = all.filter(r => 
                 r.espacio_comun_id === Number(espacioId) &&
@@ -148,6 +147,8 @@ export function NewReservationDialog({
       setError(null);
 
       const dateStr = format(date, "yyyy-MM-dd");
+
+      // CORRECCIÓN TIMEZONE: Enviar string "YYYY-MM-DDTHH:mm:ss" SIN la 'Z' ni offset.
       const fechaInicioNaive = `${dateStr}T${horaInicio}:00`;
       const fechaFinNaive = `${dateStr}T${horaFin}:00`;
 
@@ -193,8 +194,6 @@ export function NewReservationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] bg-white rounded-xl shadow-2xl border-0 p-0 overflow-hidden">
-        
-        {/* Header */}
         <div className="bg-gray-50 border-b border-gray-100 px-6 py-5">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">

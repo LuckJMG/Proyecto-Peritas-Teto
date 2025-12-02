@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-// 1. IMPORTAMOS LA SIDEBAR
 import { SidebarAdmin } from "@/components/SidebarAdmin";
 import { Loader2, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useReservasAdmin } from "./hooks/useReservasAdmin";
+import { useReservasAdmin } from "@/hooks/useReservasAdmin";
 import { ReservasTable } from "./components/ReservasTable";
 import { ReservasFilters } from "./components/ReservasFilters";
 import { PendingRequests } from "./components/PendingRequests";
@@ -20,7 +19,6 @@ export default function ReservasPage() {
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [adminEspacios, setAdminEspacios] = useState<EspacioComun[]>([]);
 
-  // Solo cargar espacios (ya no necesitamos el ID residente)
   useEffect(() => {
     const loadAdminData = async () => {
       try {
@@ -68,23 +66,18 @@ export default function ReservasPage() {
   };
 
   return (
-    // CAMBIO 1: Layout flex vertical completo
     <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
-      
-      {/* NAVBAR: Fija arriba */}
       <Navbar />
 
-      {/* CAMBIO 2: Contenedor dividido (Sidebar | Main) */}
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* SIDEBAR: Fija a la izquierda */}
+
         <div className="h-full hidden md:block border-r bg-white">
           <SidebarAdmin className="h-full" />
         </div>
 
         {/* MAIN: Contenido con Scroll propio */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-          
+
           <div className="max-w-[1400px] mx-auto">
             <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
@@ -95,7 +88,7 @@ export default function ReservasPage() {
                   Administra las solicitudes y el historial de espacios comunes.
                 </p>
               </div>
-              
+
               <Button 
                 onClick={() => setShowAdminDialog(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm transition-all active:scale-[0.98]"

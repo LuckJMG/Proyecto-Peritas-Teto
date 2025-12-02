@@ -1,4 +1,3 @@
-// frontend/src/pages/residente/EstadoCuenta/ResumenGastoComun.tsx
 import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -1,4 +1,3 @@
-// frontend/src/pages/residente/EstadoCuenta/index.tsx
 import NavbarResidente from "@/components/NavbarResidente";
 import ResumenGastoComun from "./ResumenGastoComun";
 import ResumenMultas from "./ResumenMultas";
@@ -30,15 +29,12 @@ export default function EstadoCuentaPage() {
           </div>
         </div>
 
-        {/* Grid de contenido */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Columna Izquierda (2/3) */}
           <div className="lg:col-span-2 space-y-6">
             <ResumenGastoComun />
             <ResumenMultas />
           </div>
 
-          {/* Columna Derecha (1/3) */}
           <div className="lg:col-span-1">
             <TablonAnuncios />
           </div>

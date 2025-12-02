@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, Search, Download, ArrowUpDown, AlertCircle, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NavbarResidente from "@/components/NavbarResidente";
-import { useDetalleCuenta } from "./hooks/useDetalleCuenta";
+import { useDetalleCuenta } from "@/hooks/useDetalleCuenta";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
