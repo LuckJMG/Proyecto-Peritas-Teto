@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { EmailField } from './EmailField';
 import { PasswordField } from './PasswordField';
-import { RememberMeCheckbox } from './RememberMeCheckbox';
 import type { LoginFormProps } from '@/types/auth.types';
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, loading = false }) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [remember, setRemember] = useState<boolean>(false);
+  const [remember, _] = useState<boolean>(false);
 
   const handleSubmit = () => {
     if (!loading && email && password) {
@@ -25,8 +24,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, loading = false 
     <div className="space-y-5 w-full" onKeyPress={handleKeyPress}>
       <EmailField value={email} onChange={setEmail} />
       <PasswordField value={password} onChange={setPassword} />
-      <RememberMeCheckbox checked={remember} onChange={setRemember} />
-      
+
       <Button
         onClick={handleSubmit}
         disabled={loading || !email || !password}

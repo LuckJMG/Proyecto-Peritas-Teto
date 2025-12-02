@@ -3,7 +3,7 @@ import teto from '@/assets/tetnobg.png'
 
 export const CompanyBrand: React.FC = () => {
   return (
-    <div className="flex flex-col items-center gap-3 mb-10">
+    <div className="flex flex-col items-center gap-3">
       {/* Logo con contenedor */}
       <div className="w-200 h-56 bg-white rounded-xl flex items-center justify-center overflow-hidden">
         <img 

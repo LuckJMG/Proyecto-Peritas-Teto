@@ -33,17 +33,8 @@ export default function Login() {
     <div className="flex min-h-screen w-full bg-white">
       <div className="flex w-full flex-col justify-between p-8 lg:w-1/2 lg:p-12 xl:p-16">
         <CompanyBrand />
-        
-        <div className="mx-auto w-full max-w-sm">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Bienvenido
-            </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Ingresa tus credenciales para acceder a tu cuenta
-            </p>
-          </div>
 
+        <div className="mx-auto w-full max-w-sm">
           {error && (
             <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-600">
               <AlertCircle className="h-4 w-4" />
