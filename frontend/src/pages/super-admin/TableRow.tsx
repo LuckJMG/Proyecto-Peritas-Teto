@@ -41,8 +41,7 @@ export default function TableRow({ condominio, onEdit, onDelete, onViewEspacios 
   const navigate = useNavigate();
 
   const handleRowClick = () => {
-    // Navega al dashboard del condominio seleccionado
-    navigate(`/admin/dashboard/${condominio.id}`);
+    navigate(`/admin/dashboard`);
   };
 
   return (

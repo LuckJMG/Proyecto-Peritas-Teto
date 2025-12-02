@@ -93,7 +93,7 @@ def init_database(force_recreate=False):
             {
                 "email": "superadmin@casitasteto.cl",
                 "nombre": "Super", "apellido": "Admin", "password": "admin123",
-                "rol": RolUsuario.SUPER_ADMINISTRADOR, "condominio_id": None
+                "rol": RolUsuario.SUPER_ADMINISTRADOR, "condominio_id": condominio.id
             },
             {
                 "email": "admin@lospinos.cl",
