@@ -1,18 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
-from typing import List, Optional
+import json
 from datetime import date, datetime
 from decimal import Decimal
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from sqlmodel import Session, select
 
 from app.api.deps import get_db
-from app.models.multa import Multa, TipoMulta, EstadoMulta
+from app.models.alerta import Alerta, TipoAlerta
 from app.models.gasto_comun import GastoComun, EstadoGastoComun
-from app.models.usuario import Usuario
-from app.models.alerta import Alerta, TipoAlerta, EstadoAlerta
+from app.models.multa import Multa, TipoMulta, EstadoMulta
+from app.models.registro import RegistroModel, TipoEvento
 from app.models.residente import Residente
+from app.models.usuario import Usuario
 from app.utils.email_service import send_email
 
 router = APIRouter(prefix="/multas", tags=["Multas"])
+
+
+class AjusteMulta(BaseModel):
+    nuevo_monto: Decimal
+    motivo: str
+    es_condonacion: bool = False
+    usuario_id: int
+
+
+class ReversionMulta(BaseModel):
+    registro_id: int
+    motivo: str
+    usuario_id: int
 
 
 @router.get("", response_model=List[Multa])
@@ -20,7 +37,6 @@ async def listar_multas(
     residente_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    """Listar multas, opcionalmente filtrando por residente."""
     query = select(Multa)
     if residente_id:
         query = query.where(Multa.residente_id == residente_id)
@@ -29,7 +45,6 @@ async def listar_multas(
 
 @router.post("", response_model=Multa, status_code=status.HTTP_201_CREATED)
 async def crear_multa(data: Multa, db: Session = Depends(get_db)):
-    """Crear multa manual y notificar por correo al residente suscrito."""
     if not data.estado:
         data.estado = EstadoMulta.PENDIENTE
 
@@ -78,7 +93,6 @@ async def procesar_atrasos(
     admin_id: int,
     db: Session = Depends(get_db),
 ):
-    """Detecta gastos vencidos, genera multas automáticas y notifica."""
     today = date.today()
 
     gastos_vencidos = db.exec(
@@ -159,9 +173,96 @@ async def procesar_atrasos(
     }
 
 
+@router.post("/{multa_id}/ajustar", response_model=Multa)
+async def ajustar_multa(multa_id: int, data: AjusteMulta, db: Session = Depends(get_db)):
+    multa = db.get(Multa, multa_id)
+    if not multa:
+        raise HTTPException(status_code=404, detail="Multa no encontrada")
+
+    monto_original = float(multa.monto)
+    multa.monto = data.nuevo_monto
+    db.add(multa)
+    db.commit()
+    db.refresh(multa)
+
+    registro = RegistroModel(
+        usuario_id=data.usuario_id,
+        tipo_evento=TipoEvento.EDICION,
+        detalle=f"Ajuste multa ID {multa_id}: {monto_original} -> {float(data.nuevo_monto)}",
+        monto=float(data.nuevo_monto),
+        condominio_id=multa.condominio_id,
+        datos_adicionales=json.dumps(
+            {
+                "tipo_objeto": "MULTA",
+                "multa_id": multa_id,
+                "monto_original": monto_original,
+                "monto_editado": float(data.nuevo_monto),
+                "accion": "CONDONACION" if data.es_condonacion else "EDICION",
+                "motivo": data.motivo,
+                "revertible": True,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        ),
+    )
+    db.add(registro)
+    db.commit()
+
+    return multa
+
+
+@router.post("/{multa_id}/revertir", response_model=Multa)
+async def revertir_multa(multa_id: int, data: ReversionMulta, db: Session = Depends(get_db)):
+    multa = db.get(Multa, multa_id)
+    if not multa:
+        raise HTTPException(status_code=404, detail="Multa no encontrada")
+
+    registro = db.get(RegistroModel, data.registro_id)
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+
+    try:
+        meta = json.loads(registro.datos_adicionales or "{}")
+    except json.JSONDecodeError:
+        meta = {}
+
+    if meta.get("tipo_objeto") != "MULTA" or meta.get("multa_id") != multa_id:
+        raise HTTPException(status_code=400, detail="El registro no corresponde a esta multa")
+
+    monto_original = meta.get("monto_original")
+    if monto_original is None:
+        raise HTTPException(status_code=400, detail="El registro no contiene monto original para revertir")
+
+    multa.monto = Decimal(str(monto_original))
+    db.add(multa)
+    db.commit()
+    db.refresh(multa)
+
+    registro_reversion = RegistroModel(
+        usuario_id=data.usuario_id,
+        tipo_evento=TipoEvento.EDICION,
+        detalle=f"Reversion ajuste multa ID {multa_id}: restaura a {monto_original}",
+        monto=float(multa.monto),
+        condominio_id=multa.condominio_id,
+        datos_adicionales=json.dumps(
+            {
+                "tipo_objeto": "MULTA",
+                "multa_id": multa_id,
+                "accion": "REVERSION",
+                "registro_revertido": data.registro_id,
+                "monto_restaurado": monto_original,
+                "motivo": data.motivo,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        ),
+    )
+    db.add(registro_reversion)
+    db.commit()
+
+    return multa
+
+
 @router.get("/{item_id}", response_model=Multa)
 async def obtener_multa(item_id: int, db: Session = Depends(get_db)):
-    """Obtener una multa específica."""
     item = db.get(Multa, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Multa no encontrada")
@@ -170,7 +271,6 @@ async def obtener_multa(item_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{item_id}", response_model=Multa)
 async def actualizar_multa(item_id: int, data: Multa, db: Session = Depends(get_db)):
-    """Actualizar una multa existente."""
     item = db.get(Multa, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Multa no encontrada")
@@ -187,7 +287,6 @@ async def actualizar_multa(item_id: int, data: Multa, db: Session = Depends(get_
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def eliminar_multa(item_id: int, db: Session = Depends(get_db)):
-    """Eliminar una multa."""
     item = db.get(Multa, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Multa no encontrada")

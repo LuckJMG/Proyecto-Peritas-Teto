@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Trash2, Pencil } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2, Pencil, DollarSign } from "lucide-react";
 import { type Usuario } from "@/services/usuarioService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ interface UsuarioRowProps {
   onToggleExpand: () => void;
   onDelete: (u: Usuario) => void;
   onEdit: (u: Usuario) => void;
+  onAjustar: (u: Usuario) => void;
 }
 
 export function UsuarioRow({
@@ -19,6 +20,7 @@ export function UsuarioRow({
   onToggleExpand,
   onDelete,
   onEdit,
+  onAjustar,
 }: UsuarioRowProps) {
   
   const formatCurrency = (amount?: number) => {
@@ -81,6 +83,16 @@ export function UsuarioRow({
               title="Editar usuario"
             >
               <Pencil className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+              onClick={() => onAjustar(usuario)}
+              title="Ajustar deuda (gasto/multa)"
+            >
+              <DollarSign className="h-4 w-4" />
             </Button>
 
             <Button

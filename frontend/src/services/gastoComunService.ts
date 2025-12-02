@@ -52,6 +52,41 @@ class GastoComunService {
     const all = await this.getAll();
     return all.filter(g => g.residente_id === residenteId);
   }
+
+  async ajustar(gastoId: number, payload: {
+    nuevo_monto: number;
+    motivo: string;
+    es_condonacion?: boolean;
+    usuario_id: number;
+  }): Promise<GastoComun> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/gastos-comunes/${gastoId}/ajustar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Error al ajustar gasto común');
+    }
+    return await response.json();
+  }
+
+  async revertir(gastoId: number, payload: {
+    registro_id: number;
+    motivo: string;
+    usuario_id: number;
+  }): Promise<GastoComun> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/gastos-comunes/${gastoId}/revertir`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Error al revertir ajuste de gasto común');
+    }
+    return await response.json();
+  }
 }
 
 export const gastoComunService = new GastoComunService();

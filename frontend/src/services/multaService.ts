@@ -197,4 +197,39 @@ export const multaService = {
       return [];
     }
   },
+
+  async ajustar(multaId: number, payload: {
+    nuevo_monto: number;
+    motivo: string;
+    es_condonacion?: boolean;
+    usuario_id: number;
+  }): Promise<Multa> {
+    const response = await fetchWithAuth(`${API_URL}/multas/${multaId}/ajustar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || "Error al ajustar multa");
+    }
+    return await response.json();
+  },
+
+  async revertir(multaId: number, payload: {
+    registro_id: number;
+    motivo: string;
+    usuario_id: number;
+  }): Promise<Multa> {
+    const response = await fetchWithAuth(`${API_URL}/multas/${multaId}/revertir`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || "Error al revertir multa");
+    }
+    return await response.json();
+  },
 };

@@ -17,6 +17,7 @@ import { UsuarioRow } from "./UsuarioRow";
 import { AddUsuarioDialog } from "./AddUsuarioDialog";
 import { DeleteUsuarioDialog } from "./DeleteUsuarioDialog";
 import { EditUsuarioDialog } from "./EditUsuarioDialog";
+import { AdjustDeudaDialog } from "./AdjustDeudaDialog";
 
 interface SortConfig {
   key: keyof Usuario | null;
@@ -43,9 +44,11 @@ export default function ListaUsuarios() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showAdjustDialog, setShowAdjustDialog] = useState(false);
   
   const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
   const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | null>(null);
+  const [usuarioToAdjust, setUsuarioToAdjust] = useState<Usuario | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // 2. INICIALIZAR EL HOOK
@@ -164,6 +167,11 @@ export default function ListaUsuarios() {
     setShowEditDialog(true);
   };
 
+  const handleAjustarClick = (u: Usuario) => {
+    setUsuarioToAdjust(u);
+    setShowAdjustDialog(true);
+  };
+
   return (
     <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
       <Navbar />
@@ -227,6 +235,7 @@ export default function ListaUsuarios() {
                             onToggleExpand={() => setExpandedId(expandedId === u.id ? null : u.id)}
                             onDelete={handleDeleteClick}
                             onEdit={handleEditClick}
+                            onAjustar={handleAjustarClick}
                           />
                         ))
                       )}
@@ -268,6 +277,12 @@ export default function ListaUsuarios() {
         usuario={selectedUsuario}
         onConfirm={confirmDelete}
         isSubmitting={isDeleting}
+      />
+
+      <AdjustDeudaDialog
+        open={showAdjustDialog}
+        onOpenChange={setShowAdjustDialog}
+        usuario={usuarioToAdjust}
       />
     </div>
   );

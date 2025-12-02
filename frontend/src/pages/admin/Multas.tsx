@@ -23,6 +23,7 @@ const CURRENT_ADMIN_ID = 1;
 const CURRENT_CONDOMINIO_ID = 1;
 
 export default function AdminMultas() {
+  const toInt = (val: number | undefined) => Math.round(Number(val ?? 0));
   const [multas, setMultas] = useState<Multa[]>([]);
   const [residentes, setResidentes] = useState<Residente[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +127,8 @@ export default function AdminMultas() {
       alert("Error al crear multa");
     }
   };
+
+  const multasVisibles = multas.filter((m) => toInt(m.monto) > 0);
 
   return (
     <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
@@ -250,9 +253,9 @@ export default function AdminMultas() {
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
                     <tr><td colSpan={6} className="p-12 text-center text-gray-400">Cargando datos...</td></tr>
-                  ) : multas.length === 0 ? (
+                  ) : multasVisibles.length === 0 ? (
                     <tr><td colSpan={6} className="p-12 text-center text-gray-400">No hay multas registradas</td></tr>
-                  ) : multas.map((m) => (
+                  ) : multasVisibles.map((m) => (
                     <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 text-gray-400 font-mono text-xs">#{m.id}</td>
                       <td className="px-6 py-4 font-medium text-gray-900">
