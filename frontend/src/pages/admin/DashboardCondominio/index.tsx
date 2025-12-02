@@ -23,35 +23,20 @@ export default function DashboardCondominio() {
   const handlePrev = () => setCurrentChart((prev) => (prev - 1 + totalCharts) % totalCharts);
 
   const greenColor = "#99D050"; 
-  
-  // Estilo Sólido (Shadow Compacta)
   const cardStyle = `border border-gray-100 bg-white rounded-[20px] shadow-[0px_4px_10px_rgba(153,208,80,0.25)] transition-none`;
 
   return (
-    // CAMBIO 1: flex-col en lugar de flex (por defecto row) para apilar Navbar sobre el resto
     <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
-      
-      {/* NAVBAR: Ahora está arriba de todo, ocupando todo el ancho */}
       <Navbar />
 
-      {/* CONTENEDOR INFERIOR: Este divide el espacio restante entre Sidebar y Main */}
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* SIDEBAR: Ahora vive dentro de este contenedor inferior */}
-        <div className="h-full hidden md:block border-r border-gray-200/50"> {/* Opcional: border-r para separar visualmente */}
+        <div className="h-full hidden md:block border-r border-gray-200/50">
           <SidebarAdmin className="h-full" />
         </div>
 
-        {/* CONTENIDO PRINCIPAL */}
         <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden"> 
-          {/* Nota: agregué overflow-y-auto aquí para que el scroll sea solo en el contenido */}
-          
           <div className="flex h-full gap-6">
-            
-            {/* === COLUMNA IZQUIERDA === */}
-            <div className="flex-[3] flex flex-col gap-6 h-full min-w-0">
-              
-              {/* FILA 1: KPIs SUPERIORES */}
+            <div className="flex-3 flex flex-col gap-6 h-full min-w-0">
               <div className="grid grid-cols-3 gap-6 h-[150px] shrink-0">
                 <Card className={`${cardStyle} flex flex-col justify-center relative overflow-hidden`}>
                   <CardContent className="p-0 flex items-center gap-4 px-6 relative z-10">
@@ -82,9 +67,7 @@ export default function DashboardCondominio() {
                 </Card>
               </div>
 
-              {/* FILA 2: GRÁFICO */}
               <div className="flex items-center gap-4 flex-1 min-h-0">
-                
                 <Button onClick={handlePrev} variant="ghost" size="icon" className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform">
                   <ChevronLeft className="h-7 w-7" />
                 </Button>
@@ -152,7 +135,6 @@ export default function DashboardCondominio() {
                 </Button>
               </div>
 
-              {/* FILA 3: KPIs INFERIORES */}
               <div className="grid grid-cols-3 gap-6 h-[140px] shrink-0">
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Ingresos Reservas</p>
@@ -169,7 +151,6 @@ export default function DashboardCondominio() {
               </div>
             </div>
 
-            {/* === COLUMNA DERECHA === */}
             <div className="flex-1 flex flex-col gap-6 min-w-[340px] max-w-[420px]">
               <Card className={`${cardStyle} flex-none`}>
                 <CardHeader className="flex flex-row items-center justify-between pb-4 pt-6 px-6">
