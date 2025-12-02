@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { multaService, type Multa } from "@/services/multaService";
 import { authService } from "@/services/authService";
 import { residenteService } from "@/services/residenteService";
@@ -12,20 +15,23 @@ export default function ResumenMultas() {
       try {
         setLoading(true);
         
-        // 1. Obtener usuario logueado
         const user = authService.getUser();
         
         if (user?.id) {
-            // 2. Buscar el perfil de residente asociado a este usuario
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const allResidentes = await residenteService.getAll();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const miResidente = allResidentes.find((r: any) => r.usuario_id === user.id);
 
             if (miResidente) {
-                // 3. Ahora sí cargamos las multas de este residente específico
                 const data = await multaService.getAll(miResidente.id);
-                setMultas(data);
-            } else {
-                console.warn("Este usuario no tiene un perfil de residente asociado.");
+                // Ordenar por fecha descendente
+                const sorted = data.sort((a, b) => {
+                    const dateA = a.fecha_emision ? new Date(a.fecha_emision).getTime() : 0;
+                    const dateB = b.fecha_emision ? new Date(b.fecha_emision).getTime() : 0;
+                    return dateB - dateA;
+                });
+                setMultas(sorted);
             }
         }
       } catch (error) {
@@ -38,12 +44,25 @@ export default function ResumenMultas() {
     fetchMultas();
   }, []);
 
-  if (loading) return <div className="p-6 text-center text-gray-500">Cargando multas...</div>;
+  if (loading) return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 h-[300px] flex items-center justify-center text-gray-500">
+        Cargando multas...
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900">Multas Recientes</h2>
+        
+        {/* --- BOTÓN VER MÁS ESTILIZADO (VERDE SÓLIDO) --- */}
+        <Link to="/multas">
+            <Button 
+                className="bg-[#99D050] hover:bg-[#8bc040] text-white shadow-sm h-8 px-3 text-xs font-semibold"
+            >
+                Ver más <ChevronRight className="ml-1 h-3 w-3" />
+            </Button>
+        </Link>
       </div>
 
       <div className="overflow-x-auto">
@@ -59,8 +78,8 @@ export default function ResumenMultas() {
           <tbody>
             {multas.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-500">
-                  No tienes multas registradas
+                <td colSpan={4} className="text-center py-8 text-gray-500 text-sm">
+                  No tienes multas registradas. ¡Felicitaciones!
                 </td>
               </tr>
             ) : (
@@ -72,7 +91,7 @@ export default function ResumenMultas() {
                   <td className="py-3 px-2 text-sm text-gray-900 font-medium">
                     ${multa.monto.toLocaleString("es-CL")}
                   </td>
-                  <td className="py-3 px-2 text-sm text-gray-600 truncate max-w-[200px]" title={multa.descripcion}>
+                  <td className="py-3 px-2 text-sm text-gray-600 truncate max-w-[150px]" title={multa.descripcion}>
                     {multa.descripcion}
                   </td>
                   <td className="py-3 px-2 text-sm">
@@ -81,7 +100,7 @@ export default function ResumenMultas() {
                         ? 'bg-green-100 text-green-800 border-green-200' 
                         : multa.estado === 'PENDIENTE' 
                           ? 'bg-red-100 text-red-800 border-red-200' 
-                          : 'bg-gray-100 text-gray-800 border-gray-200'
+                          : 'bg-blue-100 text-blue-800 border-blue-200'
                     }`}>
                       {multa.estado}
                     </span>

@@ -1,71 +1,89 @@
-// frontend/src/pages/residente/EstadoCuenta/TablonAnuncios.tsx
-import { X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Megaphone, ChevronRight, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { anuncioService } from "@/services/anuncioService";
+import type { Anuncio } from "@/types/anuncio.types"; // Asegúrate de que este tipo existe, o úsalo desde el servicio
 
 export default function TablonAnuncios() {
-  const navigate = useNavigate();
+  const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const avisos = [
-    {
-      tipo: "Fiestas Patrias",
-      descripcion: "Mañana 18:00 hrs",
-      icono: "🎉"
-    },
-    {
-      tipo: "Lavadora 2 no funciona",
-      descripcion: "Por favor al hogar.",
-      icono: "🔧"
-    },
-    {
-      tipo: "Piscina disponible",
-      descripcion: "¡Llegó el verano!",
-      icono: "🏊"
-    },
-    {
-      tipo: "Reunión de vecinos",
-      descripcion: "Jueves 19:00 hrs",
-      icono: "👥"
-    },
-    {
-      tipo: "Mantención ascensores",
-      descripcion: "Lunes todo el día",
-      icono: "⚠️"
-    }
-  ];
+  useEffect(() => {
+    const loadAnuncios = async () => {
+      try {
+        setLoading(true);
+        // Obtenemos los anuncios
+        const data = await anuncioService.getAll();
+        
+        // Ordenamos por fecha (más reciente primero) y tomamos solo los 3 primeros
+        const sorted = data.sort((a, b) => 
+          new Date(b.fecha_publicacion).getTime() - new Date(a.fecha_publicacion).getTime()
+        ).slice(0, 3);
+        
+        setAnuncios(sorted);
+      } catch (error) {
+        console.error("Error cargando anuncios", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnuncios();
+  }, []);
+
+  if (loading) return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 h-[300px] flex items-center justify-center text-gray-500">
+      Cargando anuncios...
+    </div>
+  );
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-6 flex flex-col h-full">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Avisos</h2>
-        <button 
-          onClick={() => navigate('/anuncios')}
-          className="px-3 py-1 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] transition-colors text-sm font-medium"
-        >
-          Ver más
-        </button>
-      </div>
-
-      <div className="space-y-3 max-h-[600px] overflow-y-auto">
-        {avisos.map((aviso, index) => (
-          <div 
-            key={index} 
-            className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <Megaphone className="w-5 h-5 text-green-600" />
+          Anuncios
+        </h2>
+        
+        <Link to="/anuncios">
+          <Button 
+            className="bg-[#99D050] hover:bg-[#8bc040] text-white shadow-sm h-8 px-3 text-xs font-semibold"
           >
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0 text-xl">
-              {aviso.icono}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-medium text-gray-900 mb-1">{aviso.tipo}</h3>
-              <p className="text-xs text-gray-600">{aviso.descripcion}</p>
-            </div>
-            <button className="text-gray-400 hover:text-gray-600 shrink-0">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+            Ver más <ChevronRight className="ml-1 h-3 w-3" />
+          </Button>
+        </Link>
       </div>
 
+      <div className="flex-1 space-y-4">
+        {anuncios.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-200">
+            No hay anuncios recientes.
+          </div>
+        ) : (
+          anuncios.map((anuncio) => (
+            <div 
+              key={anuncio.id} 
+              className="p-4 rounded-lg bg-gray-50 border border-gray-100 hover:border-gray-200 transition-colors group"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-blue-600 transition-colors">
+                  {anuncio.titulo}
+                </h3>
+                <span className="text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-100 whitespace-nowrap flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  {new Date(anuncio.fecha_publicacion).toLocaleDateString("es-CL", {
+                    day: 'numeric', month: 'short'
+                  })}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                {anuncio.contenido}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
