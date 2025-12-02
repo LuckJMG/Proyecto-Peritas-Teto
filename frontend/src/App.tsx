@@ -23,6 +23,8 @@ import AdminAlertasPage from "./pages/admin/Alertas";
 import HistorialPagos from "./pages/residente/HistorialPagos";
 import SistemaPago from "./pages/residente/SistemaPago";
 import DetalleGastoPage from "./pages/residente/Detalle";
+import AnunciosPage from "./pages/residente/Anuncios";
+import MultasPage from "./pages/residente/Multas";
 
 function DevHome() {
   return (
@@ -192,6 +194,8 @@ function App() {
         <Route path="/historial" element={<HistorialPagos />} />
         <Route path="/pago" element={<SistemaPago />} />
         <Route path="/detalle" element={<DetalleGastoPage />} />
+        <Route path="/anuncios" element={<AnunciosPage />} />
+        <Route path="/multas" element={<MultasPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, CreditCard, Loader2, CheckCircle, XCircle } from 'lucide-react';
-import NavbarResidente from '@/components/NavbarResidente'
-import { Link } from 'react-router-dom'; 
+import NavbarResidente from '@/components/NavbarResidente';
+import { Link } from 'react-router-dom';
+// 1. IMPORTACIONES NUEVAS PARA REGISTRO
+import { useRegistroAutomatico } from "@/services/registroService";
+import { authService } from "@/services/authService";
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -48,6 +51,10 @@ const SistemaPago = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 2. INICIALIZAR EL HOOK DE REGISTRO
+  const { registrar } = useRegistroAutomatico();
+  const user = authService.getUser();
 
   // Simular ID de residente (en producción vendría de autenticación)
   const RESIDENTE_ID = 1;
@@ -100,6 +107,9 @@ const SistemaPago = () => {
       
       const data = await response.json();
       
+      // Obtenemos el ID del condominio del usuario actual para el log
+      const condominioId = user?.condominio_id || user?.condominioId;
+      
       if (data.success) {
         setPaymentStatus({
           success: true,
@@ -108,12 +118,37 @@ const SistemaPago = () => {
           monto: data.monto,
           autorizacion: data.codigo_autorizacion
         });
+
+        // 3. REGISTRAR ÉXITO AUTOMÁTICAMENTE
+        await registrar(
+          'PAGO',
+          `Pago Online Aprobado (Transbank). Monto: $${data.monto?.toLocaleString('es-CL')} - Transacción: ${data.numero_transaccion}`,
+          {
+            monto: data.monto,
+            condominio_id: condominioId,
+            datos_adicionales: { 
+              metodo: 'WEBPAY', 
+              autorizacion: data.codigo_autorizacion 
+            }
+          }
+        );
+
       } else {
         setPaymentStatus({
           success: false,
           message: 'El pago fue rechazado',
           transaccion: data.numero_transaccion
         });
+
+        // 3. REGISTRAR RECHAZO AUTOMÁTICAMENTE
+        await registrar(
+          'PAGO',
+          `Pago Online Rechazado/Anulado (Transbank). Transacción: ${data.numero_transaccion || 'N/A'}`,
+          {
+            condominio_id: condominioId,
+            datos_adicionales: { metodo: 'WEBPAY', estado: 'RECHAZADO' }
+          }
+        );
       }
     } catch (err) {
       setPaymentStatus({
