@@ -6,13 +6,13 @@ import type { EmailFieldProps } from '@/types/auth.types';
 export const EmailField: React.FC<EmailFieldProps> = ({ value, onChange }) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor="email" className="text-gray-900 font-normal">
+      <Label htmlFor="email" className="text-foreground font-normal">
         Correo
       </Label>
       <Input
         id="email"
         type="email"
-        placeholder="name@example.com"
+        placeholder="nombre@ejemplo.com"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full h-11"

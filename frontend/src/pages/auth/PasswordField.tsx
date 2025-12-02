@@ -8,19 +8,19 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({ value, onChange })
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleRecoverPassword = () => {
-    // Lógica de recuperar contraseña
+    // Lógica futura para recuperar contraseña
     console.log('Recuperar contraseña');
   };
 
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <Label htmlFor="password" className="text-gray-900 font-normal">
+        <Label htmlFor="password" className="text-foreground font-normal">
           Contraseña
         </Label>
         <button
           type="button"
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-blue-600 hover:underline font-medium"
           onClick={handleRecoverPassword}
         >
           Recuperar
@@ -30,7 +30,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({ value, onChange })
         <Input
           id="password"
           type={showPassword ? "text" : "password"}
-          placeholder="Contraseña"
+          placeholder="••••••••"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full h-11 pr-10"
@@ -38,7 +38,8 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({ value, onChange })
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          tabIndex={-1} // Evitar foco al navegar con tab
         >
           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>

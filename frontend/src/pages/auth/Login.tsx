@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 import { authService } from "@/services/authService";
 import { CompanyBrand } from "./CompanyBrand";
 import { LoginForm } from "./LoginForm";
 import { ImagePanel } from "./ImagePanel";
 import { Footer as LoginFooter } from "./LoginFooter";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { LoginCredentials } from "@/types/auth.types";
-import { AlertCircle } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -34,12 +35,15 @@ export default function Login() {
       <div className="flex w-full flex-col justify-between p-8 lg:w-1/2 lg:p-12 xl:p-16">
         <CompanyBrand />
 
-        <div className="mx-auto w-full max-w-sm">
+        <div className="mx-auto w-full max-w-sm space-y-6">
           {error && (
-            <div className="mb-4 flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <span>{error}</span>
-            </div>
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
           )}
 
           <LoginForm 
