@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CreditCard, Home, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import NavbarResidente from '@/components/NavbarResidente'
+import { Link } from 'react-router-dom'; 
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -192,23 +194,7 @@ const SistemaPago = () => {
   if (paymentStatus) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-3">
-                <Home className="w-8 h-8" />
-                <span className="text-xl font-bold">Casitas Teto</span>
-              </div>
-              {residente && (
-                <div className="text-right">
-                  <div className="font-semibold">{residente.nombre}</div>
-                  <div className="text-sm text-gray-500">{residente.vivienda}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
+        <NavbarResidente />
         <div className="max-w-2xl mx-auto px-4 py-16">
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             {paymentStatus.success ? (
@@ -276,38 +262,17 @@ const SistemaPago = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <Home className="w-8 h-8" />
-              <span className="text-xl font-bold">Casitas Teto</span>
-            </div>
-            {residente && (
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <div className="font-semibold">{residente.nombre}</div>
-                  <div className="text-sm text-gray-500">{residente.vivienda}</div>
-                </div>
-                <div className="bg-gray-100 px-3 py-1 rounded text-sm font-medium">
-                  CL
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <NavbarResidente />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <button 
-          onClick={() => window.history.back()}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+        <Link 
+          to="/resumen" 
+          className="flex items-center text-gray-600 hover:text-gray-900 mb-6 font-medium"
         >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Estado de cuenta
-        </button>
+          <ArrowLeft className="w-5 h-5 mr-2" /> Estado de cuenta
+        </Link>
 
         {/* Page Title */}
         <div className="mb-8">
@@ -390,6 +355,9 @@ const SistemaPago = () => {
                   </div>
                   <div className="text-gray-600">
                     CVV: cualquiera | Fecha: cualquier fecha futura
+                  </div>
+                  <div className="text-gray-600">
+                    Cuando aparece un formulario de autenticación con RUT y clave, se debe usar el RUT 11.111.111-1 y la clave 123.
                   </div>
                 </div>
               </div>
