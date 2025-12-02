@@ -4,6 +4,7 @@ import { Overview } from "./Overview";
 import { HogaresMorosos } from "./HogaresMorosos";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,18 +13,53 @@ import {
   MoreHorizontal, 
   ChevronLeft,
   ChevronRight,
-  Wallet
+  Wallet,
+  Loader2
 } from "lucide-react";
 
 export default function DashboardCondominio() {
   const [currentChart, setCurrentChart] = useState(0);
-  const totalCharts = 3; 
+  const totalCharts = 3;
+  
+  // Conectar con datos reales del backend
+  const dashboardData = useDashboardData();
 
   const handleNext = () => setCurrentChart((prev) => (prev + 1) % totalCharts);
   const handlePrev = () => setCurrentChart((prev) => (prev - 1 + totalCharts) % totalCharts);
 
   const greenColor = "#99D050"; 
   const cardStyle = `border border-gray-100 bg-white rounded-[20px] shadow-[0px_4px_10px_rgba(153,208,80,0.25)] transition-none`;
+
+  // Función helper para formatear montos
+  const formatMonto = (monto: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(monto);
+  };
+
+  // Loading State
+  if (dashboardData.loading) {
+    return (
+      <div className="flex flex-col h-screen w-full bg-[#F5F6F8]">
+        <Navbar />
+        <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
+            <p className="text-gray-500 font-medium">Cargando datos del dashboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error State (Mostrar datos de respaldo)
+  if (dashboardData.error) {
+    console.warn("Error en dashboard:", dashboardData.error);
+    // Continuamos mostrando el dashboard con datos disponibles
+  }
 
   return (
     <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
@@ -46,8 +82,10 @@ export default function DashboardCondominio() {
                        </div>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-500 mb-1">Ingreso por renta</p>
-                      <div className="text-5xl font-extrabold text-gray-800 tracking-tight">$800M</div>
+                      <p className="text-sm font-bold text-gray-500 mb-1">Ingreso Total</p>
+                      <div className="text-4xl font-extrabold text-gray-800 tracking-tight">
+                        {formatMonto(dashboardData.ingresoTotal)}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -55,20 +93,30 @@ export default function DashboardCondominio() {
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center`}>
                   <CardContent className="p-0">
                       <p className="text-sm font-bold text-gray-500 mb-2">Índice de Morosidad</p>
-                      <div className="text-6xl font-extrabold text-gray-900 tracking-tight">30%</div>
+                      <div className="text-6xl font-extrabold text-gray-900 tracking-tight">
+                        {dashboardData.morosidadPorcentaje}%
+                      </div>
                   </CardContent>
                 </Card>
 
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center`}>
                   <CardContent className="p-0">
                       <p className="text-sm font-bold text-gray-500 mb-2">Multas Registradas</p>
-                      <div className="text-6xl font-extrabold text-gray-900 tracking-tight">30</div>
+                      <div className="text-6xl font-extrabold text-gray-900 tracking-tight">
+                        {dashboardData.multasRegistradas}
+                      </div>
                   </CardContent>
                 </Card>
               </div>
 
               <div className="flex items-center gap-4 flex-1 min-h-0">
-                <Button onClick={handlePrev} variant="ghost" size="icon" className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform">
+                
+                <Button 
+                  onClick={handlePrev} 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform"
+                >
                   <ChevronLeft className="h-7 w-7" />
                 </Button>
 
@@ -78,7 +126,9 @@ export default function DashboardCondominio() {
                       <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-8 shrink-0 z-10 bg-white">
                           <div className="flex items-center gap-4">
                             <span className="text-2xl font-bold" style={{ color: greenColor }}>Ingresos</span>
-                            <span className="text-sm text-gray-400 font-medium hidden xl:block">Gasto común + Renta + Servicios</span>
+                            <span className="text-sm text-gray-400 font-medium hidden xl:block">
+                              Gasto común + Renta + Servicios
+                            </span>
                           </div>
                           <div className="flex gap-6 text-xs font-bold uppercase tracking-wide">
                             <div className="flex items-center gap-2">
@@ -94,7 +144,13 @@ export default function DashboardCondominio() {
                       
                       <CardContent className="flex-1 w-full min-h-0 relative">
                         <div className="absolute inset-0 pb-2 pr-4 pl-0">
-                            <Overview /> 
+                          {dashboardData.graficoData.length > 0 ? (
+                            <Overview data={dashboardData.graficoData} />
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <p className="text-gray-400">No hay datos disponibles</p>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
 
@@ -103,7 +159,9 @@ export default function DashboardCondominio() {
                             <button 
                               key={idx}
                               onClick={() => setCurrentChart(idx)}
-                              className={`rounded-full transition-all duration-300 mx-1.5 ${currentChart === idx ? 'w-8 h-2.5' : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'}`}
+                              className={`rounded-full transition-all duration-300 mx-1.5 ${
+                                currentChart === idx ? 'w-8 h-2.5' : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'
+                              }`}
                               style={{ backgroundColor: currentChart === idx ? greenColor : undefined }}
                             />
                           ))}
@@ -121,7 +179,9 @@ export default function DashboardCondominio() {
                              <button 
                                key={idx}
                                onClick={() => setCurrentChart(idx)}
-                               className={`rounded-full transition-all duration-300 mx-1.5 ${currentChart === idx ? 'w-8 h-2.5' : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'}`}
+                               className={`rounded-full transition-all duration-300 mx-1.5 ${
+                                 currentChart === idx ? 'w-8 h-2.5' : 'w-2.5 h-2.5 bg-gray-200 hover:bg-gray-300'
+                               }`}
                                style={{ backgroundColor: currentChart === idx ? greenColor : undefined }}
                              />
                            ))}
@@ -130,7 +190,12 @@ export default function DashboardCondominio() {
                   )}
                 </Card>
 
-                <Button onClick={handleNext} variant="ghost" size="icon" className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform">
+                <Button 
+                  onClick={handleNext} 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full bg-white h-12 w-12 border border-gray-100 shadow-[0px_2px_5px_rgba(0,0,0,0.1)] text-gray-400 hover:text-[#99D050] shrink-0 active:scale-95 transition-transform"
+                >
                   <ChevronRight className="h-7 w-7" />
                 </Button>
               </div>
@@ -138,15 +203,21 @@ export default function DashboardCondominio() {
               <div className="grid grid-cols-3 gap-6 h-[140px] shrink-0">
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Ingresos Reservas</p>
-                   <div className="text-4xl font-extrabold mt-2 text-gray-900">$341.820</div>
+                   <div className="text-4xl font-extrabold mt-2 text-gray-900">
+                     {formatMonto(dashboardData.ingresosReservas)}
+                   </div>
                 </Card>
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
-                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Residentes</p>
-                   <div className="text-4xl font-extrabold mt-2 text-gray-900">300.000</div>
+                   <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Residentes Activos</p>
+                   <div className="text-4xl font-extrabold mt-2 text-gray-900">
+                     {dashboardData.usuariosActivos}
+                   </div>
                 </Card>
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Reservas por confirmar</p>
-                   <div className="text-5xl font-extrabold mt-2 text-gray-900">20</div>
+                   <div className="text-5xl font-extrabold mt-2 text-gray-900">
+                     {dashboardData.reservasPorConfirmar}
+                   </div>
                 </Card>
               </div>
             </div>
@@ -156,7 +227,11 @@ export default function DashboardCondominio() {
                 <CardHeader className="flex flex-row items-center justify-between pb-4 pt-6 px-6">
                   <CardTitle className="text-lg font-bold text-gray-900">Avisos Comunidad</CardTitle>
                   <Link to="/admin/anuncios">
-                    <Button size="sm" className="text-white font-bold h-7 rounded-md px-3 text-xs shadow-none active:scale-95 transition-transform" style={{ backgroundColor: greenColor }}>
+                    <Button 
+                      size="sm" 
+                      className="text-white font-bold h-7 rounded-md px-3 text-xs shadow-none active:scale-95 transition-transform" 
+                      style={{ backgroundColor: greenColor }}
+                    >
                       Ver más
                     </Button>
                   </Link>
@@ -164,7 +239,9 @@ export default function DashboardCondominio() {
                 <CardContent className="px-6 pb-6 space-y-5">
                    <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-lg border border-blue-100">🎉</div>
+                        <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-lg border border-blue-100">
+                          🎉
+                        </div>
                         <div>
                           <p className="text-sm font-bold text-gray-800">Fiestas Patrias</p>
                           <p className="text-xs text-gray-400 mt-0.5">Mañana 14:00 hrs</p>
@@ -175,7 +252,11 @@ export default function DashboardCondominio() {
                    <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center text-lg border border-red-100">
-                             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" className="h-8 w-8" alt="icon" />
+                          <img 
+                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
+                            className="h-8 w-8" 
+                            alt="icon" 
+                          />
                         </div>
                         <div>
                           <p className="text-sm font-bold text-gray-800">Lavadora 2 no funciona</p>
@@ -186,7 +267,9 @@ export default function DashboardCondominio() {
                    </div>
                    <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-lg border border-orange-100">😎</div>
+                        <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-lg border border-orange-100">
+                          😎
+                        </div>
                         <div>
                           <p className="text-sm font-bold text-gray-800">Piscina disponible</p>
                           <p className="text-xs text-gray-400 mt-0.5">¡Llegó el verano!</p>
@@ -203,7 +286,9 @@ export default function DashboardCondominio() {
 
               <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-6 h-[140px] shrink-0 border-2 border-[#E4F4C8]`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Deuda Total de Impago</p>
-                   <div className="text-4xl font-extrabold mt-2 text-gray-900 tracking-tight">$237.821.234</div>
+                   <div className="text-4xl font-extrabold mt-2 text-gray-900 tracking-tight">
+                     {formatMonto(dashboardData.deudaTotal)}
+                   </div>
               </Card>
             </div>
           </div>
