@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   DollarSign, 
-  MoreHorizontal, 
   ChevronLeft,
   ChevronRight,
   Wallet,
-  Loader2
+  Loader2,
+  Megaphone
 } from "lucide-react";
 
 export default function DashboardCondominio() {
@@ -40,6 +40,16 @@ export default function DashboardCondominio() {
     }).format(monto);
   };
 
+  // Colores para los iconos de anuncios
+  const getBgColor = (index: number) => {
+    const colors = [
+      'bg-blue-50 border-blue-100',
+      'bg-orange-50 border-orange-100',
+      'bg-purple-50 border-purple-100'
+    ];
+    return colors[index % colors.length];
+  };
+
   // Loading State
   if (dashboardData.loading) {
     return (
@@ -58,7 +68,6 @@ export default function DashboardCondominio() {
   // Error State (Mostrar datos de respaldo)
   if (dashboardData.error) {
     console.warn("Error en dashboard:", dashboardData.error);
-    // Continuamos mostrando el dashboard con datos disponibles
   }
 
   return (
@@ -70,9 +79,13 @@ export default function DashboardCondominio() {
           <SidebarAdmin className="h-full" />
         </div>
 
-        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden"> 
+        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
           <div className="flex h-full gap-6">
-            <div className="flex-3 flex flex-col gap-6 h-full min-w-0">
+            
+            {/* === COLUMNA IZQUIERDA === */}
+            <div className="flex-[3] flex flex-col gap-6 h-full min-w-0">
+              
+              {/* FILA 1: KPIs SUPERIORES */}
               <div className="grid grid-cols-3 gap-6 h-[150px] shrink-0">
                 <Card className={`${cardStyle} flex flex-col justify-center relative overflow-hidden`}>
                   <CardContent className="p-0 flex items-center gap-4 px-6 relative z-10">
@@ -109,6 +122,7 @@ export default function DashboardCondominio() {
                 </Card>
               </div>
 
+              {/* FILA 2: GRÁFICO */}
               <div className="flex items-center gap-4 flex-1 min-h-0">
                 
                 <Button 
@@ -200,6 +214,7 @@ export default function DashboardCondominio() {
                 </Button>
               </div>
 
+              {/* FILA 3: KPIs INFERIORES */}
               <div className="grid grid-cols-3 gap-6 h-[140px] shrink-0">
                 <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-4`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Ingresos Reservas</p>
@@ -222,7 +237,10 @@ export default function DashboardCondominio() {
               </div>
             </div>
 
+            {/* === COLUMNA DERECHA === */}
             <div className="flex-1 flex flex-col gap-6 min-w-[340px] max-w-[420px]">
+              
+              {/* AVISOS COMUNIDAD */}
               <Card className={`${cardStyle} flex-none`}>
                 <CardHeader className="flex flex-row items-center justify-between pb-4 pt-6 px-6">
                   <CardTitle className="text-lg font-bold text-gray-900">Avisos Comunidad</CardTitle>
@@ -237,53 +255,50 @@ export default function DashboardCondominio() {
                   </Link>
                 </CardHeader>
                 <CardContent className="px-6 pb-6 space-y-5">
-                   <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-lg border border-blue-100">
-                          🎉
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-800">Fiestas Patrias</p>
-                          <p className="text-xs text-gray-400 mt-0.5">Mañana 14:00 hrs</p>
-                        </div>
-                      </div>
-                      <MoreHorizontal className="h-5 w-5 text-gray-300" />
-                   </div>
-                   <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center text-lg border border-red-100">
-                          <img 
-                            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-                            className="h-8 w-8" 
-                            alt="icon" 
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-800">Lavadora 2 no funciona</p>
-                          <p className="text-xs text-gray-400 mt-0.5">Por favor arreglar.</p>
+                  {dashboardData.anuncios.length > 0 ? (
+                    dashboardData.anuncios.map((anuncio, index) => (
+                      <div key={anuncio.id} className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center text-lg border ${getBgColor(index)}`}>
+                            {anuncio.icono}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-800 line-clamp-1">{anuncio.titulo}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{anuncio.fecha}</p>
+                          </div>
                         </div>
                       </div>
-                      <MoreHorizontal className="h-5 w-5 text-gray-300" />
-                   </div>
-                   <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center text-lg border border-orange-100">
-                          😎
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-800">Piscina disponible</p>
-                          <p className="text-xs text-gray-400 mt-0.5">¡Llegó el verano!</p>
-                        </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6">
+                      <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
+                        <Megaphone className="h-6 w-6 text-gray-400" />
                       </div>
-                      <MoreHorizontal className="h-5 w-5 text-gray-300" />
-                   </div>
+                      <p className="text-gray-400 text-sm">No hay anuncios recientes</p>
+                      <Link to="/admin/anuncios">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="mt-3 text-xs"
+                        >
+                          Crear primer anuncio
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
+              {/* HOGARES MOROSOS */}
               <div className="flex-1 min-h-0">
-                <HogaresMorosos customStyle={cardStyle} greenColor={greenColor} />
+                <HogaresMorosos 
+                  customStyle={cardStyle} 
+                  greenColor={greenColor}
+                  data={dashboardData.hogaresMorosos}
+                />
               </div>
 
+              {/* DEUDA TOTAL */}
               <Card className={`${cardStyle} flex flex-col justify-center items-center text-center p-6 h-[140px] shrink-0 border-2 border-[#E4F4C8]`}>
                    <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Deuda Total de Impago</p>
                    <div className="text-4xl font-extrabold mt-2 text-gray-900 tracking-tight">

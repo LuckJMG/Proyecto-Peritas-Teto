@@ -19,31 +19,44 @@ export interface Multa {
   creado_por: number;
 }
 
+/**
+ * Payload para crear una multa manual.
+ * Más seguro que usar Omit<Multa, 'id'>.
+ */
+export interface MultaCreate {
+  residente_id: number;
+  condominio_id: number;
+  tipo: TipoMulta;
+  descripcion: string;
+  monto: number;
+  creado_por: number;
+}
+
 export const multaService = {
   /**
-   * Obtiene todas las multas de un residente
+   * Obtiene todas las multas (global o por residente)
    */
   async getAll(residenteId?: number): Promise<Multa[]> {
     try {
-      const url = residenteId 
+      const url = residenteId
         ? `${API_URL}/multas?residente_id=${residenteId}`
         : `${API_URL}/multas`;
-      
+
       const response = await fetchWithAuth(url);
-      
+
       if (!response.ok) {
         throw new Error("Error al obtener multas");
       }
 
       const multas = await response.json();
 
-      // Ordenar por fecha de emisión descendente (más recientes primero)
-      return multas.sort((a: Multa, b: Multa) => 
-        new Date(b.fecha_emision).getTime() - new Date(a.fecha_emision).getTime()
+      return multas.sort(
+        (a: Multa, b: Multa) =>
+          new Date(b.fecha_emision).getTime() - new Date(a.fecha_emision).getTime()
       );
     } catch (error) {
-      console.error("Error en getAll:", error);
-      throw error;
+      console.error("Error en multaService.getAll:", error);
+      return [];
     }
   },
 
@@ -53,22 +66,22 @@ export const multaService = {
   async getById(id: number): Promise<Multa> {
     try {
       const response = await fetchWithAuth(`${API_URL}/multas/${id}`);
-      
+
       if (!response.ok) {
         throw new Error("Multa no encontrada");
       }
 
       return await response.json();
     } catch (error) {
-      console.error("Error en getById:", error);
+      console.error("Error en multaService.getById:", error);
       throw error;
     }
   },
 
   /**
-   * Crea una nueva multa
+   * Crea una multa manual
    */
-  async create(multa: Omit<Multa, 'id'>): Promise<Multa> {
+  async create(multa: MultaCreate): Promise<Multa> {
     try {
       const response = await fetchWithAuth(`${API_URL}/multas`, {
         method: "POST",
@@ -77,22 +90,27 @@ export const multaService = {
         },
         body: JSON.stringify(multa),
       });
-      
+
       if (!response.ok) {
-        throw new Error("Error al crear multa");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Error al crear multa");
       }
-      
+
       return await response.json();
     } catch (error) {
-      console.error("Error en create:", error);
+      console.error("Error en multaService.create:", error);
       throw error;
     }
   },
 
   /**
-   * Procesa multas por atraso
+   * Procesa multas automáticas por atraso
    */
-  async procesarAtrasos(adminId: number): Promise<any> {
+  async procesarAtrasos(adminId: number): Promise<{
+    message: string;
+    gastos_vencidos_detectados: number;
+    multas_creadas: number;
+  }> {
     try {
       const response = await fetchWithAuth(
         `${API_URL}/multas/procesar-atrasos?admin_id=${adminId}`,
@@ -100,14 +118,14 @@ export const multaService = {
           method: "POST",
         }
       );
-      
+
       if (!response.ok) {
         throw new Error("Error al procesar atrasos");
       }
-      
+
       return await response.json();
     } catch (error) {
-      console.error("Error en procesarAtrasos:", error);
+      console.error("Error en multaService.procesarAtrasos:", error);
       throw error;
     }
   },
@@ -131,7 +149,7 @@ export const multaService = {
 
       return await response.json();
     } catch (error) {
-      console.error("Error en update:", error);
+      console.error("Error en multaService.update:", error);
       throw error;
     }
   },
@@ -144,13 +162,39 @@ export const multaService = {
       const response = await fetchWithAuth(`${API_URL}/multas/${id}`, {
         method: "DELETE",
       });
-      
+
       if (!response.ok) {
         throw new Error("Error al eliminar multa");
       }
     } catch (error) {
-      console.error("Error en delete:", error);
+      console.error("Error en multaService.delete:", error);
       throw error;
+    }
+  },
+
+  /**
+   * Obtiene multas por condominio
+   */
+  async getByCondominio(condominioId: number): Promise<Multa[]> {
+    try {
+      const todas = await this.getAll();
+      return todas.filter(m => m.condominio_id === condominioId);
+    } catch (error) {
+      console.error("Error en multaService.getByCondominio:", error);
+      return [];
+    }
+  },
+
+  /**
+   * Obtiene multas pendientes de un condominio
+   */
+  async getPendientesByCondominio(condominioId: number): Promise<Multa[]> {
+    try {
+      const multas = await this.getByCondominio(condominioId);
+      return multas.filter(m => m.estado === "PENDIENTE");
+    } catch (error) {
+      console.error("Error en multaService.getPendientesByCondominio:", error);
+      return [];
     }
   },
 };

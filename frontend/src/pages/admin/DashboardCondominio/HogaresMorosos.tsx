@@ -10,21 +10,81 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle, ChevronDown, Users } from "lucide-react";
 
-// Recibimos props para mantener consistencia de estilo
-export function HogaresMorosos({ customStyle, greenColor = "#99D050" }: { customStyle?: string, greenColor?: string }) {
+interface HogarMoroso {
+  nombre: string;
+  vivienda: string;
+  avatar: string;
+  mesesAtraso: number;
+  montoDeuda: number;
+  residenteId: number;
+}
+
+interface HogaresMorososProps {
+  customStyle?: string;
+  greenColor?: string;
+  data?: HogarMoroso[];
+}
+
+export function HogaresMorosos({ 
+  customStyle, 
+  greenColor = "#99D050",
+  data = []
+}: HogaresMorososProps) {
   
-  const morosos = [
-    { nombre: "Cecilia Immergreen", atraso: "10 meses de atraso", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Cecilia" },
-    { nombre: "Immer Plush", atraso: "8 meses de atraso", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Plush" },
-    { nombre: "Noah O'Connor", atraso: "5 meses de atraso", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Noah" },
-    { nombre: "Zoe Lee", atraso: "3 meses de atraso", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe" },
-    { nombre: "Aria Stark", atraso: "2 meses de atraso", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aria" },
-  ];
-
-  // Estilo por defecto si no se pasa prop (backup)
   const finalStyle = customStyle || "border-none bg-white rounded-[24px] shadow-sm";
+
+  // Formatear monto en pesos chilenos
+  const formatMonto = (monto: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(monto);
+  };
+
+  // Texto descriptivo del atraso
+  const getTextoAtraso = (meses: number) => {
+    if (meses === 1) return "1 mes de atraso";
+    if (meses < 12) return `${meses} meses de atraso`;
+    const anios = Math.floor(meses / 12);
+    const mesesRestantes = meses % 12;
+    if (mesesRestantes === 0) return `${anios} ${anios === 1 ? 'año' : 'años'} de atraso`;
+    return `${anios} ${anios === 1 ? 'año' : 'años'} y ${mesesRestantes} ${mesesRestantes === 1 ? 'mes' : 'meses'} de atraso`;
+  };
+
+  // Estado vacío
+  if (data.length === 0) {
+    return (
+      <Card className={`${finalStyle} h-full flex flex-col`}>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6 shrink-0">
+          <CardTitle className="text-lg font-bold text-gray-900">
+            Hogares Impagos
+          </CardTitle>
+          <Button 
+            size="sm" 
+            className="text-white font-bold h-7 rounded-md px-3 text-xs shadow-sm hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: greenColor }}
+            disabled
+          >
+            Ver más
+          </Button>
+        </CardHeader>
+
+        <CardContent className="px-6 pb-6 pt-2 flex-1 flex items-center justify-center">
+          <div className="text-center py-8">
+            <div className="h-16 w-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-green-500" />
+            </div>
+            <p className="text-gray-500 font-medium">¡Excelente!</p>
+            <p className="text-gray-400 text-sm mt-1">No hay hogares con pagos pendientes</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={`${finalStyle} h-full flex flex-col`}>
@@ -43,21 +103,26 @@ export function HogaresMorosos({ customStyle, greenColor = "#99D050" }: { custom
 
       <CardContent className="px-6 pb-6 pt-2 flex-1 overflow-hidden">
         <div className="space-y-5 h-full overflow-y-auto pr-2 custom-scrollbar">
-          {morosos.map((item, index) => (
-            <div key={index} className="flex items-start space-x-4">
-
+          {data.map((hogar) => (
+            <div key={hogar.residenteId} className="flex items-start space-x-4">
+              
               <Avatar className="h-12 w-12 border-2 border-white shadow-sm mt-1">
-                <AvatarImage src={item.avatar} alt={item.nombre} />
-                <AvatarFallback>User</AvatarFallback>
+                <AvatarImage src={hogar.avatar} alt={hogar.nombre} />
+                <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
+                  {hogar.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0">
                 <div className="mb-2">
                   <p className="text-sm font-bold text-gray-900 leading-none truncate">
-                    {item.nombre}
+                    {hogar.nombre}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1 truncate">
-                    {item.atraso}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {getTextoAtraso(hogar.mesesAtraso)} • Vivienda {hogar.vivienda}
+                  </p>
+                  <p className="text-xs font-bold text-red-600 mt-1">
+                    Deuda: {formatMonto(hogar.montoDeuda)}
                   </p>
                 </div>
 

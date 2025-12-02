@@ -3,7 +3,26 @@ import { pagoService } from '../services/pagoService';
 import { gastoComunService } from '../services/gastoComunService';
 import { usuarioService } from '../services/usuarioService';
 import { reservaService } from '../services/reservaService';
+import { multaService } from '../services/multaService';
+import { anuncioService } from '../services/anuncioService';
+import { residenteService } from '../services/residenteService';
 import { authService } from '../services/authService';
+
+export interface HogarMoroso {
+  nombre: string;
+  vivienda: string;
+  avatar: string;
+  mesesAtraso: number;
+  montoDeuda: number;
+  residenteId: number;
+}
+
+export interface AnuncioComunidad {
+  id: number;
+  titulo: string;
+  fecha: string;
+  icono: string;
+}
 
 export const useDashboardData = () => {
   const [data, setData] = useState({
@@ -17,6 +36,8 @@ export const useDashboardData = () => {
     reservasPorConfirmar: 0,
     graficoData: [] as any[],
     pagosRecientes: [] as any[],
+    hogaresMorosos: [] as HogarMoroso[],
+    anuncios: [] as AnuncioComunidad[],
     loading: true,
     error: null as string | null
   });
@@ -30,19 +51,21 @@ export const useDashboardData = () => {
         }
 
         // Cargar datos en paralelo
-        const [pagos, gastos, usuarios, reservas] = await Promise.all([
+        const [pagos, gastos, usuarios, reservas, multas, anuncios, residentes] = await Promise.all([
           pagoService.getAll({ condominio_id: user.condominioId }).catch(() => []),
           gastoComunService.getAll().catch(() => []),
           usuarioService.getAll().catch(() => []),
-          reservaService.getAll().catch(() => [])
+          reservaService.getAll().catch(() => []),
+          multaService.getAll().catch(() => []),
+          anuncioService.getAll().catch(() => []),
+          residenteService.getAll().catch(() => [])
         ]);
 
         // Filtrar por condominio del usuario
         const gastosCondo = gastos.filter((g: any) => g.condominio_id === user.condominioId);
         const usuariosCondo = usuarios.filter((u: any) => u.condominio_id === user.condominioId);
-        const reservasCondo = reservas.filter(() => {
-          return true;
-        });
+        const multasCondo = multas.filter((m: any) => m.condominio_id === user.condominioId);
+        const anunciosCondo = anuncios.filter((a: any) => a.condominio_id === user.condominioId);
 
         // 1. INGRESO TOTAL (Pagos aprobados)
         const ingresoTotal = pagos
@@ -64,17 +87,16 @@ export const useDashboardData = () => {
           ? Math.round((gastosImpagos / totalGastos) * 100) 
           : 0;
 
-        // 4. MULTAS REGISTRADAS (se obtiene del servicio de multas si está disponible)
-        // Por ahora usamos un valor de ejemplo ya que no veo el endpoint en uso
-        const multasRegistradas = 30; // TODO: Conectar con multaService.getAll()
+        // 4. MULTAS REGISTRADAS (del condominio)
+        const multasRegistradas = multasCondo.length;
 
         // 5. INGRESOS POR RESERVAS
-        const ingresosReservas = reservasCondo
+        const ingresosReservas = reservas
           .filter((r: any) => r.estado === 'CONFIRMADA' || r.estado === 'COMPLETADA')
           .reduce((acc: number, r: any) => acc + (Number(r.monto_pago) || 0), 0);
 
         // 6. RESERVAS POR CONFIRMAR
-        const reservasPorConfirmar = reservasCondo
+        const reservasPorConfirmar = reservas
           .filter((r: any) => r.estado === 'PENDIENTE_PAGO')
           .length;
 
@@ -87,7 +109,6 @@ export const useDashboardData = () => {
         const graficoMap = new Array(12).fill(0);
         const estimadoMap = new Array(12).fill(0);
         
-        // Calcular ingresos reales por mes
         pagos.forEach((p: any) => {
           if (p.estado_pago === 'APROBADO') {
             const fecha = new Date(p.fecha_pago);
@@ -98,10 +119,9 @@ export const useDashboardData = () => {
           }
         });
 
-        // Calcular ingresos estimados (suma de gastos comunes emitidos por mes)
         gastosCondo.forEach((g: any) => {
           if (g.anio === currentYear) {
-            const mesIndex = g.mes - 1; // mes viene como 1-12
+            const mesIndex = g.mes - 1;
             if (mesIndex >= 0 && mesIndex < 12) {
               estimadoMap[mesIndex] += Number(g.monto_total);
             }
@@ -128,8 +148,76 @@ export const useDashboardData = () => {
             };
           });
 
-        // 10. CONTADOR DE RESERVAS (Total de reservas)
-        const reservasCount = reservasCondo.length;
+        // 10. HOGARES MOROSOS (Top 5 con mayor deuda)
+        const morososMap = new Map<number, { deuda: number; gastos: any[] }>();
+        
+        gastosCondo
+          .filter((g: any) => estadosDeuda.includes(g.estado))
+          .forEach((g: any) => {
+            const current = morososMap.get(g.residente_id) || { deuda: 0, gastos: [] };
+            current.deuda += Number(g.monto_total);
+            current.gastos.push(g);
+            morososMap.set(g.residente_id, current);
+          });
+
+        const hogaresMorosos: HogarMoroso[] = Array.from(morososMap.entries())
+          .map(([residenteId, data]) => {
+            const residente = residentes.find((r: any) => r.id === residenteId);
+            
+            // Calcular meses de atraso (el gasto más antiguo)
+            const gastosOrdenados = data.gastos.sort((a: any, b: any) => {
+              const fechaA = new Date(a.fecha_vencimiento);
+              const fechaB = new Date(b.fecha_vencimiento);
+              return fechaA.getTime() - fechaB.getTime();
+            });
+            
+            const gastoMasAntiguo = gastosOrdenados[0];
+            const fechaVencimiento = new Date(gastoMasAntiguo.fecha_vencimiento);
+            const hoy = new Date();
+            const mesesAtraso = Math.max(1, Math.floor(
+              (hoy.getTime() - fechaVencimiento.getTime()) / (1000 * 60 * 60 * 24 * 30)
+            ));
+
+            return {
+              nombre: residente 
+                ? `${residente.nombre} ${residente.apellido}`
+                : `Residente #${residenteId}`,
+              vivienda: residente?.vivienda_numero || 'S/N',
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${residenteId}`,
+              mesesAtraso,
+              montoDeuda: data.deuda,
+              residenteId
+            };
+          })
+          .sort((a, b) => b.montoDeuda - a.montoDeuda)
+          .slice(0, 5);
+
+        // 11. ANUNCIOS RECIENTES (Últimos 3 activos)
+        const anunciosRecientes: AnuncioComunidad[] = anunciosCondo
+          .filter((a: any) => a.activo)
+          .sort((a: any, b: any) => {
+            const fechaA = new Date(a.fecha_publicacion);
+            const fechaB = new Date(b.fecha_publicacion);
+            return fechaB.getTime() - fechaA.getTime();
+          })
+          .slice(0, 3)
+          .map((a: any, index: number) => {
+            // Iconos rotativos para variedad visual
+            const iconos = ['🎉', '📢', '🏠', '⚠️', '✨', '🎊'];
+            return {
+              id: a.id,
+              titulo: a.titulo,
+              fecha: new Date(a.fecha_publicacion).toLocaleDateString('es-CL', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+              }),
+              icono: iconos[index % iconos.length]
+            };
+          });
+
+        const reservasCount = reservas.length;
 
         setData({
           ingresoTotal: Math.round(ingresoTotal),
@@ -142,6 +230,8 @@ export const useDashboardData = () => {
           reservasPorConfirmar,
           graficoData,
           pagosRecientes,
+          hogaresMorosos,
+          anuncios: anunciosRecientes,
           loading: false,
           error: null
         });
