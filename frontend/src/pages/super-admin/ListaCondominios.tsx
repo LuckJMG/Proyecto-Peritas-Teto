@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Building2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { condominioService } from "@/services/condominioService";
 import SearchBar from "./SearchBar";
@@ -7,6 +7,7 @@ import CondominiosTable from "./CondominiosTable";
 import DeleteDialog from "./DeleteDialog";
 import CondominioFormDialog from "./CondominioFormDialog";
 import EspaciosComunesDialog from "./EspaciosComunesDialog";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { Condominio, SortConfig, ValidationErrors, CondominioFormData } from "@/types/condominio.types";
 
 export default function ListaCondominios() {
@@ -224,12 +225,12 @@ export default function ListaCondominios() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
-        <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+        <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
-            <p className="text-gray-600">Cargando condominios...</p>
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground text-sm">Cargando condominios...</p>
           </div>
         </div>
       </div>
@@ -237,43 +238,72 @@ export default function ListaCondominios() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
 
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-8">
+          {/* Header Section */}
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-3">
+              <Building2 className="h-10 w-10 text-primary" />
+              Gestión de Condominios
+            </h1>
+            <p className="text-gray-500">
+              Administra la información, espacios comunes y finanzas de los condominios registrados.
+            </p>
+          </div>
+
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 text-sm animate-in fade-in slide-in-from-top-2">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <h3 className="font-medium text-red-800">Error del sistema</h3>
+                <p className="text-red-700 mt-1">{error}</p>
               </div>
               <button
                 onClick={() => setError(null)}
-                className="text-red-600 hover:text-red-800"
+                className="text-red-600 hover:text-red-800 transition-colors"
               >
-                ×
+                ✕
               </button>
             </div>
           )}
 
-          <SearchBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            onAddClick={() => setShowAddDialog(true)}
-          />
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="border-b bg-gray-50/50 pb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <CardTitle className="text-xl">Listado de Condominios</CardTitle>
+                  <CardDescription>
+                    {filteredCondominios.length} { filteredCondominios.length === 1 ? "registro encontrado" : "registros encontrados"}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              <div className="space-y-6">
+                <SearchBar
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  onAddClick={() => setShowAddDialog(true)}
+                />
 
-          <CondominiosTable
-            condominios={sortedCondominios}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onViewEspacios={handleViewEspacios}
-          />
+                <div className="rounded-md border">
+                  <CondominiosTable
+                    condominios={sortedCondominios}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onViewEspacios={handleViewEspacios}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </main>
 
       <DeleteDialog
         open={showDeleteDialog}

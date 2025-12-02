@@ -1,6 +1,15 @@
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import TableRow from "./TableRow";
 import type { Condominio, SortConfig } from "@/types/condominio.types";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow as UiTableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 interface CondominiosTableProps {
   condominios: Condominio[];
@@ -21,68 +30,53 @@ export default function CondominiosTable({
 }: CondominiosTableProps) {
   const getSortIcon = (key: keyof Condominio) => {
     if (sortConfig.key !== key) {
-      return <ArrowUpDown className="h-3 w-3" />;
+      return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />;
     }
     return sortConfig.direction === 'asc' 
-      ? <ArrowUp className="h-3 w-3" /> 
-      : <ArrowDown className="h-3 w-3" />;
+      ? <ArrowUp className="ml-2 h-4 w-4 text-primary" /> 
+      : <ArrowDown className="ml-2 h-4 w-4 text-primary" />;
   };
 
+  const renderSortButton = (label: string, key: keyof Condominio) => (
+    <Button
+      variant="ghost"
+      onClick={() => onSort(key)}
+      className="flex items-center justify-center w-full font-semibold hover:bg-transparent hover:text-primary p-0 h-auto"
+    >
+      {label}
+      {getSortIcon(key)}
+    </Button>
+  );
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <table className="w-full">
-        <thead className="bg-[#e5e5e5] border-b border-gray-300">
-          <tr>
-            <th className="px-4 py-2 text-center">
-              <button
-                onClick={() => onSort('nombre')}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto"
-              >
-                Nombre del condominio
-                {getSortIcon('nombre')}
-              </button>
-            </th>
-            <th className="px-4 py-2 text-center">
-              <button
-                onClick={() => onSort('direccion')}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto"
-              >
-                Dirección
-                {getSortIcon('direccion')}
-              </button>
-            </th>
-            <th className="px-4 py-2 text-center">
-              <button
-                onClick={() => onSort('ingresos')}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto"
-              >
-                Ingresos
-                {getSortIcon('ingresos')}
-              </button>
-            </th>
-            <th className="px-4 py-2 text-center">
-              <button
-                onClick={() => onSort('fecha_creacion')}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900 mx-auto"
-              >
-                Fecha de creación
-                {getSortIcon('fecha_creacion')}
-              </button>
-            </th>
-            <th className="px-4 py-2 text-center">
-              <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 mx-auto">
-                Acciones
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+    <div className="rounded-md border bg-white shadow-sm">
+      <Table>
+        <TableHeader>
+          <UiTableRow className="bg-muted/50 hover:bg-muted/50">
+            <TableHead className="text-center w-[25%]">
+              {renderSortButton("Nombre del condominio", "nombre")}
+            </TableHead>
+            <TableHead className="text-center w-[25%]">
+              {renderSortButton("Dirección", "direccion")}
+            </TableHead>
+            <TableHead className="text-center w-[15%]">
+              {renderSortButton("Ingresos", "ingresos")}
+            </TableHead>
+            <TableHead className="text-center w-[15%]">
+              {renderSortButton("Fecha de creación", "fecha_creacion")}
+            </TableHead>
+            <TableHead className="text-center w-[20%] font-semibold text-foreground">
+              Acciones
+            </TableHead>
+          </UiTableRow>
+        </TableHeader>
+        <TableBody>
           {condominios.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+            <UiTableRow>
+              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                 No se encontraron condominios
-              </td>
-            </tr>
+              </TableCell>
+            </UiTableRow>
           ) : (
             condominios.map((condo, index) => (
               <TableRow
@@ -95,8 +89,8 @@ export default function CondominiosTable({
               />
             ))
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

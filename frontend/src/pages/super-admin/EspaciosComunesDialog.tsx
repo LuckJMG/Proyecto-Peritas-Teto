@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
-import { Loader2, AlertCircle, Building2, Users, DollarSign, Plus, Edit, Trash2, X } from "lucide-react";
+import { Loader2, AlertCircle, Building2, Users, DollarSign, Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -36,10 +40,10 @@ const TIPO_LABELS: Record<string, string> = {
 };
 
 const TIPO_COLORS: Record<string, string> = {
-  ESTACIONAMIENTO: 'bg-blue-100 text-blue-800',
-  QUINCHO: 'bg-orange-100 text-orange-800',
-  MULTICANCHA: 'bg-green-100 text-green-800',
-  SALA_EVENTOS: 'bg-purple-100 text-purple-800',
+  ESTACIONAMIENTO: 'bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200',
+  QUINCHO: 'bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200',
+  MULTICANCHA: 'bg-green-100 text-green-800 hover:bg-green-100 border-green-200',
+  SALA_EVENTOS: 'bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200',
 };
 
 const INITIAL_FORM: Omit<EspacioComunInput, 'condominio_id'> = {
@@ -83,10 +87,7 @@ export default function EspaciosComunesDialog({
     try {
       setLoading(true);
       setError(null);
-
-      console.log('Cargando espacios para condominio:', condominio.id);
       const data = await espaciosComunesService.getByCondominio(condominio.id);
-      console.log('Espacios cargados:', data);
       setEspacios(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar espacios comunes');
@@ -213,9 +214,9 @@ export default function EspaciosComunesDialog({
 
   const renderListMode = () => (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <DialogDescription className="text-sm text-gray-600">
-          Espacios disponibles en {condominio?.nombre}
+      <div className="flex justify-between items-center mb-6">
+        <DialogDescription>
+          Gestiona los espacios comunes de <strong>{condominio?.nombre}</strong>
         </DialogDescription>
         <Button
           onClick={handleAdd}
@@ -223,17 +224,17 @@ export default function EspaciosComunesDialog({
           className="bg-[#99D050] hover:bg-[#88bf40] text-white"
         >
           <Plus className="h-4 w-4 mr-1" />
-          Añadir
+          Añadir Nuevo
         </Button>
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12">
           <Loader2 className="h-10 w-10 animate-spin text-[#99D050] mb-4" />
-          <p className="text-sm text-gray-600">Cargando espacios comunes...</p>
+          <p className="text-sm text-muted-foreground">Cargando espacios comunes...</p>
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 mb-4">
           <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
           <div className="flex-1">
             <h3 className="text-sm font-medium text-red-800">Error</h3>
@@ -241,88 +242,76 @@ export default function EspaciosComunesDialog({
           </div>
         </div>
       ) : espacios.length === 0 ? (
-        <div className="text-center py-12">
-          <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-sm text-gray-600">No hay espacios comunes registrados</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Haz clic en "Añadir" para crear el primer espacio común
+        <div className="text-center py-12 border-2 border-dashed rounded-lg">
+          <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-sm font-medium text-gray-900">No hay espacios comunes registrados</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Haz clic en "Añadir Nuevo" para comenzar
           </p>
         </div>
       ) : (
-        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
           {espacios.map((espacio) => (
-            <div
-              key={espacio.id}
-              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900">{espacio.nombre}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${TIPO_COLORS[espacio.tipo]}`}>
-                      {TIPO_LABELS[espacio.tipo]}
-                    </span>
+            <Card key={espacio.id} className="shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-1">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900">{espacio.nombre}</h3>
+                      <Badge variant="outline" className={TIPO_COLORS[espacio.tipo]}>
+                        {TIPO_LABELS[espacio.tipo]}
+                      </Badge>
+                    </div>
+                    {espacio.descripcion && (
+                      <p className="text-sm text-muted-foreground line-clamp-1">{espacio.descripcion}</p>
+                    )}
+                    
+                    <div className="flex items-center gap-4 text-sm pt-2">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        <span>Capacidad: <strong>{espacio.capacidad}</strong></span>
+                      </div>
+                      
+                      {espacio.requiere_pago && espacio.costo_por_hora !== null && espacio.costo_por_hora > 0 ? (
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <DollarSign className="h-4 w-4" />
+                          <span>{formatCurrency(espacio.costo_por_hora)}/hora</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-green-600 font-medium">
+                          <DollarSign className="h-4 w-4" />
+                          <span>Uso gratuito</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {espacio.descripcion && (
-                    <p className="text-sm text-gray-600 mt-1">{espacio.descripcion}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => handleEdit(espacio)}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteClick(espacio)}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
 
-              <div className="flex items-center gap-6 text-sm">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span>Capacidad: <strong>{espacio.capacidad}</strong></span>
-                </div>
-                
-                {espacio.requiere_pago && espacio.costo_por_hora !== null && espacio.costo_por_hora > 0 && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <DollarSign className="h-4 w-4 text-gray-500" />
-                    <span>
-                      {formatCurrency(espacio.costo_por_hora)}/hora
-                    </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      onClick={() => handleEdit(espacio)}
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteClick(espacio)}
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                )}
-                
-                {!espacio.requiere_pago && (
-                  <div className="flex items-center gap-2 text-green-700">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    <span className="font-medium">Uso gratuito</span>
-                  </div>
-                )}
-
-                <div className={`ml-auto px-2 py-1 rounded-full text-xs font-medium ${
-                  espacio.activo 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {espacio.activo ? 'Activo' : 'Inactivo'}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
 
-      <div className="flex justify-end mt-4">
+      <div className="flex justify-end mt-6">
         <Button onClick={() => onOpenChange(false)} variant="outline">
           Cerrar
         </Button>
@@ -332,17 +321,17 @@ export default function EspaciosComunesDialog({
 
   const renderFormMode = () => (
     <>
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-6">
         <Button
           onClick={handleCancel}
           size="sm"
           variant="ghost"
           className="h-8 w-8 p-0"
         >
-          <X className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
         </Button>
-        <DialogDescription className="text-sm text-gray-600">
-          {mode === 'add' ? 'Crear nuevos espacios comunes' : `Editar "${selectedEspacio?.nombre}"`}
+        <DialogDescription>
+          {mode === 'add' ? 'Ingresa los datos del nuevo espacio.' : `Modificando: ${selectedEspacio?.nombre}`}
         </DialogDescription>
       </div>
 
@@ -353,50 +342,46 @@ export default function EspaciosComunesDialog({
         </div>
       )}
 
-      <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
-            Nombre *
-          </label>
+      <div className="grid gap-4 py-2">
+        <div className="grid gap-2">
+          <Label htmlFor="nombre">Nombre *</Label>
           <Input
+            id="nombre"
             placeholder="Ej: Estacionamiento Visita"
             value={formData.nombre}
             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
           />
           {mode === 'add' && cantidad > 1 && (
-            <p className="text-xs text-gray-500 mt-1">
-              Se añadirá un número al final de cada espacio (Ej: {formData.nombre} 1, {formData.nombre} 2...)
+            <p className="text-xs text-muted-foreground">
+              Se añadirá un número al final (Ej: {formData.nombre} 1, {formData.nombre} 2...)
             </p>
           )}
         </div>
 
         {mode === 'add' && (
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Cantidad a crear
-            </label>
+          <div className="grid gap-2">
+            <Label htmlFor="cantidad">Cantidad a crear</Label>
             <Input
+              id="cantidad"
               type="number"
               min="1"
               max="50"
               value={cantidad}
               onChange={(e) => setCantidad(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Crea múltiples espacios con las mismas características
+            <p className="text-xs text-muted-foreground">
+              Crea múltiples espacios idénticos de una vez.
             </p>
           </div>
         )}
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
-            Tipo *
-          </label>
+        <div className="grid gap-2">
+          <Label htmlFor="tipo">Tipo *</Label>
           <Select
             value={formData.tipo}
             onValueChange={(value) => setFormData({ ...formData, tipo: value as EspacioComun['tipo'] })}
           >
-            <SelectTrigger>
+            <SelectTrigger id="tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -409,11 +394,10 @@ export default function EspaciosComunesDialog({
           </Select>
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
-            Capacidad *
-          </label>
+        <div className="grid gap-2">
+          <Label htmlFor="capacidad">Capacidad (Personas) *</Label>
           <Input
+            id="capacidad"
             type="number"
             min="1"
             value={formData.capacidad}
@@ -421,36 +405,37 @@ export default function EspaciosComunesDialog({
           />
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
-            Descripción
-          </label>
+        <div className="grid gap-2">
+          <Label htmlFor="descripcion">Descripción</Label>
           <Input
-            placeholder="Descripción del espacio común"
+            id="descripcion"
+            placeholder="Detalles adicionales..."
             value={formData.descripcion}
             onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
+        <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+          <Checkbox
             id="requierePago"
             checked={formData.requiere_pago}
-            onChange={(e) => setFormData({ ...formData, requiere_pago: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-[#99D050] focus:ring-[#99D050]"
+            onCheckedChange={(checked) => setFormData({ ...formData, requiere_pago: checked as boolean })}
           />
-          <label htmlFor="requierePago" className="text-sm text-gray-700">
-            Requiere pago
-          </label>
+          <div className="space-y-1 leading-none">
+            <Label htmlFor="requierePago" className="cursor-pointer">
+              Requiere pago para reservar
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Si se marca, los residentes deberán pagar para usar este espacio.
+            </p>
+          </div>
         </div>
 
         {formData.requiere_pago && (
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Costo por hora (CLP)
-            </label>
+          <div className="grid gap-2 animate-in slide-in-from-top-2">
+            <Label htmlFor="costo">Costo por hora (CLP)</Label>
             <Input
+              id="costo"
               type="number"
               min="0"
               value={formData.costo_por_hora || ''}
@@ -460,7 +445,10 @@ export default function EspaciosComunesDialog({
         )}
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-2 mt-6">
+        <Button onClick={handleCancel} variant="outline" disabled={submitting} className="flex-1">
+          Cancelar
+        </Button>
         <Button
           onClick={mode === 'add' ? handleSubmitAdd : handleSubmitEdit}
           disabled={submitting || !formData.nombre.trim()}
@@ -472,11 +460,8 @@ export default function EspaciosComunesDialog({
               {mode === 'add' ? 'Creando...' : 'Guardando...'}
             </>
           ) : (
-            mode === 'add' ? `Crear ${cantidad > 1 ? `${cantidad} espacios` : 'espacio'}` : 'Guardar cambios'
+            mode === 'add' ? `Crear ${cantidad > 1 ? `${cantidad} Espacios` : 'Espacio'}` : 'Guardar Cambios'
           )}
-        </Button>
-        <Button onClick={handleCancel} variant="outline" disabled={submitting}>
-          Cancelar
         </Button>
       </div>
     </>
@@ -484,10 +469,16 @@ export default function EspaciosComunesDialog({
 
   const renderDeleteMode = () => (
     <>
-      <DialogDescription className="text-sm text-gray-600 pt-2 mb-4">
-        ¿Estás seguro de que quieres eliminar el espacio común "{selectedEspacio?.nombre}"?
-        Esta acción no se puede deshacer.
-      </DialogDescription>
+      <div className="flex flex-col items-center justify-center text-center py-6">
+        <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+          <AlertCircle className="h-6 w-6 text-red-600" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900">¿Eliminar espacio común?</h3>
+        <DialogDescription className="text-center max-w-[80%] mt-2">
+          Estás a punto de eliminar <strong>"{selectedEspacio?.nombre}"</strong>. 
+          Esta acción no se puede deshacer y afectará a las reservas históricas.
+        </DialogDescription>
+      </div>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
@@ -496,11 +487,15 @@ export default function EspaciosComunesDialog({
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-2">
+        <Button onClick={handleCancel} variant="outline" disabled={submitting} className="flex-1">
+          Cancelar
+        </Button>
         <Button
           onClick={handleConfirmDelete}
           disabled={submitting}
-          className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+          variant="destructive"
+          className="flex-1"
         >
           {submitting ? (
             <>
@@ -508,11 +503,8 @@ export default function EspaciosComunesDialog({
               Eliminando...
             </>
           ) : (
-            'Eliminar'
+            'Sí, eliminar'
           )}
-        </Button>
-        <Button onClick={handleCancel} variant="outline" disabled={submitting}>
-          Cancelar
         </Button>
       </div>
     </>
@@ -520,15 +512,15 @@ export default function EspaciosComunesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <Building2 className="h-5 w-5 text-[#99D050]" />
-            {mode === 'delete' ? 'Eliminar Espacio Común' : 'Espacios Comunes'}
+            {mode === 'delete' ? 'Confirmar Eliminación' : 'Espacios Comunes'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pr-1">
           {mode === 'list' && renderListMode()}
           {(mode === 'add' || mode === 'edit') && renderFormMode()}
           {mode === 'delete' && renderDeleteMode()}

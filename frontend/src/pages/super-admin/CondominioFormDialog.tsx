@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -40,24 +41,24 @@ export default function CondominioFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle>
             {mode === 'create' ? 'Añadir Condominio' : 'Editar Condominio'}
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600 pt-2">
+          <DialogDescription>
             {mode === 'create' 
-              ? 'Completa la información del nuevo condominio'
-              : `Modifica la información del condominio "${condominioName}"`
+              ? 'Ingresa los datos para registrar un nuevo condominio en el sistema.'
+              : `Modifica la información del condominio "${condominioName}".`
             }
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Nombre *
-            </label>
+        
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="nombre">Nombre *</Label>
             <Input
+              id="nombre"
               placeholder="Ej: Condominio Las Flores"
               value={formData.nombre}
               onChange={(e) => {
@@ -66,17 +67,17 @@ export default function CondominioFormDialog({
                   onValidationErrorClear('nombre');
                 }
               }}
-              className={`w-full ${validationErrors.nombre ? 'border-red-500' : ''}`}
+              className={validationErrors.nombre ? 'border-red-500 focus-visible:ring-red-500' : ''}
             />
             {validationErrors.nombre && (
-              <p className="text-xs text-red-600 mt-1">{validationErrors.nombre}</p>
+              <p className="text-xs font-medium text-red-500">{validationErrors.nombre}</p>
             )}
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Dirección *
-            </label>
+
+          <div className="grid gap-2">
+            <Label htmlFor="direccion">Dirección *</Label>
             <Input
+              id="direccion"
               placeholder="Ej: Av. Principal 123"
               value={formData.direccion}
               onChange={(e) => {
@@ -85,63 +86,63 @@ export default function CondominioFormDialog({
                   onValidationErrorClear('direccion');
                 }
               }}
-              className={`w-full ${validationErrors.direccion ? 'border-red-500' : ''}`}
+              className={validationErrors.direccion ? 'border-red-500 focus-visible:ring-red-500' : ''}
             />
             {validationErrors.direccion && (
-              <p className="text-xs text-red-600 mt-1">{validationErrors.direccion}</p>
+              <p className="text-xs font-medium text-red-500">{validationErrors.direccion}</p>
             )}
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              Total de Viviendas *
-            </label>
-            <Input
-              type="number"
-              placeholder="Ej: 50"
-              min="0"
-              value={formData.total_viviendas || ''}
-              onChange={(e) => onFormChange({ total_viviendas: parseInt(e.target.value) || 0 })}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
-              {mode === 'create' ? 'Ingresos Iniciales' : 'Ingresos'}
-            </label>
-            <Input
-              type="number"
-              placeholder="Ej: 0"
-              value={formData.ingresos || ''}
-              onChange={(e) => onFormChange({ ingresos: parseFloat(e.target.value) || 0 })}
-              className="w-full"
-            />
-            {mode === 'create' && (
-              <p className="text-xs text-gray-500 mt-1">Deja en 0 para comenzar sin ingresos</p>
-            )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="total_viviendas">Total de Viviendas</Label>
+              <Input
+                id="total_viviendas"
+                type="number"
+                placeholder="0"
+                min="0"
+                value={formData.total_viviendas || ''}
+                onChange={(e) => onFormChange({ total_viviendas: parseInt(e.target.value) || 0 })}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="ingresos">
+                {mode === 'create' ? 'Ingresos Iniciales' : 'Ingresos'}
+              </Label>
+              <Input
+                id="ingresos"
+                type="number"
+                placeholder="0"
+                min="0"
+                value={formData.ingresos || ''}
+                onChange={(e) => onFormChange({ ingresos: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
           </div>
         </div>
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={submitting}
+          >
+            Cancelar
+          </Button>
           <Button
             onClick={onSubmit}
             disabled={submitting || !isFormValid}
-            className="w-full bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
+            className="bg-[#99D050] hover:bg-[#88bf40] text-white"
           >
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {mode === 'create' ? 'Creando...' : 'Actualizando...'}
+                {mode === 'create' ? 'Creando...' : 'Guardando...'}
               </>
             ) : (
               mode === 'create' ? 'Crear Condominio' : 'Guardar Cambios'
             )}
-          </Button>
-          <Button
-            onClick={() => onOpenChange(false)}
-            variant="outline"
-            className="w-full"
-            disabled={submitting}
-          >
-            Cancelar
           </Button>
         </DialogFooter>
       </DialogContent>

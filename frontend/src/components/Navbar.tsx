@@ -1,6 +1,5 @@
-import { Bell, ChevronRight, LogOut } from "lucide-react";
+import { ChevronRight, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +16,22 @@ export default function Navbar() {
   const navigate = useNavigate();
   const user = authService.getUser();
 
+  // Función para formatear el rol de manera legible
+  const formatRole = (rol: string | undefined) => {
+    if (!rol) return 'Invitado';
+    
+    const roleMap: Record<string, string> = {
+      [RolUsuario.SUPER_ADMINISTRADOR]: "Super Administrador",
+      [RolUsuario.ADMINISTRADOR]: "Administrador",
+      [RolUsuario.CONSERJE]: "Conserje",
+      [RolUsuario.DIRECTIVA]: "Directiva",
+      [RolUsuario.RESIDENTE]: "Residente"
+    };
+
+    // Si el rol está en el mapa, lo usamos. Si no, formateamos el string original (ej: ROL_TEST -> Rol Test)
+    return roleMap[rol] || rol.charAt(0).toUpperCase() + rol.slice(1).toLowerCase().replace(/_/g, ' ');
+  };
+
   // Determinar la ruta "Home" según el rol
   const getHomeRoute = () => {
     if (!user) return "/";
@@ -31,6 +46,7 @@ export default function Navbar() {
   };
 
   const homeRoute = getHomeRoute();
+
   // Generador de Breadcrumbs Personalizado
   const getBreadcrumbs = (pathname: string) => {
     // 1. Definir rutas "Home" que no deben mostrar > Página
@@ -63,6 +79,7 @@ export default function Navbar() {
     };
 
     const segments = pathname.split('/').filter(Boolean);
+    
     // Filtramos segmentos "técnicos" que no queremos en el breadcrumb visual
     const cleanSegments = segments.filter(seg => 
         !['admin', 'super', 'residente'].includes(seg) && 
@@ -71,12 +88,15 @@ export default function Navbar() {
 
     cleanSegments.forEach((segment, index) => {
         const label = routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
-        // Reconstruimos la ruta real para el link
         const isLast = index === cleanSegments.length - 1;
+        
+        // Reconstrucción correcta de la ruta para el link
+        const originalIndex = segments.lastIndexOf(segment);
+        const path = "/" + segments.slice(0, originalIndex + 1).join("/");
 
         breadcrumbs.push({
             label: label,
-            path: location.pathname,
+            path: path,
             isLast: isLast
         });
     });
@@ -96,7 +116,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-3">
+    <nav className="bg-background border-b border-border px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Logo y Breadcrumbs */}
         <div className="flex items-center gap-8">
@@ -114,16 +134,16 @@ export default function Navbar() {
             {breadcrumbs.map((crumb, index) => (
               <div key={index} className="flex items-center gap-2">
                 {index > 0 && (
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}
                 {crumb.isLast ? (
-                  <span className="text-gray-900 font-medium">
+                  <span className="text-foreground font-medium">
                     {crumb.label}
                   </span>
                 ) : (
                   <Link 
                     to={crumb.path}
-                    className="text-gray-500 hover:text-gray-900 cursor-pointer transition-colors"
+                    className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                   >
                     {crumb.label}
                   </Link>
@@ -135,22 +155,18 @@ export default function Navbar() {
 
         {/* Acciones del usuario */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-            <Bell className="h-5 w-5" />
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <button className="flex items-center gap-3 hover:opacity-80 transition-opacity outline-none">
                 <div className="text-left hidden sm:block">
-                  <div className="text-sm font-semibold text-gray-900">
+                  <div className="text-sm font-semibold text-foreground">
                     {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
                   </div>
-                  <div className="text-xs text-gray-400">
-                    {user?.rol || 'Invitado'}
+                  <div className="text-xs text-muted-foreground">
+                    {formatRole(user?.rol)}
                   </div>
                 </div>
-                <Avatar className="h-10 w-10 border border-gray-200">
+                <Avatar className="h-10 w-10 border border-border">
                   <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
                   <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
                     {userInitials}
@@ -161,9 +177,6 @@ export default function Navbar() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                Perfil (Próximamente)
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="text-red-600 cursor-pointer focus:text-red-700 focus:bg-red-50"
