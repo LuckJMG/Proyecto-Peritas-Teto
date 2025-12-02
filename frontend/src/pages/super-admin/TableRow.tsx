@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Edit, Trash2, Building2, CalendarDays } from "lucide-react";
+import { Edit, Trash2, Building2, CalendarDays, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TableRow as UiTableRow, TableCell } from "@/components/ui/table";
@@ -39,6 +39,7 @@ const formatDate = (dateString: string): string => {
 
 export default function TableRow({ condominio, onEdit, onDelete, onViewEspacios }: TableRowProps) {
   const navigate = useNavigate();
+  const isInactive = !condominio.activo;
 
   const handleRowClick = () => {
     navigate(`/admin/dashboard`);
@@ -47,10 +48,21 @@ export default function TableRow({ condominio, onEdit, onDelete, onViewEspacios 
   return (
     <UiTableRow 
       onClick={handleRowClick}
-      className="cursor-pointer hover:bg-muted/50 transition-colors"
+      className={`cursor-pointer transition-all duration-200 ${
+        isInactive 
+          ? "bg-muted/40 hover:bg-muted/60 opacity-70 grayscale-[0.8]" 
+          : "hover:bg-muted/50"
+      }`}
     >
       <TableCell className="font-medium text-center">
-        {condominio.nombre}
+        <div className="flex items-center justify-center gap-2">
+          {condominio.nombre}
+          {isInactive && (
+            <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-600 border border-gray-300">
+              Inactivo
+            </span>
+          )}
+        </div>
       </TableCell>
       
       <TableCell className="text-center text-muted-foreground">
@@ -119,16 +131,26 @@ export default function TableRow({ condominio, onEdit, onDelete, onViewEspacios 
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                  className={`h-8 w-8 ${
+                    isInactive 
+                      ? "text-muted-foreground hover:text-green-600 hover:bg-green-50" 
+                      : "text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                  }`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(condominio);
                   }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  {isInactive ? (
+                    <Power className="h-4 w-4" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Deshabilitar Condominio</TooltipContent>
+              <TooltipContent>
+                {isInactive ? "Habilitar Condominio" : "Deshabilitar Condominio"}
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
