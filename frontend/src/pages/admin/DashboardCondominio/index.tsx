@@ -5,7 +5,7 @@ import { HogaresMorosos } from "./HogaresMorosos";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
 import { useDashboardData } from "@/hooks/useDashboardData";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -40,15 +40,6 @@ export default function DashboardCondominio() {
     }).format(monto);
   };
 
-  // Colores para los iconos de anuncios
-  const getBgColor = (index: number) => {
-    const colors = [
-      'bg-blue-50 border-blue-100',
-      'bg-orange-50 border-orange-100',
-      'bg-purple-50 border-purple-100'
-    ];
-    return colors[index % colors.length];
-  };
 
   // Loading State
   if (dashboardData.loading) {
@@ -256,15 +247,18 @@ export default function DashboardCondominio() {
                 </CardHeader>
                 <CardContent className="px-6 pb-6 space-y-5">
                   {dashboardData.anuncios.length > 0 ? (
-                    dashboardData.anuncios.map((anuncio, index) => (
-                      <div key={anuncio.id} className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`h-10 w-10 rounded-full flex items-center justify-center text-lg border ${getBgColor(index)}`}>
-                            {anuncio.icono}
-                          </div>
-                          <div>
+                    dashboardData.anuncios.map((anuncio) => (
+                      <div key={anuncio.id} className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Avatar className="h-10 w-10 border-2 border-gray-100 shadow-sm shrink-0">
+                            <AvatarImage src={anuncio.avatar} alt={anuncio.nombreAutor} />
+                            <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold text-xs">
+                              {anuncio.nombreAutor.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-gray-800 line-clamp-1">{anuncio.titulo}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">{anuncio.fecha}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{anuncio.nombreAutor} • {anuncio.fecha}</p>
                           </div>
                         </div>
                       </div>

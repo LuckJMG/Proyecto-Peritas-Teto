@@ -2,12 +2,24 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { Anuncio } from "@/types/anuncio.types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { anuncioService } from "@/services/anuncioService";
 import { X, BookOpen } from "lucide-react";
 
+interface AnuncioConAutor {
+  id: number;
+  titulo: string;
+  contenido: string;
+  fecha_publicacion: string;
+  creado_por: number;
+  condominio_id: number;
+  activo: boolean;
+  nombreAutor: string;
+  avatarAutor: string;
+}
+
 interface EditViewAnuncioProps {
-  anuncio: Anuncio | null;
+  anuncio: AnuncioConAutor | null;
   mode: "edit" | "view" | null;
   onClose: () => void;
   onUpdate: () => void;
@@ -21,8 +33,8 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
 
   useEffect(() => {
     if (anuncio) {
-      setTitulo(anuncio.titulo);
-      setContenido(anuncio.contenido);
+      setTitulo(anuncio.titulo || "");
+      setContenido(anuncio.contenido || "");
     } else {
       setTitulo("");
       setContenido("");
@@ -34,10 +46,17 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
 
   const handleUpdate = async () => {
     if (!anuncio) return;
+    
+    if (!titulo.trim() || !contenido.trim()) {
+      onError("Por favor completa el título y el contenido.");
+      return;
+    }
+    
     setLoading(true);
     try {
       await anuncioService.update(anuncio.id, { titulo, contenido });
       onUpdate();
+      onClose();
     } catch (error) {
       console.error(error);
       onError("No se pudo actualizar el aviso.");
@@ -85,7 +104,7 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
           <div className="space-y-2 flex-1 flex flex-col">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Contenido</label>
             <Textarea
-              value={contenido} // CAMBIO
+              value={contenido}
               onChange={(e) => setContenido(e.target.value)}
               disabled={isView}
               className={`flex-1 resize-none text-base leading-relaxed p-4 ${isView ? 'bg-transparent border-none px-0 shadow-none text-slate-600' : 'bg-[#99D050]/5 border-[#99D050]/20'}`}
@@ -102,15 +121,24 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
                </div>
                <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Fecha</span>
-                  <p className="text-sm font-medium text-slate-700">{new Date(anuncio.fecha_publicacion).toLocaleDateString()}</p>
+                  <p className="text-sm font-medium text-slate-700">
+                    {new Date(anuncio.fecha_publicacion).toLocaleDateString('es-CL', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </p>
                </div>
                <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Autor</span>
                   <div className="flex items-center gap-2">
-                     <div className="h-5 w-5 rounded-full bg-slate-200 overflow-hidden">
-                        <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${anuncio.creado_por}`} alt="Avatar" />
-                     </div>
-                     <p className="text-xs font-medium text-slate-700">Usuario {anuncio.creado_por}</p>
+                     <Avatar className="h-6 w-6 border border-slate-200">
+                        <AvatarImage src={anuncio.avatarAutor} alt={anuncio.nombreAutor} />
+                        <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white text-[10px] font-bold">
+                          {anuncio.nombreAutor.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                     </Avatar>
+                     <p className="text-xs font-medium text-slate-700">{anuncio.nombreAutor}</p>
                   </div>
                </div>
             </div>

@@ -58,7 +58,7 @@ export function HogaresMorosos({
   // Estado vacío
   if (data.length === 0) {
     return (
-      <Card className={`${finalStyle} h-full flex flex-col`}>
+      <Card className={`${finalStyle} h-full flex flex-col overflow-hidden`}>
         <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6 shrink-0">
           <CardTitle className="text-lg font-bold text-gray-900">
             Hogares Impagos
@@ -73,8 +73,8 @@ export function HogaresMorosos({
           </Button>
         </CardHeader>
 
-        <CardContent className="px-6 pb-6 pt-2 flex-1 flex items-center justify-center">
-          <div className="text-center py-8">
+        <CardContent className="px-6 pb-6 pt-2 flex-1 flex items-center justify-center min-h-0">
+          <div className="text-center">
             <div className="h-16 w-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
               <Users className="h-8 w-8 text-green-500" />
             </div>
@@ -87,7 +87,7 @@ export function HogaresMorosos({
   }
 
   return (
-    <Card className={`${finalStyle} h-full flex flex-col`}>
+    <Card className={`${finalStyle} h-full flex flex-col overflow-hidden`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6 px-6 shrink-0">
         <CardTitle className="text-lg font-bold text-gray-900">
           Hogares Impagos
@@ -101,12 +101,12 @@ export function HogaresMorosos({
         </Button>
       </CardHeader>
 
-      <CardContent className="px-6 pb-6 pt-2 flex-1 overflow-hidden">
+      <CardContent className="px-6 pb-6 pt-2 flex-1 overflow-hidden min-h-0">
         <div className="space-y-5 h-full overflow-y-auto pr-2 custom-scrollbar">
           {data.map((hogar) => (
             <div key={hogar.residenteId} className="flex items-start space-x-4">
               
-              <Avatar className="h-12 w-12 border-2 border-white shadow-sm mt-1">
+              <Avatar className="h-12 w-12 border-2 border-white shadow-sm mt-1 shrink-0">
                 <AvatarImage src={hogar.avatar} alt={hogar.nombre} />
                 <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
                   {hogar.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}

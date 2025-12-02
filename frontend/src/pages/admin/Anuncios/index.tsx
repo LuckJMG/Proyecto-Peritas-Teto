@@ -8,10 +8,17 @@ import { DeleteAnuncioDialog } from "./DeleteAnuncioDialog";
 import { ErrorDialog } from "./ErrorDialog"; 
 import type { Anuncio } from "@/types/anuncio.types";
 import { anuncioService } from "@/services/anuncioService";
+import { usuarioService } from "@/services/usuarioService";
+
+// Extendemos el tipo Anuncio para incluir datos del autor
+export interface AnuncioConAutor extends Anuncio {
+  nombreAutor: string;
+  avatarAutor: string;
+}
 
 export default function AnunciosPage() {
-  const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
-  const [selectedAnuncio, setSelectedAnuncio] = useState<Anuncio | null>(null);
+  const [anuncios, setAnuncios] = useState<AnuncioConAutor[]>([]);
+  const [selectedAnuncio, setSelectedAnuncio] = useState<AnuncioConAutor | null>(null);
   const [mode, setMode] = useState<"edit" | "view" | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -22,10 +29,27 @@ export default function AnunciosPage() {
   const fetchAnuncios = async () => {
     setLoading(true);
     try {
-      const data = await anuncioService.getAll(0, 100);
-      setAnuncios(data);
+      const [anunciosData, usuarios] = await Promise.all([
+        anuncioService.getAll(0, 100),
+        usuarioService.getAll()
+      ]);
+      
+      // Enriquecer anuncios con datos del autor
+      const anunciosConAutor: AnuncioConAutor[] = anunciosData.map(anuncio => {
+        const autor = usuarios.find(u => u.id === anuncio.creado_por);
+        const nombreAutor = autor ? `${autor.nombre} ${autor.apellido}` : `Usuario ${anuncio.creado_por}`;
+        
+        return {
+          ...anuncio,
+          nombreAutor,
+          avatarAutor: `https://api.dicebear.com/7.x/avataaars/svg?seed=${nombreAutor}`
+        };
+      });
+      
+      setAnuncios(anunciosConAutor);
     } catch (error) {
       console.error("Error al cargar:", error);
+      showError("Error al cargar los anuncios");
     } finally {
       setLoading(false);
     }
@@ -39,12 +63,12 @@ export default function AnunciosPage() {
     fetchAnuncios();
   };
 
-  const handleEdit = (anuncio: Anuncio) => {
+  const handleEdit = (anuncio: AnuncioConAutor) => {
     setSelectedAnuncio(anuncio);
     setMode("edit");
   };
 
-  const handleView = (anuncio: Anuncio) => {
+  const handleView = (anuncio: AnuncioConAutor) => {
     setSelectedAnuncio(anuncio);
     setMode("view");
   };
@@ -75,7 +99,7 @@ export default function AnunciosPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#99D050]/10 font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-white font-sans">
       <Navbar />
 
       <div className="flex flex-1 overflow-hidden">
@@ -83,7 +107,7 @@ export default function AnunciosPage() {
             <SidebarAdmin className="w-64 h-full shrink-0" />
         </div>
 
-        <main className="flex-1 p-6 h-full w-full overflow-hidden flex flex-col min-h-0">
+        <main className="flex-1 p-6 h-full w-full overflow-hidden flex flex-col min-h-0 bg-white">
           <div className="grid grid-rows-[55%_42%] gap-6 h-full w-full min-h-0">
             <div className="grid grid-cols-12 gap-6 h-full min-h-0">
               <div className="col-span-5 h-full min-h-0">

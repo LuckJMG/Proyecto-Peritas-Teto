@@ -1,14 +1,25 @@
 import { useState } from "react";
-import type { Anuncio } from "@/types/anuncio.types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, BookOpen, Trash2, RotateCw, Megaphone, Search } from "lucide-react";
 
+interface AnuncioConAutor {
+  id: number;
+  titulo: string;
+  contenido: string;
+  fecha_publicacion: string;
+  creado_por: number;
+  condominio_id: number;
+  activo: boolean;
+  nombreAutor: string;
+  avatarAutor: string;
+}
+
 interface AnuncioListProps {
-  anuncios: Anuncio[];
-  onEdit: (a: Anuncio) => void;
-  onView: (a: Anuncio) => void;
+  anuncios: AnuncioConAutor[];
+  onEdit: (a: AnuncioConAutor) => void;
+  onView: (a: AnuncioConAutor) => void;
   onDelete: (id: number) => void;
   loading: boolean;
   onRefresh: () => void;
@@ -69,19 +80,25 @@ export function AnuncioList({ anuncios, onEdit, onView, onDelete, loading, onRef
           <div className="divide-y divide-[#99D050]/10">
             {filteredAnuncios.map((anuncio) => (
               <div key={anuncio.id} className="p-4 bg-white hover:bg-[#99D050]/5 transition-colors flex gap-4 group items-center animate-in fade-in duration-300">
-                <Avatar className="h-11 w-11 border-2 border-[#99D050]/20 shadow-sm shrink-0">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${anuncio.creado_por}`} />
-                  <AvatarFallback className="bg-[#99D050]/20 text-[#99D050]">AD</AvatarFallback>
+                <Avatar className="h-11 w-11 border-2 border-gray-200 shadow-sm shrink-0">
+                  <AvatarImage src={anuncio.avatarAutor} alt={anuncio.nombreAutor} />
+                  <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
+                    {anuncio.nombreAutor.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-1">
                     <h4 className="text-sm font-bold text-slate-800 truncate pr-2">{anuncio.titulo}</h4>
-                    {/* CAMBIO: fecha_publicacion */}
                     <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
-                      {new Date(anuncio.fecha_publicacion).toLocaleDateString()}
+                      {new Date(anuncio.fecha_publicacion).toLocaleDateString('es-CL', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 line-clamp-1">{anuncio.contenido}</p>
+                  <p className="text-[10px] text-slate-400 mt-1">{anuncio.nombreAutor}</p>
                 </div>
                 <div className="flex items-center gap-1 pl-2">
                   <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-[#99D050] hover:bg-[#99D050]/10 rounded-lg transition-all" onClick={() => onEdit(anuncio)} title="Editar">

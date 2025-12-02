@@ -21,7 +21,8 @@ export interface AnuncioComunidad {
   id: number;
   titulo: string;
   fecha: string;
-  icono: string;
+  avatar: string;
+  nombreAutor: string;
 }
 
 export const useDashboardData = () => {
@@ -57,15 +58,16 @@ export const useDashboardData = () => {
           usuarioService.getAll().catch(() => []),
           reservaService.getAll().catch(() => []),
           multaService.getAll().catch(() => []),
-          anuncioService.getAll().catch(() => []),
+          anuncioService.getAll(0, 100).catch(() => []),
           residenteService.getAll().catch(() => [])
         ]);
 
         // Filtrar por condominio del usuario
-        const gastosCondo = gastos.filter((g: any) => g.condominio_id === user.condominioId);
-        const usuariosCondo = usuarios.filter((u: any) => u.condominio_id === user.condominioId);
-        const multasCondo = multas.filter((m: any) => m.condominio_id === user.condominioId);
-        const anunciosCondo = anuncios.filter((a: any) => a.condominio_id === user.condominioId);
+        const condominioId = user.condominio_id || user.condominioId;
+        const gastosCondo = gastos.filter((g: any) => g.condominio_id === condominioId);
+        const usuariosCondo = usuarios.filter((u: any) => u.condominio_id === condominioId);
+        const multasCondo = multas.filter((m: any) => m.condominio_id === condominioId);
+        const anunciosCondo = anuncios.filter((a: any) => a.condominio_id === condominioId && a.activo === true);
 
         // 1. INGRESO TOTAL (Pagos aprobados)
         const ingresoTotal = pagos
@@ -192,18 +194,19 @@ export const useDashboardData = () => {
           .sort((a, b) => b.montoDeuda - a.montoDeuda)
           .slice(0, 5);
 
-        // 11. ANUNCIOS RECIENTES (Últimos 3 activos)
+        // 11. ANUNCIOS RECIENTES (Últimos 3 activos del condominio)
         const anunciosRecientes: AnuncioComunidad[] = anunciosCondo
-          .filter((a: any) => a.activo)
           .sort((a: any, b: any) => {
             const fechaA = new Date(a.fecha_publicacion);
             const fechaB = new Date(b.fecha_publicacion);
             return fechaB.getTime() - fechaA.getTime();
           })
           .slice(0, 3)
-          .map((a: any, index: number) => {
-            // Iconos rotativos para variedad visual
-            const iconos = ['🎉', '📢', '🏠', '⚠️', '✨', '🎊'];
+          .map((a: any) => {
+            // Buscar el usuario que creó el anuncio
+            const autor = usuariosCondo.find((u: any) => u.id === a.creado_por);
+            const nombreAutor = autor ? `${autor.nombre} ${autor.apellido}` : `Usuario ${a.creado_por}`;
+            
             return {
               id: a.id,
               titulo: a.titulo,
@@ -213,7 +216,8 @@ export const useDashboardData = () => {
                 hour: '2-digit',
                 minute: '2-digit'
               }),
-              icono: iconos[index % iconos.length]
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${nombreAutor}`,
+              nombreAutor: nombreAutor
             };
           });
 
