@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
+// 1. IMPORTAR EL HOOK DE REGISTRO
+import { useRegistroAutomatico } from "@/services/registroService";
 
 // Constantes para MVP (Idealmente vendrían del contexto de autenticación)
 const CURRENT_ADMIN_ID = 1;
@@ -26,6 +28,9 @@ export default function AdminMultas() {
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
+
+  // 2. INICIALIZAR EL HOOK
+  const { registrar } = useRegistroAutomatico();
 
   // Form State
   const [newMulta, setNewMulta] = useState<Partial<Multa>>({
@@ -66,6 +71,16 @@ export default function AdminMultas() {
     setProcessing(true);
     try {
       const res = await multaService.procesarAtrasos(CURRENT_ADMIN_ID);
+      
+      // 3. REGISTRO AUTOMÁTICO (Proceso masivo)
+      await registrar(
+        "MULTA",
+        `Ejecución de multas automáticas: Se generaron ${res.multas_creadas} nuevas multas por atraso.`,
+        {
+            condominio_id: CURRENT_CONDOMINIO_ID
+        }
+      );
+
       alert(`Proceso completado. Se crearon ${res.multas_creadas} multas nuevas.`);
       const multasUpdated = await multaService.getAll();
       setMultas(multasUpdated);
@@ -84,6 +99,19 @@ export default function AdminMultas() {
       }
       
       await multaService.create(newMulta as Multa);
+
+      // 4. REGISTRO AUTOMÁTICO (Multa manual)
+      const nombreResidente = getNombreResidente(newMulta.residente_id);
+      await registrar(
+        "MULTA",
+        `Multa manual aplicada a ${nombreResidente}. Monto: $${newMulta.monto.toLocaleString()} - Motivo: ${newMulta.descripcion}`,
+        {
+            monto: newMulta.monto,
+            condominio_id: CURRENT_CONDOMINIO_ID,
+            datos_adicionales: { tipo_multa: newMulta.tipo }
+        }
+      );
+
       setIsCreateOpen(false);
       setNewMulta({
         tipo: "OTRO",

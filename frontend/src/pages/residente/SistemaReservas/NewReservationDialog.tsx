@@ -32,6 +32,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { reservaService, type Reserva } from "@/services/reservaService";
 import type { EspacioComun } from "@/services/espaciosComunesService";
 
+// IMPORTAMOS EL HOOK DESDE TU SERVICIO EXISTENTE
+import { useRegistroAutomatico } from "@/services/registroService";
+
 interface NewReservationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -49,6 +52,9 @@ export function NewReservationDialog({
 }: NewReservationDialogProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Inicializamos el hook de registro
+  const { registrar } = useRegistroAutomatico();
 
   // Form States
   const [espacioId, setEspacioId] = useState<string>("");
@@ -71,8 +77,6 @@ export function NewReservationDialog({
     const fetchConflicts = async () => {
         setIsLoadingReservations(true);
         try {
-            // Nota: Idealmente el backend tendría un filtro por fecha/espacio.
-            // Aquí traemos todas y filtramos en cliente por simplicidad/rapidez.
             const all = await reservaService.getAll();
             
             const selectedDateStr = format(date, "yyyy-MM-dd");
@@ -94,17 +98,9 @@ export function NewReservationDialog({
 
   // 2. Helper para verificar si una hora está ocupada
   const isTimeOccupied = (timeStr: string) => {
-    // timeStr viene como "HH:MM"
-    // Comparamos contra rangos existentes [hora_inicio, hora_fin)
-    // Asumimos formato HH:MM:SS del backend
     return existingReservations.some(r => {
-        // Normalizar strings para comparar
-        const start = r.hora_inicio.substring(0, 5); // "14:00"
-        const end = r.hora_fin.substring(0, 5);      // "15:00"
-        
-        // Lógica simple de colisión para el selector:
-        // Si el tiempo seleccionado está DENTRO de una reserva existente
-        // (Nota: para Inicio, no puede ser >= start && < end)
+        const start = r.hora_inicio.substring(0, 5); 
+        const end = r.hora_fin.substring(0, 5);      
         return timeStr >= start && timeStr < end;
     });
   };
@@ -136,11 +132,9 @@ export function NewReservationDialog({
       return;
     }
 
-    // Validación final de conflicto antes de enviar
     const conflict = existingReservations.some(r => {
         const rStart = r.hora_inicio.substring(0, 5);
         const rEnd = r.hora_fin.substring(0, 5);
-        // Hay solapamiento si: (StartA < EndB) y (EndA > StartB)
         return horaInicio < rEnd && horaFin > rStart;
     });
 
@@ -154,12 +148,10 @@ export function NewReservationDialog({
       setError(null);
 
       const dateStr = format(date, "yyyy-MM-dd");
-
-      // CORRECCIÓN TIMEZONE: Enviar string "YYYY-MM-DDTHH:mm:ss" SIN la 'Z' ni offset.
-      // Esto hace que el backend lo interprete como "Local Time" (Naive).
       const fechaInicioNaive = `${dateStr}T${horaInicio}:00`;
       const fechaFinNaive = `${dateStr}T${horaFin}:00`;
 
+      // 1. Crear Reserva
       await reservaService.create({
         residente_id: residenteId,
         espacio_comun_id: Number(espacioId),
@@ -167,6 +159,18 @@ export function NewReservationDialog({
         fecha_fin: fechaFinNaive,
         cantidad_personas: Number(cantidad),
       });
+
+      // 2. Registrar Acción (LOG)
+      // Buscamos el nombre del espacio para que el log sea legible
+      const espacioNombre = espacios.find(e => e.id.toString() === espacioId)?.nombre || "Espacio Común";
+      
+      await registrar(
+        "RESERVA",
+        `Residente solicitó reserva en ${espacioNombre} para el día ${dateStr} (${horaInicio} - ${horaFin})`,
+        {
+            // Opcional: podrías pasar el condominio_id si lo tienes a mano en 'espacios' o context
+        }
+      );
 
       // Reset
       setEspacioId("");

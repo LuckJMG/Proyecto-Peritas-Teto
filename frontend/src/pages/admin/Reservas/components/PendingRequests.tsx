@@ -3,17 +3,40 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ReservaAdminView } from "../hooks/useReservasAdmin";
+// 1. IMPORTAR EL HOOK
+import { useRegistroAutomatico } from "@/services/registroService";
 
 interface PendingRequestsProps {
   reservas: ReservaAdminView[];
-  // Cambiado: action ahora espera 'CANCELADA' en lugar de 'RECHAZADA'
   onAction: (id: number, action: "CONFIRMADA" | "CANCELADA") => void;
 }
 
 export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
+  // 2. INICIALIZAR EL HOOK
+  const { registrar } = useRegistroAutomatico();
+
   const pendientes = reservas.filter(
     (r) => r.estado === "PENDIENTE" || r.estado === "PENDIENTE_PAGO"
   );
+
+  // 3. MANEJADOR INTERNO PARA INTERCEPTAR Y REGISTRAR
+  const handleDecision = async (reserva: ReservaAdminView, action: "CONFIRMADA" | "CANCELADA") => {
+    // Obtenemos el usuario actual para sacar el condominio_id (para el log)
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : {};
+
+    // Preparamos el mensaje del log
+    const accionTexto = action === "CONFIRMADA" ? "Aceptó" : "Rechazó";
+    const detalle = `Admin ${accionTexto} solicitud de reserva #${reserva.id} para ${reserva.nombreEspacio} (Residente: ${reserva.nombreResidente})`;
+
+    // Registramos la acción (Fire and forget, no bloqueamos la UI)
+    registrar("RESERVA", detalle, {
+      condominio_id: user.condominio_id
+    });
+
+    // Ejecutamos la acción original que actualiza la BD y recarga la tabla
+    onAction(reserva.id, action);
+  };
 
   return (
     <div className="space-y-4">
@@ -31,7 +54,6 @@ export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
           </div>
         ) : (
           pendientes.map((reserva) => (
-            // Agregado 'relative' para contener la barra absoluta
             <Card key={reserva.id} className="relative shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
               {/* Barra lateral amarilla contenida */}
               <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-yellow-400 z-10" />
@@ -69,10 +91,10 @@ export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
                   </div>
                 </div>
 
-                {/* Acciones */}
+                {/* Acciones MODIFICADAS para usar handleDecision */}
                 <div className="flex gap-2 pl-2">
                   <Button
-                    onClick={() => onAction(reserva.id, "CONFIRMADA")}
+                    onClick={() => handleDecision(reserva, "CONFIRMADA")}
                     className="flex-1 bg-[#99D050] hover:bg-[#8bc040] text-white h-8 text-xs font-semibold shadow-sm"
                   >
                     <Check className="w-3 h-3 mr-1.5" />
@@ -80,8 +102,7 @@ export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
                   </Button>
                   <Button
                     variant="outline"
-                    // Corrección de estado: CANCELADA
-                    onClick={() => onAction(reserva.id, "CANCELADA")}
+                    onClick={() => handleDecision(reserva, "CANCELADA")}
                     className="flex-1 border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 h-8 text-xs shadow-sm"
                   >
                     <X className="w-3 h-3 mr-1.5" />
