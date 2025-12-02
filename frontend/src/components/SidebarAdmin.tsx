@@ -5,6 +5,7 @@ import {
   Megaphone, 
   LayoutDashboard,
   TriangleAlert,
+  CircleDollarSign,
   Bell,
   BookOpen
 } from "lucide-react";
@@ -36,6 +37,11 @@ export function SidebarAdmin({ className }: SidebarProps) {
       title: "Multas",
       href: "/admin/multas",
       icon: TriangleAlert,
+    },
+    {
+      title: "Morosidad",
+      href: "/admin/morosidad",
+      icon: CircleDollarSign,
     },
     {
       title: "Anuncios",
