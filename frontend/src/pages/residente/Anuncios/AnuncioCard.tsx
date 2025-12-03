@@ -16,7 +16,7 @@ export function AnuncioCard({ anuncio, onClick }: AnuncioCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-all duration-200 border-gray-200 group flex flex-col h-full">
+    <Card className="hover:shadow-md transition-all duration-200 border-gray-200 group flex flex-col h-full rounded-xl overflow-hidden">
       <CardHeader className="pb-3 space-y-2">
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <Calendar className="w-3.5 h-3.5 text-[#99D050]" />
@@ -37,7 +37,7 @@ export function AnuncioCard({ anuncio, onClick }: AnuncioCardProps) {
         </p>
       </CardContent>
 
-      <CardFooter className="pt-2 border-t border-gray-50 bg-gray-50/50">
+      <CardFooter className="pt-3 pb-3 border-t border-gray-50 bg-gray-50/50">
         <Button 
           variant="ghost" 
           className="w-full justify-between text-[#99D050] hover:text-[#8bc040] hover:bg-transparent p-0 font-medium h-auto"

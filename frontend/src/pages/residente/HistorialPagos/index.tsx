@@ -110,7 +110,7 @@ export default function HistorialPagos() {
           </Button>
         </div>
 
-        <Card className="border-gray-200 shadow-sm overflow-hidden bg-white">
+        <Card className="border-gray-200 shadow-sm overflow-hidden bg-white rounded-xl">
           <CardHeader className="bg-gray-50/50 border-b border-gray-100 pb-4">
             <div className="flex justify-between items-center">
               <div>

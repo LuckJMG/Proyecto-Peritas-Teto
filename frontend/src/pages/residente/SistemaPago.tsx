@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CreditCard, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Loader2, CheckCircle, XCircle, AlertTriangle, ShieldCheck } from 'lucide-react';
 import NavbarResidente from '@/components/NavbarResidente';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useRegistroAutomatico } from "@/services/registroService";
 import { authService } from "@/services/authService";
-import { residenteService } from "@/services/residenteService"; // Importamos servicio
+import { residenteService } from "@/services/residenteService";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -44,6 +47,7 @@ interface PaymentStatus {
 // ============================================================================
 
 const SistemaPago = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [pagos, setPagos] = useState<PagoDetalle[]>([]);
   const [residente, setResidente] = useState<ResidenteInfo | null>(null);
@@ -95,7 +99,6 @@ const SistemaPago = () => {
   const cargarPagosPendientes = async (id: number): Promise<void> => {
     try {
       setLoading(true);
-      // Usamos el ID dinámico, no una constante
       const response = await fetch(`${API_URL}/transbank/pagos-pendientes/${id}`);
       
       if (!response.ok) throw new Error('Error al cargar pagos');
@@ -214,7 +217,7 @@ const SistemaPago = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          residente_id: residenteId, // Usamos el ID dinámico
+          residente_id: residenteId,
           pagos_ids: selectedPagos,
           email: residente?.email || 'ejemplo@email.com',
           return_url: returnUrl
@@ -248,55 +251,58 @@ const SistemaPago = () => {
   // Pantalla de confirmación
   if (paymentStatus) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 font-sans">
         <NavbarResidente />
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            {paymentStatus.success ? (
-              <>
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="w-12 h-12 text-green-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">¡Pago Exitoso!</h2>
-                <p className="text-gray-600 mb-2">Tu pago ha sido procesado correctamente.</p>
-                <div className="bg-gray-50 rounded-lg p-4 my-6 text-left">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="text-gray-500">Transacción:</div>
-                    <div className="font-mono font-semibold">{paymentStatus.transaccion}</div>
-                    <div className="text-gray-500">Monto:</div>
-                    <div className="font-semibold">${paymentStatus.monto?.toLocaleString('es-CL')}</div>
-                    {paymentStatus.autorizacion && (
-                      <>
-                        <div className="text-gray-500">Autorización:</div>
-                        <div className="font-mono">{paymentStatus.autorizacion}</div>
-                      </>
-                    )}
+        <div className="max-w-2xl mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <Card className="w-full shadow-lg border-0">
+            <CardContent className="p-8 text-center">
+              {paymentStatus.success ? (
+                <>
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in-50 duration-300">
+                    <CheckCircle className="w-12 h-12 text-green-600" />
                   </div>
-                </div>
-                <p className="text-sm text-gray-500 mb-8">
-                  Recibirás un correo de confirmación en {residente?.email}
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <XCircle className="w-12 h-12 text-red-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Pago Rechazado</h2>
-                <p className="text-gray-600 mb-8">{paymentStatus.message}</p>
-              </>
-            )}
-            
-            <button
-              onClick={() => {
-                setPaymentStatus(null);
-                if (residenteId) cargarPagosPendientes(residenteId);
-              }}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              Volver a pagos
-            </button>
-          </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">¡Pago Exitoso!</h2>
+                  <p className="text-gray-600 mb-8">Tu pago ha sido procesado correctamente.</p>
+                  
+                  <div className="bg-gray-50 rounded-xl p-6 my-6 text-left border border-gray-100">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="text-gray-500">Transacción:</div>
+                      <div className="font-mono font-semibold text-gray-900">{paymentStatus.transaccion}</div>
+                      <div className="text-gray-500">Monto:</div>
+                      <div className="font-semibold text-gray-900">${paymentStatus.monto?.toLocaleString('es-CL')}</div>
+                      {paymentStatus.autorizacion && (
+                        <>
+                          <div className="text-gray-500">Autorización:</div>
+                          <div className="font-mono text-gray-900">{paymentStatus.autorizacion}</div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-8">
+                    Recibirás un correo de confirmación en <span className="font-medium text-gray-900">{residente?.email}</span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <XCircle className="w-12 h-12 text-red-600" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Pago Rechazado</h2>
+                  <p className="text-gray-600 mb-8">{paymentStatus.message}</p>
+                </>
+              )}
+              
+              <Button
+                onClick={() => {
+                  setPaymentStatus(null);
+                  if (residenteId) cargarPagosPendientes(residenteId);
+                }}
+                className="w-full sm:w-auto min-w-[200px] bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+              >
+                Volver a pagos
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -305,134 +311,166 @@ const SistemaPago = () => {
   // Pantalla de carga
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Cargando pagos pendientes...</p>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <NavbarResidente />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-12 h-12 animate-spin text-[#99D050]" />
+            <p className="text-gray-600 font-medium">Cargando pagos pendientes...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-sans pb-10">
       <NavbarResidente />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link 
-          to="/resumen" 
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6 font-medium"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" /> Estado de cuenta
-        </Link>
-
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Pago de cuenta</h1>
-          <p className="text-gray-500 mt-1">Selecciona los pagos que deseas realizar</p>
+          <Button 
+            variant="ghost" 
+            className="pl-0 hover:bg-transparent text-gray-500 hover:text-gray-900 mb-2"
+            onClick={() => navigate('/resumen')}
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" /> 
+            Volver al resumen
+          </Button>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold text-gray-900">Pago de cuenta</h1>
+            <p className="text-gray-500">Selecciona los pagos que deseas realizar</p>
+          </div>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            <span>{error}</span>
           </div>
         )}
 
         {pagos.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">No tienes pagos pendientes</h2>
-            <p className="text-gray-600">¡Estás al día con tus pagos!</p>
-          </div>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">No tienes pagos pendientes</h2>
+              <p className="text-gray-500">¡Estás al día con tus gastos comunes!</p>
+              <Button 
+                className="mt-6 bg-[#99D050] hover:bg-[#88bf40] text-white"
+                onClick={() => navigate('/resumen')}
+              >
+                Volver al inicio
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Resumen de Costos */}
-            <div className="bg-white rounded-lg shadow p-8">
-              <h2 className="text-2xl font-bold text-center mb-8">Costo total</h2>
-              <div className="text-center mb-8">
-                <div className="text-5xl font-bold text-gray-900">
-                  $ {calcularTotal().toLocaleString('es-CL')}
+            <Card className="border border-gray-100 shadow-sm h-fit">
+              <CardHeader>
+                <CardTitle className="text-xl text-center">Selección de Pagos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center mb-8 bg-gray-50 rounded-xl p-6 border border-gray-100">
+                  <p className="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-1">Total a Pagar</p>
+                  <div className="text-4xl font-extrabold text-gray-900">
+                    $ {calcularTotal().toLocaleString('es-CL')}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    <Badge variant="outline" className="bg-white">
+                      {selectedPagos.length} seleccionados
+                    </Badge>
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  {selectedPagos.length} de {pagos.length} pagos seleccionados
-                </p>
-              </div>
 
-              <div className="space-y-3">
-                {pagos.map((pago: PagoDetalle) => (
-                  <button
-                    key={pago.id}
-                    onClick={() => togglePago(pago.id)}
-                    className={`w-full rounded-full px-6 py-3 flex items-center justify-between transition-all ${
-                      selectedPagos.includes(pago.id)
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    <span className="font-medium text-left">{pago.concepto}</span>
-                    <span className="font-bold ml-2 whitespace-nowrap">$ {pago.monto.toLocaleString('es-CL')}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                  {pagos.map((pago: PagoDetalle) => (
+                    <div
+                      key={pago.id}
+                      onClick={() => togglePago(pago.id)}
+                      className={`
+                        w-full rounded-xl p-4 flex items-center justify-between cursor-pointer border transition-all duration-200
+                        ${selectedPagos.includes(pago.id)
+                          ? 'bg-gray-900 border-gray-900 text-white shadow-md'
+                          : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-sm'
+                        }
+                      `}
+                    >
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm">{pago.concepto}</span>
+                        <span className={`text-xs ${selectedPagos.includes(pago.id) ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {pago.tipo}
+                        </span>
+                      </div>
+                      <span className="font-bold whitespace-nowrap text-lg">
+                        ${pago.monto.toLocaleString('es-CL')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Información Transbank */}
-            <div className="bg-white rounded-lg shadow p-8">
-              <div className="text-center mb-8">
-                <CreditCard className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Pago con Transbank
-                </h2>
-                <p className="text-gray-600">
-                  Serás redirigido a la plataforma segura de Transbank para completar tu pago
-                </p>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-blue-900 mb-2">
-                  🧪 Ambiente de Prueba
-                </h3>
-                <p className="text-sm text-blue-800 mb-3">
-                  Este es un ambiente de integración. Usa estas tarjetas de prueba:
-                </p>
-                <div className="bg-white rounded p-3 text-sm space-y-2">
-                  <div>
-                    <div className="font-semibold">VISA (Aprobada):</div>
-                    <div className="font-mono">4051 8856 0044 6623</div>
+            <Card className="border border-gray-100 shadow-sm h-fit">
+              <CardContent className="p-8">
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <CreditCard className="w-8 h-8 text-blue-600" />
                   </div>
-                  <div className="text-gray-600 text-xs mt-1">
-                    CVV: cualquiera | Fecha: futura
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Pago con Transbank
+                  </h2>
+                  <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                    Serás redirigido a la plataforma segura de Webpay Plus para completar tu transacción.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 mb-8">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-blue-900 text-sm mb-1">
+                        Ambiente de Integración
+                      </h3>
+                      <p className="text-xs text-blue-700 leading-relaxed">
+                        Estás utilizando el modo de pruebas. Utiliza las tarjetas de crédito de prueba proporcionadas por Transbank.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <button
-                onClick={iniciarPagoTransbank}
-                disabled={isProcessing || selectedPagos.length === 0}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Redirigiendo a Transbank...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Pagar con Transbank
-                  </>
-                )}
-              </button>
+                <Button
+                  onClick={iniciarPagoTransbank}
+                  disabled={isProcessing || selectedPagos.length === 0}
+                  className="w-full bg-[#99D050] hover:bg-[#88bf40] text-white font-bold h-14 text-lg rounded-xl shadow-md shadow-[#99D050]/20 disabled:opacity-50 disabled:shadow-none"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      Pagar con Webpay
+                    </>
+                  )}
+                </Button>
 
-              <div className="text-center mt-6 pt-6 border-t">
-                <p className="text-sm text-gray-600 mb-3">Powered by</p>
-                <div className="flex justify-center items-center gap-2">
-                   <span className="font-bold text-xl text-red-600 tracking-tighter">transbank</span>
+                <div className="text-center mt-8 pt-6 border-t border-gray-100">
+                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-widest font-semibold">Procesado por</p>
+                  <div className="flex justify-center items-center opacity-80 hover:opacity-100 transition-opacity">
+                     <span className="font-bold text-xl text-[#d10046] tracking-tighter">transbank</span>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };

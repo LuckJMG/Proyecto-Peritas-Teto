@@ -41,11 +41,14 @@ export function MultaCard({ multa, onClick }: MultaCardProps) {
     }
   };
 
-  // Formatear tipo para mostrar (eliminar guiones bajos)
-  const formatTipo = (tipo: string) => tipo.replace(/_/g, " ");
+  // Formatear tipo para mostrar (eliminar guiones bajos y capitalizar)
+  const formatTipo = (tipo: string) => {
+    const text = tipo.replace(/_/g, " ").toLowerCase();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
 
   return (
-    <Card className="hover:shadow-md transition-all duration-200 border-gray-200 group flex flex-col h-full overflow-hidden">
+    <Card className="hover:shadow-md transition-all duration-200 border-gray-200 group flex flex-col h-full overflow-hidden rounded-xl">
       {/* Indicador lateral de estado */}
       <div className={`h-1 w-full ${multa.estado === 'PENDIENTE' ? 'bg-red-500' : 'bg-green-500'}`} />
       
@@ -57,7 +60,7 @@ export function MultaCard({ multa, onClick }: MultaCardProps) {
           <div>
             <h3 className="font-bold text-gray-900 text-sm">{formatTipo(multa.tipo)}</h3>
             <p className="text-xs text-gray-500">
-              {multa.fecha_emision ? new Date(multa.fecha_emision).toLocaleDateString() : "Fecha desconocida"}
+              {multa.fecha_emision ? new Date(multa.fecha_emision).toLocaleDateString("es-CL") : "Fecha desconocida"}
             </p>
           </div>
         </div>
@@ -69,18 +72,18 @@ export function MultaCard({ multa, onClick }: MultaCardProps) {
           <p className="text-2xl font-bold text-gray-900">
             ${multa.monto.toLocaleString("es-CL")}
           </p>
-          <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+          <p className="text-sm text-gray-600 line-clamp-2 mt-1 leading-relaxed">
             {multa.descripcion}
           </p>
         </div>
 
         <Button 
-          variant="outline" 
-          className="w-full justify-between text-gray-600 hover:text-gray-900 hover:bg-gray-50 text-xs h-9"
+          variant="ghost" 
+          className="w-full justify-between text-[#99D050] hover:text-[#8bc040] hover:bg-transparent p-0 font-medium h-auto"
           onClick={() => onClick(multa)}
         >
           Ver detalles
-          <ChevronRight className="w-3 h-3 ml-2" />
+          <ChevronRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
         </Button>
       </CardContent>
     </Card>

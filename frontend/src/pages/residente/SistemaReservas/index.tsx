@@ -196,7 +196,7 @@ export default function SistemaReservasPage() {
           <span className="text-sm font-medium">Estado de cuenta</span>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-sm mb-8 w-fit min-w-[300px]">
+        <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 w-fit min-w-[300px]">
           <h1 className="text-3xl font-semibold text-gray-900 mb-1">Reservas</h1>
           <p className="text-gray-400 text-sm">Tus reservas de espacios comunes</p>
         </div>
@@ -208,7 +208,7 @@ export default function SistemaReservasPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <section className="lg:col-span-7 flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm h-fit">
+          <section className="lg:col-span-7 flex flex-col gap-6 bg-white p-6 rounded-2xl shadow-sm h-fit">
             <h2 className="text-2xl font-semibold text-gray-900">Reservas futuras</h2>
             <button
               onClick={() => setShowNewReservation(true)}
@@ -223,7 +223,7 @@ export default function SistemaReservasPage() {
             />
           </section>
 
-          <section className="lg:col-span-5 flex flex-col gap-6 bg-white p-6 rounded-3xl shadow-sm h-fit">
+          <section className="lg:col-span-5 flex flex-col gap-6 bg-white p-6 rounded-2xl shadow-sm h-fit">
             <h2 className="text-2xl font-semibold text-gray-900">Reservas pasadas</h2>
             <ReservationsList
               groups={pastReservations}

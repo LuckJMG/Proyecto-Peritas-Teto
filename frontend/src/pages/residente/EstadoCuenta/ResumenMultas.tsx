@@ -45,20 +45,20 @@ export default function ResumenMultas() {
   }, []);
 
   if (loading) return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 h-[300px] flex items-center justify-center text-gray-500">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 h-[300px] flex items-center justify-center text-gray-500 shadow-sm">
         Cargando multas...
     </div>
   );
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Multas Recientes</h2>
+        <h2 className="text-xl font-bold text-gray-900">Multas Recientes</h2>
         
         {/* --- BOTÓN VER MÁS ESTILIZADO (VERDE SÓLIDO) --- */}
         <Link to="/multas">
             <Button 
-                className="bg-[#99D050] hover:bg-[#8bc040] text-white shadow-sm h-8 px-3 text-xs font-semibold"
+                className="bg-[#99D050] hover:bg-[#8bc040] text-white shadow-sm h-8 px-3 text-xs font-bold rounded-md transition-all active:scale-95"
             >
                 Ver más <ChevronRight className="ml-1 h-3 w-3" />
             </Button>
@@ -69,38 +69,38 @@ export default function ResumenMultas() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Fecha</th>
-              <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Monto</th>
-              <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Causa</th>
-              <th className="text-left py-3 px-2 text-sm font-medium text-gray-700">Estado</th>
+              <th className="text-left py-3 px-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">Fecha</th>
+              <th className="text-left py-3 px-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">Monto</th>
+              <th className="text-left py-3 px-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">Causa</th>
+              <th className="text-left py-3 px-2 text-sm font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
             </tr>
           </thead>
           <tbody>
             {multas.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-500 text-sm">
+                <td colSpan={4} className="text-center py-12 text-gray-400 text-sm italic">
                   No tienes multas registradas. ¡Felicitaciones!
                 </td>
               </tr>
             ) : (
               multas.slice(0, 5).map((multa) => (
                 <tr key={multa.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 px-2 text-sm text-gray-900">
+                  <td className="py-3 px-2 text-sm text-gray-600">
                     {multa.fecha_emision ? new Date(multa.fecha_emision).toLocaleDateString() : "-"}
                   </td>
-                  <td className="py-3 px-2 text-sm text-gray-900 font-medium">
+                  <td className="py-3 px-2 text-sm text-gray-900 font-bold">
                     ${multa.monto.toLocaleString("es-CL")}
                   </td>
                   <td className="py-3 px-2 text-sm text-gray-600 truncate max-w-[150px]" title={multa.descripcion}>
                     {multa.descripcion}
                   </td>
                   <td className="py-3 px-2 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
                       multa.estado === 'PAGADA' 
-                        ? 'bg-green-100 text-green-800 border-green-200' 
+                        ? 'bg-green-50 text-green-700 border-green-200' 
                         : multa.estado === 'PENDIENTE' 
-                          ? 'bg-red-100 text-red-800 border-red-200' 
-                          : 'bg-blue-100 text-blue-800 border-blue-200'
+                          ? 'bg-red-50 text-red-700 border-red-200' 
+                          : 'bg-blue-50 text-blue-700 border-blue-200'
                     }`}>
                       {multa.estado}
                     </span>

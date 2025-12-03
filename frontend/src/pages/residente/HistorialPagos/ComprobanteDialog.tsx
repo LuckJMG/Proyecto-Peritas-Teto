@@ -20,14 +20,14 @@ export function ComprobanteDialog({ pago, open, onOpenChange }: ComprobanteDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-white">
+      <DialogContent className="max-w-md p-0 overflow-hidden bg-white rounded-xl">
         {/* Encabezado Visual */}
         <div className="bg-[#99D050] p-6 text-center print:bg-white print:text-black">
-          <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+          <div className="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm print:hidden">
             <CheckCircle2 className="h-10 w-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-1">Comprobante de Pago</h2>
-          <p className="text-white/90 text-sm">Transacción Exitosa</p>
+          <h2 className="text-2xl font-bold text-white mb-1 print:text-black">Comprobante de Pago</h2>
+          <p className="text-white/90 text-sm print:text-gray-600">Transacción Exitosa</p>
         </div>
 
         {/* Cuerpo del Comprobante */}
@@ -63,7 +63,7 @@ export function ComprobanteDialog({ pago, open, onOpenChange }: ComprobanteDialo
 
             <div className="flex justify-between items-center">
               <span className="text-gray-500">N° Transacción</span>
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 font-mono">
                 {pago.numero_transaccion || '---'}
               </span>
             </div>
@@ -76,7 +76,7 @@ export function ComprobanteDialog({ pago, open, onOpenChange }: ComprobanteDialo
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg text-xs text-gray-500 text-center mt-6">
+          <div className="bg-gray-50 p-4 rounded-lg text-xs text-gray-500 text-center mt-6 print:border print:border-gray-200">
             <p>ID Referencia Pago: #{pago.id}</p>
             <p className="mt-1">Gracias por usar Peritas Teto</p>
           </div>

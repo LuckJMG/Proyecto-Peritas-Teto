@@ -21,7 +21,7 @@ export function AnuncioDetailDialog({ anuncio, open, onOpenChange }: AnuncioDeta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto rounded-xl">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="secondary" className="bg-[#99D050]/20 text-green-800 hover:bg-[#99D050]/30 border-0">
@@ -55,7 +55,7 @@ export function AnuncioDetailDialog({ anuncio, open, onOpenChange }: AnuncioDeta
         </div>
 
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)} className="bg-gray-900 text-white hover:bg-gray-800">
+          <Button onClick={() => onOpenChange(false)} className="bg-gray-900 text-white hover:bg-gray-800 rounded-lg">
             Cerrar
           </Button>
         </DialogFooter>

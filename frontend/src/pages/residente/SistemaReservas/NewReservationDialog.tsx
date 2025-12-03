@@ -31,8 +31,6 @@ import { Calendar } from "@/components/ui/calendar";
 
 import { reservaService, type Reserva } from "@/services/reservaService";
 import type { EspacioComun } from "@/services/espaciosComunesService";
-
-// IMPORTAMOS EL HOOK DESDE TU SERVICIO EXISTENTE
 import { useRegistroAutomatico } from "@/services/registroService";
 
 interface NewReservationDialogProps {
@@ -169,7 +167,7 @@ export function NewReservationDialog({
         "RESERVA",
         `Residente solicitó reserva en ${espacioNombre} para el día ${dateStr} (${horaInicio} - ${horaFin})`,
         {
-            // Opcional: podrías pasar el condominio_id si lo tienes a mano en 'espacios' o context
+            // Opcional: podrías pasar el condominio_id si lo tienes a mano
         }
       );
 

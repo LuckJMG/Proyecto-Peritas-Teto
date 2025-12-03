@@ -24,7 +24,7 @@ export function MultaDetailDialog({ multa, open, onOpenChange }: MultaDetailDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] rounded-xl">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             {isPending ? (
@@ -89,7 +89,7 @@ export function MultaDetailDialog({ multa, open, onOpenChange }: MultaDetailDial
           </Button>
           {isPending && (
             <Link to="/resumen" className="w-full sm:w-auto">
-              <Button className="w-full bg-[#99D050] hover:bg-[#8bc040] text-black font-medium">
+              <Button className="w-full bg-[#99D050] hover:bg-[#8bc040] text-white font-medium">
                 Ir a Pagar
               </Button>
             </Link>
