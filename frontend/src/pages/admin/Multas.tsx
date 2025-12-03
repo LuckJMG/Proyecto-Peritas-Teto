@@ -3,6 +3,7 @@ import { multaService, type Multa } from "@/services/multaService";
 import { residenteService, type Residente } from "@/services/residenteService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +12,20 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 import { SidebarAdmin } from "@/components/SidebarAdmin";
-// 1. IMPORTAR EL HOOK DE REGISTRO
 import { useRegistroAutomatico } from "@/services/registroService";
+import { Zap, Plus } from "lucide-react";
 
 // Constantes para MVP (Idealmente vendrían del contexto de autenticación)
 const CURRENT_ADMIN_ID = 1;
@@ -30,7 +39,7 @@ export default function AdminMultas() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  // 2. INICIALIZAR EL HOOK
+  // Inicializar el hook
   const { registrar } = useRegistroAutomatico();
 
   // Form State
@@ -73,7 +82,7 @@ export default function AdminMultas() {
     try {
       const res = await multaService.procesarAtrasos(CURRENT_ADMIN_ID);
       
-      // 3. REGISTRO AUTOMÁTICO (Proceso masivo)
+      // Registro Automático (Proceso masivo)
       await registrar(
         "MULTA",
         `Ejecución de multas automáticas: Se generaron ${res.multas_creadas} nuevas multas por atraso.`,
@@ -101,7 +110,7 @@ export default function AdminMultas() {
       
       await multaService.create(newMulta as Multa);
 
-      // 4. REGISTRO AUTOMÁTICO (Multa manual)
+      // Registro Automático (Multa manual)
       const nombreResidente = getNombreResidente(newMulta.residente_id);
       await registrar(
         "MULTA",
@@ -131,42 +140,42 @@ export default function AdminMultas() {
   const multasVisibles = multas.filter((m) => toInt(m.monto) > 0);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-muted/40 font-sans">
       <Navbar />
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="h-full hidden md:block border-r border-gray-200/50">
-          <SidebarAdmin className="h-full" />
-        </div>
+        <SidebarAdmin />
 
-        <main className="flex-1 p-8 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 p-8 overflow-y-auto">
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900">Gestión de Multas</h1>
-                <p className="text-gray-500 mt-1">Administra las sanciones y cobros del condominio.</p>
+                <p className="text-muted-foreground mt-1">Administra las sanciones y cobros del condominio.</p>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-3 w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   onClick={handleProcesarAutomaticas}
                   disabled={processing}
-                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+                  className="gap-2 w-full sm:w-auto"
                 >
-                  {processing ? "Procesando..." : "⚡ Generar Multas Automáticas"}
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                  {processing ? "Procesando..." : "Generar Automáticas"}
                 </Button>
 
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-[#8BC34A] hover:bg-[#7CB342] text-white shadow-sm">
-                      Nueva Multa Manual
+                    <Button className="bg-[#99D050] hover:bg-[#88bf40] text-white gap-2 w-full sm:w-auto">
+                      <Plus className="h-4 w-4" />
+                      Nueva Multa
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px] bg-white">
+                  <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                       <DialogTitle>Aplicar Multa Manual</DialogTitle>
                     </DialogHeader>
-                    <div className="grid gap-5 py-4">
+                    <div className="grid gap-4 py-4">
                       
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label className="text-right font-medium">Residente</Label>
@@ -174,7 +183,7 @@ export default function AdminMultas() {
                           <Select 
                             onValueChange={(val) => setNewMulta({...newMulta, residente_id: parseInt(val)})}
                           >
-                            <SelectTrigger className="bg-white border-gray-200">
+                            <SelectTrigger>
                               <SelectValue placeholder="Seleccione residente..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -195,7 +204,7 @@ export default function AdminMultas() {
                             onValueChange={(val: any) => setNewMulta({...newMulta, tipo: val})}
                             defaultValue="OTRO"
                           >
-                            <SelectTrigger className="bg-white border-gray-200">
+                            <SelectTrigger>
                               <SelectValue placeholder="Seleccione tipo" />
                             </SelectTrigger>
                             <SelectContent>
@@ -213,7 +222,7 @@ export default function AdminMultas() {
                         <Label className="text-right font-medium">Monto ($)</Label>
                         <Input 
                           type="number"
-                          className="col-span-3 bg-white border-gray-200" 
+                          className="col-span-3" 
                           placeholder="Ej: 15000"
                           onChange={(e) => setNewMulta({...newMulta, monto: parseFloat(e.target.value)})}
                         />
@@ -222,14 +231,14 @@ export default function AdminMultas() {
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label className="text-right font-medium">Descripción</Label>
                         <Input 
-                          className="col-span-3 bg-white border-gray-200" 
+                          className="col-span-3" 
                           placeholder="Detalle de la infracción"
                           onChange={(e) => setNewMulta({...newMulta, descripcion: e.target.value})}
                         />
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleCreate} className="bg-[#8BC34A] hover:bg-[#7CB342] text-white">
+                      <Button onClick={handleCreate} className="bg-[#99D050] hover:bg-[#88bf40] text-white">
                         Guardar Multa
                       </Button>
                     </DialogFooter>
@@ -238,53 +247,64 @@ export default function AdminMultas() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-gray-50/50 border-b border-gray-100 text-gray-500 uppercase text-xs font-semibold">
-                  <tr>
-                    <th className="px-6 py-4">ID</th>
-                    <th className="px-6 py-4">Residente</th>
-                    <th className="px-6 py-4">Tipo</th>
-                    <th className="px-6 py-4">Descripción</th>
-                    <th className="px-6 py-4">Monto</th>
-                    <th className="px-6 py-4">Estado</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
+            <div className="rounded-md border bg-white shadow-sm">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="w-20">ID</TableHead>
+                    <TableHead>Residente</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Descripción</TableHead>
+                    <TableHead>Monto</TableHead>
+                    <TableHead>Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {loading ? (
-                    <tr><td colSpan={6} className="p-12 text-center text-gray-400">Cargando datos...</td></tr>
+                    <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                            Cargando datos...
+                        </TableCell>
+                    </TableRow>
                   ) : multasVisibles.length === 0 ? (
-                    <tr><td colSpan={6} className="p-12 text-center text-gray-400">No hay multas registradas</td></tr>
-                  ) : multasVisibles.map((m) => (
-                    <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-gray-400 font-mono text-xs">#{m.id}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900">
+                    <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                            No hay multas registradas
+                        </TableCell>
+                    </TableRow>
+                  ) : (
+                    multasVisibles.map((m) => (
+                    <TableRow key={m.id}>
+                      <TableCell className="font-mono text-xs text-muted-foreground">#{m.id}</TableCell>
+                      <TableCell className="font-medium">
                         {getNombreResidente(m.residente_id)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 bg-gray-100 rounded-md text-xs font-semibold text-gray-600 border border-gray-200">
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-normal text-xs">
                           {m.tipo}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 truncate max-w-[200px]" title={m.descripcion}>
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground max-w-[200px] truncate" title={m.descripcion}>
                         {m.descripcion}
-                      </td>
-                      <td className="px-6 py-4 font-bold text-gray-900">
+                      </TableCell>
+                      <TableCell className="font-bold">
                         ${m.monto.toLocaleString('es-CL')}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                          m.estado === 'PENDIENTE' 
-                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
-                            : 'bg-green-50 text-green-700 border-green-200'
-                        }`}>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline"
+                          className={m.estado === 'PENDIENTE' 
+                            ? "bg-yellow-50 text-yellow-700 border-yellow-200" 
+                            : "bg-green-50 text-green-700 border-green-200"
+                          }
+                        >
                           {m.estado}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  )))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         </main>

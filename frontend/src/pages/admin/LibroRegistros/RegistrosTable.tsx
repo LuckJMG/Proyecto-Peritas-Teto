@@ -1,4 +1,13 @@
 import type { Registro } from "@/services/registroService";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface RegistrosTableProps {
   registros: Registro[];
@@ -40,69 +49,56 @@ export function RegistrosTable({ registros }: RegistrosTableProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-      <table className="w-full">
-        <thead className="border-b border-gray-200 bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
-              Nombre
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600">
-              Tipo de evento
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600">
-              Detalle
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600">
-              Monto
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600">
-              Fecha
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
+    <div className="rounded-md border bg-white shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/50 hover:bg-muted/50">
+            <TableHead>Usuario</TableHead>
+            <TableHead className="text-center">Tipo</TableHead>
+            <TableHead className="w-[40%]">Detalle</TableHead>
+            <TableHead className="text-right">Monto</TableHead>
+            <TableHead className="text-right">Fecha</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {registros.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+            <TableRow>
+              <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                 No se encontraron registros
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : (
-            registros.map((registro, index) => (
-              <tr
-                key={registro.id}
-                className={`${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                } hover:bg-gray-100 transition-colors`}
-              >
-                <td className="px-6 py-4">
+            registros.map((registro) => (
+              <TableRow key={registro.id} className="hover:bg-muted/50">
+                <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-700">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                       {getInitials(registro.usuario_nombre, registro.usuario_apellido)}
                     </div>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium">
                       {registro.usuario_nombre} {registro.usuario_apellido}
                     </span>
                   </div>
-                </td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">
-                  {TIPO_LABELS[registro.tipo_evento] || registro.tipo_evento}
-                </td>
-                <td className="px-6 py-4 text-center text-sm text-gray-700">
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge variant="secondary" className="font-normal">
+                    {TIPO_LABELS[registro.tipo_evento] || registro.tipo_evento}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
                   {registro.detalle}
-                </td>
-                <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">
+                </TableCell>
+                <TableCell className="text-right font-medium">
                   {formatMonto(registro.monto)}
-                </td>
-                <td className="px-6 py-4 text-center text-sm text-gray-500">
+                </TableCell>
+                <TableCell className="text-right text-sm text-muted-foreground">
                   {formatDate(registro.fecha_creacion)}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

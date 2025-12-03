@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, CheckCircle, Clock, AlertTriangle, FileEdit } from "lucide-react";
+import { Bell, CheckCircle, Clock, AlertTriangle, FileEdit, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -41,7 +41,7 @@ export default function AdminAlertasPage() {
       await alertaService.resolver(selectedAlerta.id, comentario);
       setIsDialogOpen(false);
       setComentario("");
-      fetchAlertas(); // Recargar lista
+      fetchAlertas();
     } catch (error) {
       console.error("Error resolviendo alerta", error);
     }
@@ -57,74 +57,68 @@ export default function AdminAlertasPage() {
   };
 
   return (
-    // Layout Principal: Flex Columna
-    <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
-
-      {/* 1. Navbar Superior */}
+    <div className="flex flex-col h-screen w-full bg-muted/40 font-sans">
       <Navbar />
 
-      {/* 2. Contenedor Inferior */}
       <div className="flex flex-1 overflow-hidden">
+        <SidebarAdmin />
 
-        {/* Sidebar Izquierda */}
-        <div className="h-full hidden md:block border-r border-gray-200/50">
-          <SidebarAdmin className="h-full" />
-        </div>
-
-        {/* Contenido Principal con Scroll */}
-        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
-
+        <main className="flex-1 p-6 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Centro de Alertas</h1>
-            <Button onClick={fetchAlertas} variant="outline" size="sm">Actualizar</Button>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Centro de Alertas</h1>
+            <Button onClick={fetchAlertas} variant="outline" size="sm" className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Actualizar
+            </Button>
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center h-64 text-gray-500">
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-                <span>Cargando alertas...</span>
-              </div>
+            <div className="flex flex-col justify-center items-center h-64 text-gray-500">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-primary mb-4"></div>
+              <span>Cargando alertas...</span>
             </div>
           ) : (
             <Tabs defaultValue="todas" className="w-full">
-              <TabsList className="bg-white border border-gray-200">
+              <TabsList className="bg-white border mb-4">
                 <TabsTrigger value="todas">Todas</TabsTrigger>
                 <TabsTrigger value="pendientes">Pendientes</TabsTrigger>
                 <TabsTrigger value="resueltas">Resueltas</TabsTrigger>
               </TabsList>
 
               {["todas", "pendientes", "resueltas"].map((tab) => (
-                <TabsContent key={tab} value={tab} className="mt-4 space-y-4">
+                <TabsContent key={tab} value={tab} className="space-y-4">
                   {alertas
                     .filter(a => tab === "todas" ? true : tab === "pendientes" ? a.estado === "PENDIENTE" : a.estado === "RESUELTO")
                     .map((alerta) => (
                     <Card key={alerta.id} className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow">
-                      <CardHeader className="flex flex-row items-center justify-between py-3">
-                        <div className="flex items-center gap-3">
+                      <CardHeader className="flex flex-row items-center justify-between py-4">
+                        <div className="flex items-center gap-4">
                           <div className="p-2 bg-gray-50 rounded-full border border-gray-100">
                             {getIcon(alerta.tipo)}
                           </div>
                           <div>
                             <CardTitle className="text-base font-semibold text-gray-900">{alerta.titulo}</CardTitle>
-                            <p className="text-xs text-gray-500 mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-1 capitalize">
                               {format(new Date(alerta.fecha_creacion), "dd MMMM yyyy HH:mm", { locale: es })}
                             </p>
                           </div>
                         </div>
                         <Badge 
-                          variant={alerta.estado === "PENDIENTE" ? "destructive" : "default"} 
-                          className={alerta.estado === "PENDIENTE" ? "bg-red-50 text-red-700 border-red-200 hover:bg-red-100" : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"}
+                          variant="outline"
+                          className={alerta.estado === "PENDIENTE" 
+                            ? "bg-red-50 text-red-700 border-red-200 hover:bg-red-50" 
+                            : "bg-green-50 text-green-700 border-green-200 hover:bg-green-50"
+                          }
                         >
                           {alerta.estado}
                         </Badge>
                       </CardHeader>
                       
-                      <CardContent className="py-2 pb-4 pl-18">
-                        <p className="text-sm text-gray-700 mb-3 leading-relaxed">{alerta.descripcion}</p>
+                      <CardContent className="pb-4 pt-0 pl-18">
+                        <p className="text-sm text-gray-700 mb-4 leading-relaxed">{alerta.descripcion}</p>
                         
                         {alerta.estado === "RESUELTO" && (
-                          <div className="bg-green-50/50 p-3 rounded-lg text-sm border border-green-100">
+                          <div className="bg-green-50/50 p-4 rounded-lg text-sm border border-green-100">
                             <p className="font-semibold text-green-800 flex items-center gap-2 mb-1">
                               <CheckCircle className="h-4 w-4"/> Resuelto:
                             </p>
@@ -136,7 +130,7 @@ export default function AdminAlertasPage() {
                         )}
 
                         {alerta.estado === "PENDIENTE" && (
-                          <div className="flex justify-end mt-2">
+                          <div className="flex justify-end">
                             <Button 
                               size="sm" 
                               className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -152,9 +146,10 @@ export default function AdminAlertasPage() {
                       </CardContent>
                     </Card>
                   ))}
+                  
                   {alertas.filter(a => tab === "todas" ? true : tab === "pendientes" ? a.estado === "PENDIENTE" : a.estado === "RESUELTO").length === 0 && (
-                    <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                        <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                        <Bell className="h-12 w-12 text-gray-300 mb-3" />
                         <p className="text-gray-500 font-medium">No hay alertas registradas en esta categoría.</p>
                     </div>
                   )}
@@ -183,13 +178,12 @@ export default function AdminAlertasPage() {
           </div>
           <DialogFooter>
              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-             <Button onClick={handleResolver} disabled={!comentario.trim()} className="bg-green-600 hover:bg-green-700">
-                Confirmar Resolución
+             <Button onClick={handleResolver} disabled={!comentario.trim()} className="bg-green-600 hover:bg-green-700 text-white">
+               Confirmar Resolución
              </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

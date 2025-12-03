@@ -43,8 +43,7 @@ export default function LibroRegistros() {
     }
   };
 
-
-  // Filtrar por búsqueda
+  // Filtrar por búsqueda en frontend
   const filtered = registros.filter((r) => {
     const searchText = `${r.usuario_nombre} ${r.usuario_apellido} ${r.detalle}`.toLowerCase();
     return searchText.includes(searchTerm.toLowerCase());
@@ -54,18 +53,18 @@ export default function LibroRegistros() {
   const visible = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-muted/40 font-sans">
       <Navbar />
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="h-full hidden md:block border-r bg-white">
+        <div className="h-full hidden md:block border-r bg-background">
           <SidebarAdmin className="h-full" />
         </div>
 
         <main className="flex-1 overflow-y-auto p-8">
           {loading ? (
              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
+               <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
              </div>
           ) : (
             <div className="mx-auto max-w-7xl">

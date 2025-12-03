@@ -10,6 +10,15 @@ import {
   condominioService,
   type Condominio,
 } from "@/services/condominioService";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 import { useRegistroAutomatico } from "@/services/registroService";
 import { UsuarioFilters } from "./UsuarioFilters";
@@ -51,7 +60,7 @@ export default function ListaUsuarios() {
   const [usuarioToAdjust, setUsuarioToAdjust] = useState<Usuario | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 2. INICIALIZAR EL HOOK
+  // Inicializar hook
   const { registrar } = useRegistroAutomatico();
 
   const loadData = async () => {
@@ -127,7 +136,6 @@ export default function ListaUsuarios() {
   const visible = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // --- Handlers de Acciones ---
-  // Eliminar
   const handleDeleteClick = (u: Usuario) => {
     setSelectedUsuario(u);
     setShowDeleteDialog(true);
@@ -139,8 +147,7 @@ export default function ListaUsuarios() {
       setIsDeleting(true);
       await usuarioService.delete(selectedUsuario.id);
 
-      // 3. REGISTRO AUTOMÁTICO (Eliminación)
-      // Obtenemos admin para condominio_id
+      // Registro Automático
       const userStr = localStorage.getItem("user");
       const user = userStr ? JSON.parse(userStr) : {};
 
@@ -173,20 +180,27 @@ export default function ListaUsuarios() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-50 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-muted/40 font-sans">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
-        <div className="h-full hidden md:block border-r bg-white">
+        <div className="h-full hidden md:block border-r bg-background">
           <SidebarAdmin className="h-full" />
         </div>
 
         <main className="flex-1 overflow-y-auto p-8">
           {loading ? (
              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
+               <Loader2 className="h-12 w-12 animate-spin text-[#99D050]" />
              </div>
           ) : (
-             <div className="mx-auto max-w-7xl">
+             <div className="mx-auto max-w-7xl space-y-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">Gestión de Usuarios</h1>
+                    <p className="text-muted-foreground mt-1">Administra residentes, conserjes y directiva.</p>
+                  </div>
+                </div>
+
                 {error && (
                   <div className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                     <AlertCircle className="mt-0.5 h-4 w-4" />
@@ -206,25 +220,31 @@ export default function ListaUsuarios() {
                   onAddClick={() => setShowAddDialog(true)}
                 />
 
-                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-                  <table className="w-full">
-                    <thead className="border-b border-gray-300 bg-[#e5e5e5]">
-                      <tr>
-                        <th className="px-4 py-2 text-center">
-                          <button onClick={() => handleSort("nombre")} className="mx-auto flex items-center gap-2 text-xs font-semibold text-gray-700 hover:text-gray-900">
+                <div className="overflow-hidden rounded-md border bg-white shadow-sm">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
+                        <TableHead className="text-center w-[30%]">
+                          <Button 
+                            variant="ghost" 
+                            onClick={() => handleSort("nombre")} 
+                            className="flex items-center gap-1 font-semibold hover:bg-transparent p-0 mx-auto"
+                          >
                             Nombre <ArrowUpDown className="h-3 w-3" />
-                          </button>
-                        </th>
-                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">Estado de cuenta</th>
-                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">Último pago</th>
-                        <th className="px-4 py-2 text-center text-xs font-semibold text-gray-700">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                          </Button>
+                        </TableHead>
+                        <TableHead className="text-center text-xs font-semibold text-gray-700 w-[20%]">Estado de cuenta</TableHead>
+                        <TableHead className="text-center text-xs font-semibold text-gray-700 w-[20%]">Último pago</TableHead>
+                        <TableHead className="text-center text-xs font-semibold text-gray-700 w-[30%]">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {visible.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-gray-500">No se encontraron usuarios</td>
-                        </tr>
+                        <TableRow>
+                          <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                            No se encontraron usuarios
+                          </TableCell>
+                        </TableRow>
                       ) : (
                         visible.map((u, index) => (
                           <UsuarioRow
@@ -239,18 +259,29 @@ export default function ListaUsuarios() {
                           />
                         ))
                       )}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
 
-                <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-600">
-                  <button disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="disabled:text-gray-300">
-                    ‹ Anterior
-                  </button>
+                {/* Paginación simple */}
+                <div className="flex items-center justify-center gap-4 text-xs text-gray-600 pt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={page === 1} 
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    Anterior
+                  </Button>
                   <span>Página {page} de {totalPages}</span>
-                  <button disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="disabled:text-gray-300">
-                    Siguiente ›
-                  </button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={page === totalPages} 
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Siguiente
+                  </Button>
                 </div>
              </div>
           )}

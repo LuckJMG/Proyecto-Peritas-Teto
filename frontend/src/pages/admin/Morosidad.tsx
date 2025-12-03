@@ -6,8 +6,16 @@ import { multaService, type Multa } from "@/services/multaService";
 import { residenteService, type Residente } from "@/services/residenteService";
 import { authService } from "@/services/authService";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow as UiTableRow,
+} from "@/components/ui/table";
 import { ArrowUpDown, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 type SortKey = "nombre" | "vivienda" | "deudaTotal" | "d0_30" | "d31_60" | "d60";
 
@@ -23,7 +31,7 @@ interface MorosoRow {
 }
 
 const estadosGastoDeuda = ["PENDIENTE", "VENCIDO", "MOROSO"];
-const estadosMultaDeuda = ["PENDIENTE"]; // solo pendientes cuentan como deuda
+const estadosMultaDeuda = ["PENDIENTE"];
 
 const toInt = (val: number | string | undefined | null) => Math.round(Number(val ?? 0));
 const hoy = () => new Date();
@@ -36,7 +44,6 @@ const diasEntre = (fecha: string | Date) => {
 const bucketMonto = (dias: number, monto: number) => {
   if (dias <= 30) return { d0_30: monto, d31_60: 0, d60: 0 };
   if (dias <= 60) return { d0_30: 0, d31_60: monto, d60: 0 };
-  // +60 agrupa cualquier atraso mayor a 60 días
   return { d0_30: 0, d31_60: 0, d60: monto };
 };
 
@@ -86,7 +93,7 @@ export default function AdminMorosidad() {
             } as MorosoRow);
 
           const dias = diasEntre(fechaReferencia);
-          if (dias <= 0) return; // sin atraso, no cuenta para morosidad
+          if (dias <= 0) return;
           const buckets = bucketMonto(dias, monto);
           const updated: MorosoRow = {
             ...base,
@@ -109,7 +116,6 @@ export default function AdminMorosidad() {
           .filter((m) => estadosMultaDeuda.includes(m.estado) && toInt(m.monto) > 0)
           .forEach((m) => {
             const monto = toInt(m.monto);
-            // Sin fecha de vencimiento, usamos fecha_emision como referencia
             agregarDeuda(m.residente_id, monto, m.fecha_emision || m.fecha_pago || hoy());
           });
 
@@ -179,36 +185,36 @@ export default function AdminMorosidad() {
     return sorted;
   }, [rows, search, sortKey, sortDir]);
 
-  const renderSortIcon = (key: SortKey) => (
-    <ArrowUpDown
-      className={cn(
-        "h-4 w-4 inline ml-1 transition-colors",
-        sortKey === key ? "text-gray-800" : "text-gray-400"
-      )}
-    />
+  const renderSortButton = (label: string, key: SortKey) => (
+    <Button
+      variant="ghost"
+      onClick={() => toggleSort(key)}
+      className="flex items-center gap-1 font-semibold hover:bg-transparent hover:text-primary p-0 h-auto"
+    >
+      {label}
+      <ArrowUpDown className={`h-4 w-4 ${sortKey === key ? "text-primary" : "text-muted-foreground"}`} />
+    </Button>
   );
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#F5F6F8] overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-full bg-muted/40 font-sans">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
-        <div className="h-full hidden md:block border-r border-gray-200/50">
-          <SidebarAdmin className="h-full" />
-        </div>
+        <SidebarAdmin />
 
-        <main className="flex-1 p-8 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 p-8 overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">Residentes Morosos</h1>
-              <p className="text-gray-500 mt-1">
-                Lista de residentes con saldo adeudado &gt; 0, segmentada por antig&uuml;edad.
+              <p className="text-muted-foreground mt-1">
+                Lista de residentes con saldo adeudado &gt; 0, segmentada por antigüedad.
               </p>
             </div>
           </div>
 
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-6 flex items-center gap-2">
             <div className="relative w-full max-w-md">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <Input
                 className="pl-9 bg-white"
                 placeholder="Filtrar por nombre, unidad o email"
@@ -218,69 +224,74 @@ export default function AdminMorosidad() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50/50 border-b border-gray-100 text-gray-500 uppercase text-xs font-semibold">
-                <tr className="text-center">
-                  <th className="px-6 py-4 cursor-pointer text-left" onClick={() => toggleSort("nombre")}>
-                    Residente {renderSortIcon("nombre")}
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer" onClick={() => toggleSort("vivienda")}>
-                    Número de vivienda {renderSortIcon("vivienda")}
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer" onClick={() => toggleSort("deudaTotal")}>
-                    Monto Total Adeudado {renderSortIcon("deudaTotal")}
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer" onClick={() => toggleSort("d0_30")}>
-                    0-30 d&iacute;as {renderSortIcon("d0_30")}
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer" onClick={() => toggleSort("d31_60")}>
-                    31-60 d&iacute;as {renderSortIcon("d31_60")}
-                  </th>
-                  <th className="px-6 py-4 cursor-pointer" onClick={() => toggleSort("d60")}>
-                    +60 d&iacute;as {renderSortIcon("d60")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-center">
+          <div className="rounded-md border bg-white shadow-sm">
+            <Table>
+              <TableHeader>
+                <UiTableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="w-[25%]">
+                    {renderSortButton("Residente", "nombre")}
+                  </TableHead>
+                  <TableHead className="w-[15%]">
+                    {renderSortButton("N° Vivienda", "vivienda")}
+                  </TableHead>
+                  <TableHead className="w-[15%]">
+                    {renderSortButton("Deuda Total", "deudaTotal")}
+                  </TableHead>
+                  <TableHead className="w-[15%]">
+                    {renderSortButton("0-30 días", "d0_30")}
+                  </TableHead>
+                  <TableHead className="w-[15%]">
+                    {renderSortButton("31-60 días", "d31_60")}
+                  </TableHead>
+                  <TableHead className="w-[15%]">
+                    {renderSortButton("+60 días", "d60")}
+                  </TableHead>
+                </UiTableRow>
+              </TableHeader>
+              <TableBody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={6} className="p-12 text-center text-gray-400">
+                  <UiTableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                       Cargando morosidad...
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </UiTableRow>
                 ) : error ? (
-                  <tr>
-                    <td colSpan={6} className="p-12 text-center text-red-500">
+                  <UiTableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-red-500">
                       {error}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </UiTableRow>
                 ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-12 text-center text-gray-400">
+                  <UiTableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                       No hay residentes morosos con deuda pendiente.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </UiTableRow>
                 ) : (
                   filtered.map((row) => (
-                    <tr key={row.residenteId} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-gray-900 text-left">{row.nombre}</td>
-                      <td className="px-6 py-4 text-gray-700">{row.vivienda}</td>
-                      <td className="px-6 py-4 font-bold text-gray-900">${row.deudaTotal.toLocaleString("es-CL")}</td>
-                      <td className="px-6 py-4 text-gray-700">${row.d0_30.toLocaleString("es-CL")}</td>
-                      <td className="px-6 py-4 text-gray-700">${row.d31_60.toLocaleString("es-CL")}</td>
-                      <td className="px-6 py-4 text-gray-700">${row.d60.toLocaleString("es-CL")}</td>
-                    </tr>
+                    <UiTableRow key={row.residenteId} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{row.nombre}</TableCell>
+                      <TableCell>{row.vivienda}</TableCell>
+                      <TableCell className="font-bold text-gray-900">
+                        ${row.deudaTotal.toLocaleString("es-CL")}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        ${row.d0_30.toLocaleString("es-CL")}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        ${row.d31_60.toLocaleString("es-CL")}
+                      </TableCell>
+                      <TableCell className="text-red-600 font-medium">
+                        ${row.d60.toLocaleString("es-CL")}
+                      </TableCell>
+                    </UiTableRow>
                   ))
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </main>
       </div>
     </div>
   );
 }
-
-
-

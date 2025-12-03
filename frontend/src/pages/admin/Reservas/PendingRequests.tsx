@@ -11,29 +11,25 @@ interface PendingRequestsProps {
 }
 
 export function PendingRequests({ reservas, onAction }: PendingRequestsProps) {
-  // 2. INICIALIZAR EL HOOK
+  // Inicializar hook
   const { registrar } = useRegistroAutomatico();
 
   const pendientes = reservas.filter(
     (r) => r.estado === "PENDIENTE" || r.estado === "PENDIENTE_PAGO"
   );
 
-  // 3. MANEJADOR INTERNO PARA INTERCEPTAR Y REGISTRAR
   const handleDecision = async (reserva: ReservaAdminView, action: "CONFIRMADA" | "CANCELADA") => {
-    // Obtenemos el usuario actual para sacar el condominio_id (para el log)
     const userStr = localStorage.getItem("user");
     const user = userStr ? JSON.parse(userStr) : {};
 
-    // Preparamos el mensaje del log
     const accionTexto = action === "CONFIRMADA" ? "Aceptó" : "Rechazó";
     const detalle = `Admin ${accionTexto} solicitud de reserva #${reserva.id} para ${reserva.nombreEspacio} (Residente: ${reserva.nombreResidente})`;
 
-    // Registramos la acción (Fire and forget, no bloqueamos la UI)
+    // Registrar acción
     registrar("RESERVA", detalle, {
       condominio_id: user.condominio_id
     });
 
-    // Ejecutamos la acción original que actualiza la BD y recarga la tabla
     onAction(reserva.id, action);
   };
 

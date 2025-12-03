@@ -32,17 +32,25 @@ export function DeleteUsuarioDialog({
           <DialogTitle>¿Eliminar usuario?</DialogTitle>
           <DialogDescription>
             Esta acción eliminará permanentemente al usuario{" "}
-            <b>
+            <span className="font-bold text-gray-900">
               {usuario?.nombre} {usuario?.apellido}
-            </b>
+            </span>
             .
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex justify-between mt-6 w-full">
+        <DialogFooter className="flex gap-2 sm:gap-0 mt-4">
+          <Button
+            onClick={() => onOpenChange(false)}
+            variant="outline"
+            className="w-full sm:w-1/2 font-semibold"
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
           <Button
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="w-1/2 bg-[#e05959] hover:bg-[#d04848] text-white font-semibold h-12"
+            className="w-full sm:w-1/2 bg-red-600 hover:bg-red-700 text-white font-semibold"
           >
             {isSubmitting ? (
               <>
@@ -52,14 +60,6 @@ export function DeleteUsuarioDialog({
             ) : (
               "Eliminar"
             )}
-          </Button>
-          <Button
-            onClick={() => onOpenChange(false)}
-            variant="outline"
-            className="w-1/2 h-12 font-semibold"
-            disabled={isSubmitting}
-          >
-            Cancelar
           </Button>
         </DialogFooter>
       </DialogContent>

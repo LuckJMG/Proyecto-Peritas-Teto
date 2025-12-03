@@ -33,7 +33,7 @@ export function HogaresMorosos({
   data = []
 }: HogaresMorososProps) {
   
-  const finalStyle = customStyle || "border-none bg-white rounded-[24px] shadow-sm";
+  const finalStyle = customStyle || "border-none bg-white rounded-2xl shadow-sm";
 
   // Formatear monto en pesos chilenos
   const formatMonto = (monto: number) => {
@@ -104,11 +104,11 @@ export function HogaresMorosos({
       <CardContent className="px-6 pb-6 pt-2 flex-1 overflow-hidden min-h-0">
         <div className="space-y-5 h-full overflow-y-auto pr-2 custom-scrollbar">
           {data.map((hogar) => (
-            <div key={hogar.residenteId} className="flex items-start space-x-4">
+            <div key={hogar.residenteId} className="flex items-start space-x-4 group">
               
               <Avatar className="h-12 w-12 border-2 border-white shadow-sm mt-1 shrink-0">
                 <AvatarImage src={hogar.avatar} alt={hogar.nombre} />
-                <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
+                <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
                   {hogar.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

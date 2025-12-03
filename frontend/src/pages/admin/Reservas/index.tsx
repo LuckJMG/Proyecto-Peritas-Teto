@@ -52,6 +52,7 @@ export default function ReservasPage() {
         const original = data.find((r) => r.id === id);
         if (!original) return;
         const payload = { ...original, estado: action };
+        // URL base debería estar en un config o servicio centralizado
         const res = await fetchWithAuth(
           `http://localhost:8000/api/v1/reservas/${id}`,
           { method: "PUT", body: JSON.stringify(payload) }

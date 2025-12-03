@@ -134,7 +134,7 @@ export function EditViewAnuncio({ anuncio, mode, onClose, onUpdate, onError }: E
                   <div className="flex items-center gap-2">
                      <Avatar className="h-6 w-6 border border-slate-200">
                         <AvatarImage src={anuncio.avatarAutor} alt={anuncio.nombreAutor} />
-                        <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white text-[10px] font-bold">
+                        <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white text-[10px] font-bold">
                           {anuncio.nombreAutor.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                      </Avatar>

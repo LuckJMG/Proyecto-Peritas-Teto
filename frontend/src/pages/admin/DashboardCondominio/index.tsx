@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   DollarSign, 
-  ChevronLeft,
-  ChevronRight,
-  Wallet,
-  Loader2,
+  ChevronLeft, 
+  ChevronRight, 
+  Wallet, 
+  Loader2, 
   Megaphone
 } from "lucide-react";
 
@@ -28,7 +28,8 @@ export default function DashboardCondominio() {
   const handlePrev = () => setCurrentChart((prev) => (prev - 1 + totalCharts) % totalCharts);
 
   const greenColor = "#99D050"; 
-  const cardStyle = `border border-gray-100 bg-white rounded-[20px] shadow-[0px_4px_10px_rgba(153,208,80,0.25)] transition-none`;
+  // Estandarización de estilo de tarjeta: rounded-2xl
+  const cardStyle = `border border-gray-100 bg-white rounded-2xl shadow-[0px_4px_10px_rgba(153,208,80,0.25)] transition-none`;
 
   // Función helper para formatear montos
   const formatMonto = (monto: number) => {
@@ -39,7 +40,6 @@ export default function DashboardCondominio() {
       maximumFractionDigits: 0
     }).format(monto);
   };
-
 
   // Loading State
   if (dashboardData.loading) {
@@ -74,16 +74,16 @@ export default function DashboardCondominio() {
           <div className="flex h-full gap-6">
             
             {/* === COLUMNA IZQUIERDA === */}
-            <div className="flex-[3] flex flex-col gap-6 h-full min-w-0">
+            <div className="flex-3 flex flex-col gap-6 h-full min-w-0">
               
               {/* FILA 1: KPIs SUPERIORES */}
               <div className="grid grid-cols-3 gap-6 h-[150px] shrink-0">
                 <Card className={`${cardStyle} flex flex-col justify-center relative overflow-hidden`}>
                   <CardContent className="p-0 flex items-center gap-4 px-6 relative z-10">
                     <div className="h-20 w-20 rounded-full flex items-center justify-center shrink-0 bg-[#E4F4C8]">
-                       <div className="bg-white p-3 rounded-full shadow-sm">
-                         <DollarSign className="h-9 w-9" style={{ color: greenColor, fill: greenColor }} />
-                       </div>
+                        <div className="bg-white p-3 rounded-full shadow-sm">
+                          <DollarSign className="h-9 w-9" style={{ color: greenColor, fill: greenColor }} />
+                        </div>
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-500 mb-1">Ingreso Total</p>
@@ -252,7 +252,7 @@ export default function DashboardCondominio() {
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <Avatar className="h-10 w-10 border-2 border-gray-100 shadow-sm shrink-0">
                             <AvatarImage src={anuncio.avatar} alt={anuncio.nombreAutor} />
-                            <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold text-xs">
+                            <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold text-xs">
                               {anuncio.nombreAutor.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>

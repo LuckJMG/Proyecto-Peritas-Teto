@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { gastoComunService, type GastoComun } from "@/services/gastoComunService";
 import { multaService, type Multa } from "@/services/multaService";
 import type { Usuario } from "@/services/usuarioService";
@@ -228,7 +230,7 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Ajustar deuda de {usuario ? `${usuario.nombre} ${usuario.apellido}` : ""}</DialogTitle>
         </DialogHeader>
@@ -237,23 +239,26 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-1">
               <Label>Tipo</Label>
-              <select
+              <Select
                 value={tipo}
-                onChange={(e) => {
-                  const val = e.target.value as TipoObjeto;
-                  setTipo(val);
+                onValueChange={(val) => {
+                  setTipo(val as TipoObjeto);
                   setObjetoId(null);
                   setSelectedTipo(null);
                   setNuevoMonto("");
                   setMensaje("");
                   setEstado("idle");
                 }}
-                className="rounded border px-2 py-1 text-sm"
               >
-                <option value="GASTO">Gasto comun</option>
-                <option value="MULTA">Multa</option>
-                <option value="REVERTIR">Revertir ajuste</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GASTO">Gasto común</SelectItem>
+                  <SelectItem value="MULTA">Multa</SelectItem>
+                  <SelectItem value="REVERTIR">Revertir ajuste</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -264,7 +269,7 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
                   <Label>Nuevo monto</Label>
                   <Input
                     value={nuevoMonto}
-                   onChange={(e) => {
+                    onChange={(e) => {
                       const val = e.target.value;
                       setNuevoMonto(val ? fmt(Number(val)) : "");
                     }}
@@ -273,20 +278,17 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
                     className={esCondonacion ? "bg-gray-100" : ""}
                   />
                 </div>
-                <div className="flex items-end gap-2">
-                  <input
+                <div className="flex items-end gap-2 pb-2">
+                  <Checkbox
                     id="condonacion"
-                    type="checkbox"
-                    className="h-4 w-4"
                     checked={esCondonacion}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setEsCondonacion(checked);
-                    setNuevoMonto(checked ? "0" : (nuevoMonto ? fmt(Number(nuevoMonto)) : ""));
-                  }}
-                />
-                <Label htmlFor="condonacion" className="text-sm">Condonacion</Label>
-              </div>
+                    onCheckedChange={(checked) => {
+                      setEsCondonacion(checked as boolean);
+                      setNuevoMonto(checked ? "0" : (nuevoMonto ? fmt(Number(nuevoMonto)) : ""));
+                    }}
+                  />
+                  <Label htmlFor="condonacion" className="text-sm cursor-pointer">Condonación</Label>
+                </div>
               </div>
 
               <div className="grid gap-1">
@@ -302,21 +304,21 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
 
           {tipo === "REVERTIR" && (
             <div className="grid gap-1">
-              <Label>Ultimo ajuste</Label>
+              <Label>Último ajuste</Label>
               {ajusteReciente ? (
-                <>
-                  <p className="text-sm text-gray-700">Registro #{ajusteReciente.registroId} - {ajusteReciente.detalle || "Detalle no disponible"}</p>
+                <div className="p-3 bg-gray-50 rounded border text-sm">
+                  <p className="text-gray-700 font-medium">Registro #{ajusteReciente.registroId} - {ajusteReciente.detalle || "Detalle no disponible"}</p>
                   <p className="text-xs text-gray-500">Objeto: {ajusteReciente.tipo} #{ajusteReciente.objetoId}</p>
-                </>
+                </div>
               ) : (
                 <p className="text-sm text-red-500">No hay ajustes previos para revertir.</p>
               )}
               <div className="grid gap-1 mt-2">
-                <Label>Motivo reversion</Label>
+                <Label>Motivo reversión</Label>
                 <Input
                   value={motivoReversion}
                   onChange={(e) => setMotivoReversion(e.target.value)}
-                  placeholder="Explica la reversion"
+                  placeholder="Explica la reversión"
                   disabled={!ajusteReciente}
                 />
               </div>
@@ -324,10 +326,10 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
           )}
 
           {estado === "error" && (
-            <p className="text-sm text-red-600">{mensaje}</p>
+            <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{mensaje}</p>
           )}
           {estado === "success" && (
-            <p className="text-sm text-green-600">{mensaje}</p>
+            <p className="text-sm text-green-600 bg-green-50 p-2 rounded">{mensaje}</p>
           )}
 
           {tipo !== "REVERTIR" && (
@@ -335,23 +337,23 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
               <div className="border-t pt-3 mt-2" />
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-2">
-                  Selecciona un {tipo === "GASTO" ? "gasto comun" : "multa"}
+                  Selecciona un {tipo === "GASTO" ? "gasto común" : "multa"}
                 </p>
                 {errorDeudas && <p className="text-xs text-red-600 mb-2">{errorDeudas}</p>}
                 {cargandoDeudas ? (
                   <p className="text-xs text-gray-500">Cargando deudas...</p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-auto">
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-auto pr-1 custom-scrollbar">
                     {items.map((item) => (
                       <div
                         key={`${item.tipo}-${item.id}`}
-                        className={`flex items-center justify-between rounded border px-3 py-2 text-xs ${objetoId === item.id && selectedTipo === item.tipo ? "border-green-400" : ""}`}
+                        className={`flex items-center justify-between rounded border px-3 py-2 text-xs transition-colors ${objetoId === item.id && selectedTipo === item.tipo ? "border-green-500 bg-green-50" : "hover:bg-gray-50"}`}
                       >
-                        <div className="text-gray-700">{item.label}</div>
+                        <div className="text-gray-700 font-medium">{item.label}</div>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-green-600 hover:text-green-700"
+                          className="h-6 text-green-600 hover:text-green-700 hover:bg-green-100"
                           onClick={() => seleccionarObjeto(item)}
                         >
                           Seleccionar
@@ -359,7 +361,7 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
                       </div>
                     ))}
                     {items.length === 0 && !errorDeudas && (
-                      <p className="text-xs text-gray-500">No hay deudas para este residente.</p>
+                      <p className="text-xs text-gray-500 text-center py-4">No hay deudas para este residente.</p>
                     )}
                   </div>
                 )}
@@ -368,12 +370,16 @@ export function AdjustDeudaDialog({ open, onOpenChange, usuario }: AdjustDeudaDi
           )}
         </div>
 
-        <DialogFooter className="flex justify-between">
+        <DialogFooter className="flex justify-between gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={estado === "loading"}>
             Cerrar
           </Button>
-          <Button onClick={handleAjustar} disabled={estado === "loading" || (tipo === "REVERTIR" && !ajusteReciente)}>
-            {tipo === "REVERTIR" ? "Aplicar reversion" : esCondonacion ? "Aplicar condonacion" : "Aplicar ajuste"}
+          <Button 
+            onClick={handleAjustar} 
+            disabled={estado === "loading" || (tipo === "REVERTIR" && !ajusteReciente)}
+            className="bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
+          >
+            {tipo === "REVERTIR" ? "Aplicar reversión" : esCondonacion ? "Aplicar condonación" : "Aplicar ajuste"}
           </Button>
         </DialogFooter>
       </DialogContent>

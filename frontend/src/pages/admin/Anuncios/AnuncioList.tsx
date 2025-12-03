@@ -82,7 +82,7 @@ export function AnuncioList({ anuncios, onEdit, onView, onDelete, loading, onRef
               <div key={anuncio.id} className="p-4 bg-white hover:bg-[#99D050]/5 transition-colors flex gap-4 group items-center animate-in fade-in duration-300">
                 <Avatar className="h-11 w-11 border-2 border-gray-200 shadow-sm shrink-0">
                   <AvatarImage src={anuncio.avatarAutor} alt={anuncio.nombreAutor} />
-                  <AvatarFallback className="bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
+                  <AvatarFallback className="bg-linear-to-br from-pink-400 via-purple-400 to-blue-400 text-white font-bold">
                     {anuncio.nombreAutor.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

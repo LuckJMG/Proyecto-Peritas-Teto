@@ -139,7 +139,6 @@ export function ReservasTable({ reservas, onUpdateStatus }: ReservasTableProps) 
                             Aprobar
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            // Cambio a CANCELADA
                             onClick={() => onUpdateStatus(reserva.id, "CANCELADA")}
                             className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
                           >

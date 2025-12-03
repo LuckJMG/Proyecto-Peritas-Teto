@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Trash2, Pencil, DollarSign } from "lucide-react
 import { type Usuario } from "@/services/usuarioService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TableRow, TableCell } from "@/components/ui/table";
 
 interface UsuarioRowProps {
   usuario: Usuario;
@@ -32,9 +33,9 @@ export function UsuarioRow({
 
   return (
     <>
-      <tr className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
+      <TableRow className={`hover:bg-muted/50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-muted/30"}`}>
         {/* Columna Nombre */}
-        <td className="px-4 py-3">
+        <TableCell className="px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#99D050]/20 text-[#99D050] font-bold text-xs">
               {usuario.nombre.charAt(0)}
@@ -46,35 +47,35 @@ export function UsuarioRow({
               </span>
               <span className="text-xs text-gray-500">{usuario.email}</span>
               <div className="mt-0.5">
-                <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 border-gray-300 text-gray-500">
+                <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 border-gray-300 text-gray-500 font-normal">
                   {usuario.rol}
                 </Badge>
               </div>
             </div>
           </div>
-        </td>
+        </TableCell>
 
         {/* Columna Estado de Cuenta */}
-        <td className="px-4 py-3 text-center">
+        <TableCell className="px-4 py-3 text-center">
           {(usuario.total_deuda || 0) > 0 ? (
-            <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200 border-none shadow-sm">
+            <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200 border-none shadow-sm font-medium">
               Deuda: {formatCurrency(usuario.total_deuda)}
             </Badge>
           ) : (
-            <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-none shadow-sm">
+            <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-none shadow-sm font-medium">
               Al día
             </Badge>
           )}
-        </td>
+        </TableCell>
 
         {/* Columna Último Pago */}
-        <td className="px-4 py-3 text-center text-xs text-gray-500">
+        <TableCell className="px-4 py-3 text-center text-xs text-gray-500">
           {usuario.fecha_ultimo_pago ? new Date(usuario.fecha_ultimo_pago).toLocaleDateString() : "-"}
-        </td>
+        </TableCell>
 
         {/* Columna Acciones */}
-        <td className="px-4 py-3 text-center">
-          <div className="flex items-center justify-center gap-2">
+        <TableCell className="px-4 py-3 text-center">
+          <div className="flex items-center justify-center gap-1">
             <Button
               variant="ghost"
               size="icon"
@@ -112,39 +113,39 @@ export function UsuarioRow({
               onClick={onToggleExpand}
               title="Ver detalles"
             >
-               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
       
       {isExpanded && (
-        <tr className="bg-gray-50 border-b border-gray-200">
-          <td colSpan={4} className="p-4">
-             <div className="text-sm text-gray-600 pl-12 grid grid-cols-2 gap-4">
-                <div>
-                    <p className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-700">Vivienda:</span> 
-                      {usuario.vivienda || <span className="italic text-gray-400">No asignada</span>}
-                    </p>
-                    <p className="flex items-center gap-2 mt-1">
-                      <span className="font-semibold text-gray-700">Teléfono:</span> 
-                      {usuario.telefono || <span className="italic text-gray-400">No registrado</span>}
-                    </p>
-                </div>
-                <div>
-                    <p className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-700">Último Acceso:</span> 
-                      {usuario.ultimo_acceso ? new Date(usuario.ultimo_acceso).toLocaleString() : "Nunca"}
-                    </p>
-                    <p className="flex items-center gap-2 mt-1">
-                      <span className="font-semibold text-gray-700">Fecha Registro:</span> 
-                      {new Date(usuario.fecha_creacion).toLocaleDateString()}
-                    </p>
-                </div>
+        <TableRow className="bg-muted/20 border-b border-gray-200">
+          <TableCell colSpan={4} className="p-4">
+             <div className="text-sm text-gray-600 pl-14 grid grid-cols-2 gap-4">
+               <div>
+                   <p className="flex items-center gap-2">
+                     <span className="font-semibold text-gray-700">Vivienda:</span> 
+                     {usuario.vivienda || <span className="italic text-gray-400">No asignada</span>}
+                   </p>
+                   <p className="flex items-center gap-2 mt-1">
+                     <span className="font-semibold text-gray-700">Teléfono:</span> 
+                     {usuario.telefono || <span className="italic text-gray-400">No registrado</span>}
+                   </p>
+               </div>
+               <div>
+                   <p className="flex items-center gap-2">
+                     <span className="font-semibold text-gray-700">Último Acceso:</span> 
+                     {usuario.ultimo_acceso ? new Date(usuario.ultimo_acceso).toLocaleString() : "Nunca"}
+                   </p>
+                   <p className="flex items-center gap-2 mt-1">
+                     <span className="font-semibold text-gray-700">Fecha Registro:</span> 
+                     {new Date(usuario.fecha_creacion).toLocaleDateString()}
+                   </p>
+               </div>
              </div>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       )}
     </>
   );

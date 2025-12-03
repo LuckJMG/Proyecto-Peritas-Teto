@@ -220,7 +220,7 @@ export function AddUsuarioDialog({ open, onOpenChange, onSuccess }: AddUsuarioDi
             </div>
           )}
 
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-6 gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
@@ -229,7 +229,7 @@ export function AddUsuarioDialog({ open, onOpenChange, onSuccess }: AddUsuarioDi
             >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-[#99D050] hover:bg-[#86b846] text-black" disabled={loading}>
+            <Button type="submit" className="bg-[#99D050] hover:bg-[#86b846] text-white font-medium" disabled={loading}>
               {loading ? "Guardando..." : "Crear Usuario"}
             </Button>
           </DialogFooter>

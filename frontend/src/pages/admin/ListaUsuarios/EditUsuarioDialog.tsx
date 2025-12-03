@@ -20,7 +20,7 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 2. INICIALIZAR EL HOOK
+  // Inicializar hook
   const { registrar } = useRegistroAutomatico();
 
   // Campos de Usuario
@@ -47,7 +47,7 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
       setPassword("");
       setError(null);
 
-      // 2. Intentar cargar datos extra del residente
+      // Intentar cargar datos extra del residente
       fetchResidenteData(usuario.id);
     }
   }, [open, usuario]);
@@ -103,7 +103,7 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
 
       await usuarioService.update(usuario.id, payload);
 
-      // 3. REGISTRO AUTOMÁTICO (Edición)
+      // Registro Automático
       const userStr = localStorage.getItem("user");
       const user = userStr ? JSON.parse(userStr) : {};
 
@@ -192,9 +192,9 @@ export function EditUsuarioDialog({ open, onOpenChange, usuario, onSuccess }: Ed
             </div>
           )}
 
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-6 gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" className="bg-[#99D050] hover:bg-[#86b846] text-black" disabled={loading}>
+            <Button type="submit" className="bg-[#99D050] hover:bg-[#86b846] text-white font-medium" disabled={loading}>
               {loading ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </DialogFooter>

@@ -10,6 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { registroService, type TipoEvento } from "@/services/registroService";
 import { authService } from "@/services/authService";
 
@@ -78,7 +85,6 @@ export function AddRegistroDialog({
         monto: formData.monto ? parseFloat(formData.monto) : undefined,
       });
 
-      // Reset form
       setFormData({
         tipo_evento: "RESERVA",
         detalle: "",
@@ -101,7 +107,7 @@ export function AddRegistroDialog({
         <DialogHeader>
           <DialogTitle>Ingresar evento</DialogTitle>
           <DialogDescription>
-            Registra una nueva acción en el sistema
+            Registra una nueva acción en el sistema manualmente.
           </DialogDescription>
         </DialogHeader>
 
@@ -114,27 +120,28 @@ export function AddRegistroDialog({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="tipo">Tipo de evento</Label>
-            <select
-              id="tipo"
+            <Select
               value={formData.tipo_evento}
-              onChange={(e) =>
-                setFormData({ ...formData, tipo_evento: e.target.value as TipoEvento })
-              }
-              className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm"
+              onValueChange={(val) => setFormData({ ...formData, tipo_evento: val as TipoEvento })}
             >
-              {TIPOS_EVENTO.map((tipo) => (
-                <option key={tipo} value={tipo}>
-                  {TIPO_LABELS[tipo]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="tipo">
+                <SelectValue placeholder="Selecciona un tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIPOS_EVENTO.map((tipo) => (
+                  <SelectItem key={tipo} value={tipo}>
+                    {TIPO_LABELS[tipo]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="detalle">Detalle</Label>
             <Input
               id="detalle"
-              placeholder="Ej: Piscina"
+              placeholder="Ej: Mantenimiento piscina"
               value={formData.detalle}
               onChange={(e) =>
                 setFormData({ ...formData, detalle: e.target.value })
@@ -147,7 +154,7 @@ export function AddRegistroDialog({
             <Input
               id="monto"
               type="number"
-              placeholder="$20,000"
+              placeholder="$0"
               value={formData.monto}
               onChange={(e) =>
                 setFormData({ ...formData, monto: e.target.value })
@@ -156,21 +163,20 @@ export function AddRegistroDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full bg-[#99D050] hover:bg-[#88bf40] text-white font-medium"
-          >
-            {submitting ? "Creando..." : "Crear Registro"}
-          </Button>
-          <Button
-            onClick={() => onOpenChange(false)}
             variant="outline"
-            className="w-full"
+            onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
             Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="bg-[#99D050] hover:bg-[#88bf40] text-white"
+          >
+            {submitting ? "Creando..." : "Crear Registro"}
           </Button>
         </DialogFooter>
       </DialogContent>
